@@ -1,22 +1,48 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { useAuthStore } from "@/store/authStore";
+
+import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/DashboardPage";
+import StudentsPage from "./pages/StudentsPage";
+import PaymentsPage from "./pages/PaymentsPage";
+import DocumentsPage from "./pages/DocumentsPage";
+import OperatorsPage from "./pages/OperatorsPage";
+import TeachersPage from "./pages/TeachersPage";
+import BranchesPage from "./pages/BranchesPage";
+import ProfilePage from "./pages/ProfilePage";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const OwnerRoute = ({ children }: { children: React.ReactNode }) => {
+  const isOwner = useAuthStore((s) => s.isOwner);
+  if (!isOwner()) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="filiallar" element={<OwnerRoute><BranchesPage /></OwnerRoute>} />
+            <Route path="talabalar" element={<StudentsPage />} />
+            <Route path="tolovlar" element={<PaymentsPage />} />
+            <Route path="hujjatlar" element={<DocumentsPage />} />
+            <Route path="operatorlar" element={<OperatorsPage />} />
+            <Route path="oqituvchilar" element={<TeachersPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
