@@ -20,6 +20,7 @@ const LoginPage = () => {
       {
         onSuccess: () => {
           toast.success('Tizimga muvaffaqiyatli kirdingiz!');
+          
           navigate('/dashboard');
         },
         onError: () => toast.error('Email yoki parol noto\'g\'ri'),

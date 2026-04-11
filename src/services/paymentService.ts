@@ -10,9 +10,11 @@ const demoPayments: Payment[] = [
 ];
 
 const demoSummary: PaymentSummary = { total_collected: 11100000, total_debt: 5900000, monthly_income: 11100000 };
-
+interface PaymentData {
+  data: Payment[];
+}
 export const usePayments = (branchId?: string, courseType?: string) => {
-  return useQuery<Payment[]>({
+  return useQuery<PaymentData>({
     queryKey: ['payments', branchId, courseType],
     queryFn: async () => {
       try {

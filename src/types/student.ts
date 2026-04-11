@@ -1,6 +1,6 @@
 export type CourseType = 'tezkor' | 'avto_maktab';
 export type PaymentMethod = 'naqd' | 'karta' | 'perechisleniya';
-export type ResultStatus = 'kutilmoqda' | 'topshirdi' | 'yiqildi';
+export type ResultStatus = 'oqimoqda' | 'topshirdi' | 'yiqildi';
 
 export interface Student {
   id: string;
