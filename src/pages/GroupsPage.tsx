@@ -2,6 +2,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useGroups, useGroupsOverview, useCreateGroup, useUpdateGroup, useDeleteGroup } from "@/services/groupService";
 import { useBranches } from "@/services/branchService";
+import { useStudents } from "@/services/studentService";
 import { Group } from "@/types/group";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +15,14 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Eye, X } from "lucide-react";
 import { toast } from "sonner";
 
 const formatDate = (d: string) => {
   try { return format(new Date(d), "dd.MM.yyyy"); } catch { return d; }
 };
+
+const formatMoney = (n: number) => new Intl.NumberFormat("uz-UZ").format(n);
 
 const GroupsPage = () => {
   const { data: groups, isLoading } = useGroups();
@@ -34,6 +37,7 @@ const GroupsPage = () => {
   const [editGroup, setEditGroup] = useState<Group | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [expandedBranches, setExpandedBranches] = useState<Record<string, boolean>>({});
+  const [detailGroup, setDetailGroup] = useState<Group | null>(null);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -41,6 +45,17 @@ const GroupsPage = () => {
   const [formCourseType, setFormCourseType] = useState<string>("avto_maktab");
 
   const branchList = branches || [];
+
+  // Fetch students for the detail view group
+  const { data: groupStudents, isLoading: studentsLoading } = useStudents(
+    detailGroup?.course_type,
+    detailGroup?.branch_id
+  );
+
+  // Filter students belonging to the selected group
+  const filteredGroupStudents = (groupStudents || []).filter(
+    (s) => s.group_id === detailGroup?.id
+  );
 
   const filtered = (groups || []).filter((g) =>
     g.name.toLowerCase().includes(search.toLowerCase())
@@ -172,7 +187,7 @@ const GroupsPage = () => {
                     </tr>
                   ))
                 : filtered.map((g) => (
-                    <tr key={g.id} className="table-row-striped border-b border-border/50">
+                    <tr key={g.id} className="table-row-striped border-b border-border/50 cursor-pointer hover:bg-muted/10" onClick={() => setDetailGroup(g)}>
                       <td className="px-4 py-3 font-medium">{g.name}</td>
                       <td className="px-4 py-3 text-muted-foreground">{g.branch_name || getBranchName(g.branch_id)}</td>
                       <td className="px-4 py-3 text-center">
@@ -189,10 +204,13 @@ const GroupsPage = () => {
                       <td className="px-4 py-3 text-muted-foreground">{formatDate(g.created_at)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => openEdit(g)} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+                          <button onClick={(e) => { e.stopPropagation(); setDetailGroup(g); }} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+                            <Eye className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); openEdit(g); }} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
-                          <button onClick={() => setDeleteId(g.id)} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
+                          <button onClick={(e) => { e.stopPropagation(); setDeleteId(g.id); }} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
@@ -207,7 +225,76 @@ const GroupsPage = () => {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Group Detail Modal */}
+      <Dialog open={!!detailGroup} onOpenChange={(o) => !o && setDetailGroup(null)}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-heading">
+              {detailGroup?.name} — Talabalar ro'yxati
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                ({detailGroup?.course_type === "avto_maktab" ? "Avto maktab" : "Tezkor"} · {detailGroup?.branch_name || getBranchName(detailGroup?.branch_id || "")})
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Familya</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ismi</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Telefon</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Kurs narxi</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Qarzdorlik</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">Dakument</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">Natijasi</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Sana</th>
+                </tr>
+              </thead>
+              <tbody>
+                {studentsLoading ? (
+                  [...Array(3)].map((_, i) => (
+                    <tr key={i} className="border-b border-border/50">
+                      <td colSpan={8} className="p-4"><Skeleton className="h-5 w-full" /></td>
+                    </tr>
+                  ))
+                ) : filteredGroupStudents.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                      Bu guruhda talabalar topilmadi
+                    </td>
+                  </tr>
+                ) : (
+                  filteredGroupStudents.map((s) => (
+                    <tr key={s.id} className="table-row-striped border-b border-border/50">
+                      <td className="px-4 py-3 font-medium">{s.last_name}</td>
+                      <td className="px-4 py-3">{s.first_name}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.phone}</td>
+                      <td className="px-4 py-3 text-right">{formatMoney(s.total_price)}</td>
+                      <td className="px-4 py-3 text-right">
+                        <span className={s.debt > 0 ? "text-destructive" : "text-success"}>
+                          {s.debt > 0 ? formatMoney(s.debt) : "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={s.has_document ? "text-success" : "text-destructive"}>
+                          {s.has_document ? "+" : "-"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {s.result === "topshirdi" ? <span className="text-success">✓</span> : s.result === "yiqildi" ? <span className="text-destructive">✗</span> : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{formatDate(s.created_at)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-sm text-muted-foreground">Jami: {filteredGroupStudents.length} ta talaba</p>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create/Edit Modal */}
       <Dialog open={modalOpen} onOpenChange={(o) => !o && setModalOpen(false)}>
         <DialogContent className="max-w-md bg-card border-border">
           <DialogHeader>
