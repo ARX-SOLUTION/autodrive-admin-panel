@@ -232,7 +232,7 @@ const StudentsPage = () => {
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">Qarzdorlik</th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">Tulov turi</th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">Dakument</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Manager</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Operator</th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">Natijasi</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Izoh</th>
                   </>
@@ -248,7 +248,7 @@ const StudentsPage = () => {
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">O83</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Shartnoma</th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">Dakument</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Manager</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Operator</th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">Natijasi</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Izoh</th>
                   </>
