@@ -41,8 +41,8 @@ const PaymentsPage = () => {
   const { data: summary } = usePaymentSummary(branchId);
   const { data: branches } = useBranches();
 
-  const { data: tezkorStudents } = useStudents("tezkor", branchId);
-  const { data: avtoStudents } = useStudents("avto_maktab", branchId);
+  const { data: tezkorStudents } = useStudents("tezkor", branchId , 1 ,200);
+  const { data: avtoStudents } = useStudents("avto_maktab", branchId , 1 ,200);
 
   const allStudents = [
     ...(tezkorStudents ?? []),
