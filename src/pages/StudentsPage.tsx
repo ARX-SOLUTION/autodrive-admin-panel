@@ -45,7 +45,6 @@ export const formatDate = (d: string) => {
   }
 };
 
-
 const StudentsPage = () => {
   const { isOwner, user } = useAuthStore();
   const [courseType, setCourseType] = useState<CourseType>("tezkor");
@@ -59,7 +58,12 @@ const StudentsPage = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
 
-  const { data: students, isLoading } = useStudents(courseType, branchId);
+  const { data: students, isLoading } = useStudents(
+    courseType,
+    branchId,
+    1,
+    200,
+  );
   const { data: branches } = useBranches();
   const createMutation = useCreateStudent();
   const updateMutation = useUpdateStudent();
@@ -70,7 +74,7 @@ const StudentsPage = () => {
       s?.last_name?.toLowerCase().includes(search?.toLowerCase()) ||
       s?.first_name?.toLowerCase().includes(search?.toLowerCase()) ||
       s?.phone?.includes(search);
-    
+
     let matchDate = true;
     if (dateFrom || dateTo) {
       const created = new Date(s.created_at);
@@ -84,7 +88,9 @@ const StudentsPage = () => {
     return matchSearch && matchDate;
   });
 
-  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filtered);
+  const { currentPage, totalPages, paginatedItems, setCurrentPage } =
+    usePagination(filtered);
+  
 
   const handleDelete = () => {
     if (!deleteId) return;
@@ -178,28 +184,59 @@ const StudentsPage = () => {
         {/* Date range filters */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className={cn("w-[140px] justify-start text-left font-normal bg-secondary border-border", !dateFrom && "text-muted-foreground")}>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-[140px] justify-start text-left font-normal bg-secondary border-border",
+                !dateFrom && "text-muted-foreground",
+              )}
+            >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {dateFrom ? format(dateFrom, "dd.MM.yyyy") : "Dan"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+            <Calendar
+              mode="single"
+              selected={dateFrom}
+              onSelect={setDateFrom}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
           </PopoverContent>
         </Popover>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className={cn("w-[140px] justify-start text-left font-normal bg-secondary border-border", !dateTo && "text-muted-foreground")}>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-[140px] justify-start text-left font-normal bg-secondary border-border",
+                !dateTo && "text-muted-foreground",
+              )}
+            >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {dateTo ? format(dateTo, "dd.MM.yyyy") : "Gacha"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+            <Calendar
+              mode="single"
+              selected={dateTo}
+              onSelect={setDateTo}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
           </PopoverContent>
         </Popover>
         {(dateFrom || dateTo) && (
-          <Button variant="ghost" size="sm" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setDateFrom(undefined);
+              setDateTo(undefined);
+            }}
+          >
             Tozalash
           </Button>
         )}
@@ -221,39 +258,91 @@ const StudentsPage = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Familya</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ismi</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Telefon</th>
-                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Kurs narxi</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  Familya
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  Ismi
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  Telefon
+                </th>
+                <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                  Kurs narxi
+                </th>
                 {courseType === "tezkor" ? (
                   <>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">To'lov</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Qarzdorlik</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Tulov turi</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Dakument</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Operator</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Natijasi</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Izoh</th>
+                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                      To'lov
+                    </th>
+                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                      Qarzdorlik
+                    </th>
+                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                      Tulov turi
+                    </th>
+                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                      Dakument
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Operator
+                    </th>
+                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                      Natijasi
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Izoh
+                    </th>
                   </>
                 ) : (
                   <>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Bosh. tulov</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">2-tulov</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">3-tulov</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Qarzdorlik</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Tulov turi</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Guruh</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Tugatish</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">O83</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Shartnoma</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Dakument</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Operator</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Natijasi</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Izoh</th>
+                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                      Bosh. tulov
+                    </th>
+                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                      2-tulov
+                    </th>
+                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                      3-tulov
+                    </th>
+                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                      Qarzdorlik
+                    </th>
+                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                      Tulov turi
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Guruh
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Tugatish
+                    </th>
+                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                      O83
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Shartnoma
+                    </th>
+                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                      Dakument
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Operator
+                    </th>
+                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                      Natijasi
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Izoh
+                    </th>
                   </>
                 )}
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Sana</th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Amallar</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  Sana
+                </th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                  Amallar
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -266,69 +355,136 @@ const StudentsPage = () => {
                     </tr>
                   ))
                 : paginatedItems?.map((s) => (
-                    <tr key={s.id} className="table-row-striped border-b border-border/50">
+                    <tr
+                      key={s.id}
+                      className="table-row-striped border-b border-border/50"
+                    >
                       <td className="px-4 py-3 font-medium">{s.last_name}</td>
                       <td className="px-4 py-3">{s.first_name}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{s.phone}</td>
-                      <td className="px-4 py-3 text-right">{formatMoney(s.total_price)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {s.phone}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {formatMoney(s.total_price)}
+                      </td>
                       {courseType === "tezkor" ? (
                         <>
-                          <td className="px-4 py-3 text-right">{formatMoney(s.amount_paid || 0)}</td>
                           <td className="px-4 py-3 text-right">
-                            <span className={s.debt > 0 ? "text-destructive" : "text-success"}>
+                            {formatMoney(s.amount_paid || 0)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span
+                              className={
+                                s.debt > 0 ? "text-destructive" : "text-success"
+                              }
+                            >
                               {s.debt > 0 ? formatMoney(s.debt) : "—"}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-center text-xs">
-                            {s.payment_method === "naqd" ? "Naqd" : s.payment_method === "karta" ? "Karta" : "Transfer"}
+                            {s.payment_method === "naqd"
+                              ? "Naqd"
+                              : s.payment_method === "karta"
+                                ? "Karta"
+                                : "Transfer"}
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <span className={s.has_document ? "text-success" : "text-destructive"}>
+                            <span
+                              className={
+                                s.has_document
+                                  ? "text-success"
+                                  : "text-destructive"
+                              }
+                            >
                               {s.has_document ? "+" : "-"}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-muted-foreground">{s.registered_by}</td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {s.registered_by}
+                          </td>
                           <td className="px-4 py-3 text-center">{s.result}</td>
-                          <td className="px-4 py-3 text-muted-foreground max-w-[120px] truncate">{s.notes}</td>
+                          <td className="px-4 py-3 text-muted-foreground max-w-[120px] truncate">
+                            {s.notes}
+                          </td>
                         </>
                       ) : (
                         <>
-                          <td className="px-4 py-3 text-right">{formatMoney(s.initial_payment || 0)}</td>
-                          <td className="px-4 py-3 text-right">{formatMoney(s.second_payment || 0)}</td>
-                          <td className="px-4 py-3 text-right">{formatMoney(s.third_payment || 0)}</td>
                           <td className="px-4 py-3 text-right">
-                            <span className={s.debt > 0 ? "text-destructive" : "text-success"}>
+                            {formatMoney(s.initial_payment || 0)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {formatMoney(s.second_payment || 0)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {formatMoney(s.third_payment || 0)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span
+                              className={
+                                s.debt > 0 ? "text-destructive" : "text-success"
+                              }
+                            >
                               {s.debt > 0 ? formatMoney(s.debt) : "—"}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-center text-xs">
-                            {s.payment_method === "naqd" ? "Naqd" : s.payment_method === "karta" ? "Karta" : "Transfer"}
+                            {s.payment_method === "naqd"
+                              ? "Naqd"
+                              : s.payment_method === "karta"
+                                ? "Karta"
+                                : "Transfer"}
                           </td>
                           <td className="px-4 py-3">{s.group_name}</td>
-                          <td className="px-4 py-3 text-muted-foreground">{s.completion_date}</td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {s.completion_date}
+                          </td>
                           <td className="px-4 py-3 text-center">
-                            <span className={s.o83 ? "text-success" : "text-destructive"}>
+                            <span
+                              className={
+                                s.o83 ? "text-success" : "text-destructive"
+                              }
+                            >
                               {s.o83 ? "+" : "-"}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-muted-foreground">{s.contract_number}</td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {s.contract_number}
+                          </td>
                           <td className="px-4 py-3 text-center">
-                            <span className={s.has_document ? "text-success" : "text-destructive"}>
+                            <span
+                              className={
+                                s.has_document
+                                  ? "text-success"
+                                  : "text-destructive"
+                              }
+                            >
                               {s.has_document ? "+" : "-"}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-muted-foreground">{s.registered_by}</td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {s.registered_by}
+                          </td>
                           <td className="px-4 py-3 text-center">{s.result}</td>
-                          <td className="px-4 py-3 text-muted-foreground max-w-[120px] truncate">{s.notes}</td>
+                          <td className="px-4 py-3 text-muted-foreground max-w-[120px] truncate">
+                            {s.notes}
+                          </td>
                         </>
                       )}
-                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{formatDate(s.created_at)}</td>
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                        {formatDate(s.created_at)}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => openEdit(s)} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+                          <button
+                            onClick={() => openEdit(s)}
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                          >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
-                          <button onClick={() => setDeleteId(s.id)} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
+                          <button
+                            onClick={() => setDeleteId(s.id)}
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                          >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
@@ -338,12 +494,18 @@ const StudentsPage = () => {
             </tbody>
           </table>
           {filtered?.length === 0 && !isLoading && (
-            <div className="py-12 text-center text-muted-foreground">Talabalar topilmadi</div>
+            <div className="py-12 text-center text-muted-foreground">
+              Talabalar topilmadi
+            </div>
           )}
         </div>
       </div>
 
-      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       <StudentModal
         open={modalOpen}

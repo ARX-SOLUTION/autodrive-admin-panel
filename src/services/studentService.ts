@@ -15,13 +15,13 @@ const demoStudentsAvto: Student[] = [
 
 const allDemoStudents = [...demoStudentsTezkor, ...demoStudentsAvto];
 
-export const useStudents = (courseType?: CourseType, branchId?: string) => {
+export const useStudents = (courseType?: CourseType, branchId?: string , page?: number, limit?: number) => {
   return useQuery<Student[]>({
-    queryKey: ['students', courseType, branchId],
+    queryKey: ['students', courseType, branchId, page, limit],
     queryFn: async () => {
       try {
         const { data: res } = await axiosInstance.get('/students', {
-          params: { course_type: courseType, branch_id: branchId },
+          params: { course_type: courseType, branch_id: branchId, page, limit },
         });
         const arr = res?.data;
         if (Array.isArray(arr)) return arr;
