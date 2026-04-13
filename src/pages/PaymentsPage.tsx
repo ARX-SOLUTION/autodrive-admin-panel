@@ -72,6 +72,8 @@ const PaymentsPage = () => {
     return matchSearch && matchStatus && matchDate;
   });
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filtered);
+
   const paidCount = (payments || []).filter((p) => p.remaining_debt <= 0).length;
   const unpaidCount = (payments || []).filter((p) => p.remaining_debt > 0).length;
 
