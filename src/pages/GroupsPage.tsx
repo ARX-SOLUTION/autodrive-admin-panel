@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Eye, X } from "lucide-react";
 import { toast } from "sonner";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "@/components/ui/PaginationControls";
 
 const formatDate = (d: string) => {
   try { return format(new Date(d), "dd.MM.yyyy"); } catch { return d; }
@@ -49,9 +51,11 @@ const GroupsPage = () => {
 
   // Filter students belonging to the selected group
   const { data: groupData, isLoading: groupsByIdLoading } = useGroupsById({ id: detailGroup?.id ||   "" });
-  const filtered = (groups || []).filter((g) =>
+  const filteredGroups = (groups || []).filter((g) =>
     g.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const { currentPage, totalPages, paginatedItems: filtered, setCurrentPage } = usePagination(filteredGroups);
 
   const openCreate = () => {
     setEditGroup(null);
@@ -211,11 +215,13 @@ const GroupsPage = () => {
                   ))}
             </tbody>
           </table>
-          {filtered.length === 0 && !isLoading && (
+          {filteredGroups.length === 0 && !isLoading && (
             <div className="py-12 text-center text-muted-foreground">Guruhlar topilmadi</div>
           )}
         </div>
       </div>
+
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 
       {/* Group Detail Modal */}
       <Dialog open={!!detailGroup} onOpenChange={(o) => !o && setDetailGroup(null)}>

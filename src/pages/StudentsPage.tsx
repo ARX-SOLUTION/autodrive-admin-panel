@@ -31,6 +31,8 @@ import StudentModal from "@/components/ui/StudentModal";
 import { Plus, Search, Pencil, Trash2, CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "@/components/ui/PaginationControls";
 
 const formatMoney = (n: number) => new Intl.NumberFormat("uz-UZ").format(n);
 
@@ -81,6 +83,8 @@ const StudentsPage = () => {
     }
     return matchSearch && matchDate;
   });
+
+  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filtered);
 
   const handleDelete = () => {
     if (!deleteId) return;
@@ -261,7 +265,7 @@ const StudentsPage = () => {
                       </td>
                     </tr>
                   ))
-                : filtered?.map((s) => (
+                : paginatedItems?.map((s) => (
                     <tr key={s.id} className="table-row-striped border-b border-border/50">
                       <td className="px-4 py-3 font-medium">{s.last_name}</td>
                       <td className="px-4 py-3">{s.first_name}</td>
@@ -338,6 +342,8 @@ const StudentsPage = () => {
           )}
         </div>
       </div>
+
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 
       <StudentModal
         open={modalOpen}

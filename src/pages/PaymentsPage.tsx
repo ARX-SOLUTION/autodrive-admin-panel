@@ -20,6 +20,8 @@ import { DollarSign, AlertTriangle, TrendingUp, Plus, Search, Users, UserX, Cale
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDate } from "./StudentsPage";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "@/components/ui/PaginationControls";
 
 const formatMoney = (n: number) =>
   new Intl.NumberFormat("uz-UZ").format(n) + " so'm";
@@ -69,6 +71,8 @@ const PaymentsPage = () => {
 
     return matchSearch && matchStatus && matchDate;
   });
+
+  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filtered);
 
   const paidCount = (payments || []).filter((p) => p.remaining_debt <= 0).length;
   const unpaidCount = (payments || []).filter((p) => p.remaining_debt > 0).length;
@@ -191,7 +195,7 @@ const PaymentsPage = () => {
                       <td colSpan={8} className="p-4"><Skeleton className="h-5" /></td>
                     </tr>
                   ))
-                : filtered?.map((p) => (
+                : paginatedItems?.map((p) => (
                     <tr key={p.id} className="table-row-striped border-b border-border/50">
                       <td className="px-4 py-3 font-medium">{p.student_name}</td>
                       <td className="px-4 py-3 text-muted-foreground">{p.branch_name}</td>
@@ -214,6 +218,8 @@ const PaymentsPage = () => {
           )}
         </div>
       </div>
+
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 
       <PaymentModal
         open={modalOpen}
