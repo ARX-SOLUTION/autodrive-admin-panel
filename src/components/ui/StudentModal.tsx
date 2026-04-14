@@ -174,6 +174,7 @@ const StudentModal = ({
 
     if (courseType === "tezkor") {
       payload.amount_paid = form.amount_paid || 0;
+      payload.group_id = form.group_id || undefined;
     } else {
       payload.initial_payment = form.initial_payment || 0;
       payload.group_id = form.group_id || undefined;
@@ -293,26 +294,48 @@ const StudentModal = ({
           </div>
 
           {courseType === "tezkor" ? (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>To'lov miqdori</Label>
-                <Input
-                  type="number"
-                  value={form.amount_paid || ""}
-                  onChange={(e) => setNum("amount_paid", e.target.value)}
-                  min={0}
-                  className="bg-secondary border-border"
-                />
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>To'lov miqdori</Label>
+                  <Input
+                    type="number"
+                    value={form.amount_paid || ""}
+                    onChange={(e) => setNum("amount_paid", e.target.value)}
+                    min={0}
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Qarzdorlik</Label>
+                  <Input
+                    value={formatMoney(debt)}
+                    disabled
+                    className="bg-muted border-border text-destructive font-medium"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Qarzdorlik</Label>
-                <Input
-                  value={formatMoney(debt)}
-                  disabled
-                  className="bg-muted border-border text-destructive font-medium"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Guruh</Label>
+                  <Select
+                    value={form.group_id || ""}
+                    onValueChange={(v) => set("group_id", v)}
+                  >
+                    <SelectTrigger className="bg-secondary border-border">
+                      <SelectValue placeholder="Tanlang" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {groupList.map((g) => (
+                        <SelectItem key={g.id} value={g.id}>
+                          {g.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
+            </>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-4">

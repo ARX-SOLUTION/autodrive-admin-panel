@@ -1,24 +1,81 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/ui/PaginationControls';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useTeachers, useCreateTeacher, useUpdateTeacher, useDeleteTeacher, Teacher, Specialization } from '@/services/teacherService';
+import { useBranches } from '@/services/branchService';
+import { toast } from 'sonner';
 
-const demoTeachers = [
-  { id: '1', name: 'Jamshid Rahimov', phone: '+998901112233', spec: 'Nazariy dars', branch: 'Minor', courses: 3 },
-  { id: '2', name: 'Gulnora Saidova', phone: '+998934445566', spec: 'Amaliy haydash', branch: 'Chorsu', courses: 5 },
-  { id: '3', name: 'Farhod Umarov', phone: '+998957778899', spec: 'Amaliy haydash', branch: 'Novza', courses: 2 },
-  { id: '4', name: 'Dilnoza Tursunova', phone: '+998911234567', spec: 'Nazariy dars', branch: 'Samarqand', courses: 4 },
-];
+const specLabels: Record<Specialization, string> = {
+  THEORY: 'Nazariy dars',
+  PRACTICE: 'Amaliy haydash',
+};
 
 const TeachersPage = () => {
   const [search, setSearch] = useState('');
-  const filtered = demoTeachers.filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase()) ||
-    t.phone.includes(search)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState<Teacher | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [form, setForm] = useState({ fullName: '', phone: '', branchId: '', specialization: 'THEORY' as Specialization });
+
+  const { data: teachers, isLoading } = useTeachers();
+  const { data: branches } = useBranches();
+  const createMut = useCreateTeacher();
+  const updateMut = useUpdateTeacher();
+  const deleteMut = useDeleteTeacher();
+
+  const filtered = (teachers || []).filter((t) =>
+    t.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+    t.phone?.includes(search)
   );
   const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filtered);
+
+  const openCreate = () => {
+    setEditItem(null);
+    setForm({ fullName: '', phone: '', branchId: '', specialization: 'THEORY' });
+    setModalOpen(true);
+  };
+
+  const openEdit = (t: Teacher) => {
+    setEditItem(t);
+    setForm({ fullName: t.fullName || '', phone: t.phone || '', branchId: t.branchId || '', specialization: t.specialization || 'THEORY' });
+    setModalOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.fullName.trim() || !form.phone.trim()) return;
+
+    if (editItem) {
+      updateMut.mutate({ id: editItem.id, ...form }, {
+        onSuccess: () => { toast.success("O'qituvchi yangilandi"); setModalOpen(false); },
+        onError: () => toast.error("Xatolik yuz berdi"),
+      });
+    } else {
+      createMut.mutate(form, {
+        onSuccess: () => { toast.success("O'qituvchi qo'shildi"); setModalOpen(false); },
+        onError: () => toast.error("Xatolik yuz berdi"),
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    if (!deleteId) return;
+    deleteMut.mutate(deleteId, {
+      onSuccess: () => { toast.success("O'qituvchi o'chirildi"); setDeleteId(null); },
+      onError: () => toast.error("Xatolik yuz berdi"),
+    });
+  };
+
+  const getBranchName = (branchId: string) =>
+    (branches || []).find((b) => b.id === branchId)?.name || branchId || '—';
 
   return (
     <div className="space-y-6">
@@ -27,7 +84,7 @@ const TeachersPage = () => {
           <h1 className="font-heading text-2xl font-bold">O'qituvchilar</h1>
           <p className="text-sm text-muted-foreground">{filtered.length} ta o'qituvchi</p>
         </div>
-        <Button className="gap-2"><Plus className="h-4 w-4" /> O'qituvchi qo'shish</Button>
+        <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> O'qituvchi qo'shish</Button>
       </div>
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -41,34 +98,91 @@ const TeachersPage = () => {
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Telefon</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Mutaxassisligi</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Filial</th>
-              <th className="px-4 py-3 text-center font-medium text-muted-foreground">Faol kurslar</th>
+              <th className="px-4 py-3 text-center font-medium text-muted-foreground">Holati</th>
               <th className="px-4 py-3 text-center font-medium text-muted-foreground">Amallar</th>
             </tr>
           </thead>
           <tbody>
-            {paginatedItems.map((t) => (
-              <tr key={t.id} className="table-row-striped border-b border-border/50">
-                <td className="px-4 py-3 font-medium">{t.name}</td>
-                <td className="px-4 py-3 text-muted-foreground">{t.phone}</td>
-                <td className="px-4 py-3 text-muted-foreground">{t.spec}</td>
-                <td className="px-4 py-3 text-muted-foreground">{t.branch}</td>
-                <td className="px-4 py-3 text-center">{t.courses}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-center gap-1">
-                    <button className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
-                    <button className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {isLoading
+              ? [...Array(3)].map((_, i) => (
+                  <tr key={i} className="border-b border-border/50">
+                    <td colSpan={6} className="p-4"><Skeleton className="h-5 w-full" /></td>
+                  </tr>
+                ))
+              : paginatedItems.map((t) => (
+                <tr key={t.id} className="table-row-striped border-b border-border/50">
+                  <td className="px-4 py-3 font-medium">{t.fullName}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{t.phone}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{specLabels[t.specialization] || t.specialization}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{t.branch_name || getBranchName(t.branchId)}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${t.is_active !== false ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
+                      {t.is_active !== false ? 'Faol' : 'Nofaol'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => openEdit(t)} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => setDeleteId(t.id)} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
-        {filtered.length === 0 && (
+        {filtered.length === 0 && !isLoading && (
           <div className="py-12 text-center text-muted-foreground">O'qituvchilar topilmadi</div>
         )}
       </div>
 
       <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+
+      <Dialog open={modalOpen} onOpenChange={(o) => !o && setModalOpen(false)}>
+        <DialogContent className="max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-heading">{editItem ? "O'qituvchini tahrirlash" : "Yangi o'qituvchi qo'shish"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Ism *</Label>
+              <Input value={form.fullName} onChange={(e) => setForm(f => ({ ...f, fullName: e.target.value }))} required className="bg-secondary border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label>Telefon *</Label>
+              <Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} required placeholder="+998901234567" className="bg-secondary border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label>Mutaxassisligi *</Label>
+              <Select value={form.specialization} onValueChange={(v) => setForm(f => ({ ...f, specialization: v as Specialization }))}>
+                <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="THEORY">Nazariy dars</SelectItem>
+                  <SelectItem value="PRACTICE">Amaliy haydash</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Filial</Label>
+              <Select value={form.branchId} onValueChange={(v) => setForm(f => ({ ...f, branchId: v }))}>
+                <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Tanlang" /></SelectTrigger>
+                <SelectContent>
+                  {(branches || []).map((b) => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Bekor qilish</Button>
+              <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
+                {(createMut.isPending || updateMut.isPending) ? "Saqlanmoqda..." : editItem ? "Saqlash" : "Qo'shish"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete} loading={deleteMut.isPending} />
     </div>
   );
 };

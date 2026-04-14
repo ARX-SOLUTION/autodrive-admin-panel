@@ -281,6 +281,9 @@ const StudentsPage = () => {
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
                       Tulov turi
                     </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Guruh
+                    </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
                       Dakument
                     </th>
@@ -387,6 +390,9 @@ const StudentsPage = () => {
                               : s.payment_method === "karta"
                                 ? "Karta"
                                 : "Transfer"}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {s.group_name || "—"}
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span

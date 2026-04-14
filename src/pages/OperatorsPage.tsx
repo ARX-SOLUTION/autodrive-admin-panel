@@ -1,23 +1,76 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/ui/PaginationControls';
-
-const demoOperators = [
-  { id: '1', name: 'Nilufar Abdullayeva', phone: '+998901234567', branch: 'Minor', status: 'Faol' },
-  { id: '2', name: 'Aziz Karimov', phone: '+998937654321', branch: 'Chorsu', status: 'Faol' },
-  { id: '3', name: 'Sherzod Toshmatov', phone: '+998945551122', branch: 'Novza', status: 'Nofaol' },
-];
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useOperators, useCreateOperator, useUpdateOperator, useDeleteOperator, Operator } from '@/services/operatorService';
+import { useBranches } from '@/services/branchService';
+import { toast } from 'sonner';
 
 const OperatorsPage = () => {
   const [search, setSearch] = useState('');
-  const filtered = demoOperators.filter((o) =>
-    o.name.toLowerCase().includes(search.toLowerCase()) ||
-    o.phone.includes(search)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState<Operator | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [form, setForm] = useState({ fullName: '', phone: '', branchId: '' });
+
+  const { data: operators, isLoading } = useOperators();
+  const { data: branches } = useBranches();
+  const createMut = useCreateOperator();
+  const updateMut = useUpdateOperator();
+  const deleteMut = useDeleteOperator();
+
+  const filtered = (operators || []).filter((o) =>
+    o.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+    o.phone?.includes(search)
   );
   const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filtered);
+
+  const openCreate = () => {
+    setEditItem(null);
+    setForm({ fullName: '', phone: '', branchId: '' });
+    setModalOpen(true);
+  };
+
+  const openEdit = (o: Operator) => {
+    setEditItem(o);
+    setForm({ fullName: o.fullName || '', phone: o.phone || '', branchId: o.branchId || '' });
+    setModalOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.fullName.trim() || !form.phone.trim()) return;
+
+    if (editItem) {
+      updateMut.mutate({ id: editItem.id, ...form }, {
+        onSuccess: () => { toast.success("Operator yangilandi"); setModalOpen(false); },
+        onError: () => toast.error("Xatolik yuz berdi"),
+      });
+    } else {
+      createMut.mutate(form, {
+        onSuccess: () => { toast.success("Operator qo'shildi"); setModalOpen(false); },
+        onError: () => toast.error("Xatolik yuz berdi"),
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    if (!deleteId) return;
+    deleteMut.mutate(deleteId, {
+      onSuccess: () => { toast.success("Operator o'chirildi"); setDeleteId(null); },
+      onError: () => toast.error("Xatolik yuz berdi"),
+    });
+  };
+
+  const getBranchName = (branchId: string) =>
+    (branches || []).find((b) => b.id === branchId)?.name || branchId || '—';
 
   return (
     <div className="space-y-6">
@@ -26,7 +79,7 @@ const OperatorsPage = () => {
           <h1 className="font-heading text-2xl font-bold">Operatorlar</h1>
           <p className="text-sm text-muted-foreground">{filtered.length} ta operator</p>
         </div>
-        <Button className="gap-2"><Plus className="h-4 w-4" /> Operator qo'shish</Button>
+        <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> Operator qo'shish</Button>
       </div>
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -44,32 +97,75 @@ const OperatorsPage = () => {
             </tr>
           </thead>
           <tbody>
-            {paginatedItems.map((o) => (
-              <tr key={o.id} className="table-row-striped border-b border-border/50">
-                <td className="px-4 py-3 font-medium">{o.name}</td>
-                <td className="px-4 py-3 text-muted-foreground">{o.phone}</td>
-                <td className="px-4 py-3 text-muted-foreground">{o.branch}</td>
-                <td className="px-4 py-3 text-center">
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${o.status === 'Faol' ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                    {o.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-center gap-1">
-                    <button className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
-                    <button className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {isLoading
+              ? [...Array(3)].map((_, i) => (
+                  <tr key={i} className="border-b border-border/50">
+                    <td colSpan={5} className="p-4"><Skeleton className="h-5 w-full" /></td>
+                  </tr>
+                ))
+              : paginatedItems.map((o) => (
+                <tr key={o.id} className="table-row-striped border-b border-border/50">
+                  <td className="px-4 py-3 font-medium">{o.fullName}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{o.phone}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{o.branch_name || getBranchName(o.branchId)}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${o.is_active !== false ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
+                      {o.is_active !== false ? 'Faol' : 'Nofaol'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => openEdit(o)} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => setDeleteId(o.id)} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
-        {filtered.length === 0 && (
+        {filtered.length === 0 && !isLoading && (
           <div className="py-12 text-center text-muted-foreground">Operatorlar topilmadi</div>
         )}
       </div>
 
       <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+
+      <Dialog open={modalOpen} onOpenChange={(o) => !o && setModalOpen(false)}>
+        <DialogContent className="max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-heading">{editItem ? "Operatorni tahrirlash" : "Yangi operator qo'shish"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Ism *</Label>
+              <Input value={form.fullName} onChange={(e) => setForm(f => ({ ...f, fullName: e.target.value }))} required className="bg-secondary border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label>Telefon *</Label>
+              <Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} required placeholder="+998901234567" className="bg-secondary border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label>Filial</Label>
+              <Select value={form.branchId} onValueChange={(v) => setForm(f => ({ ...f, branchId: v }))}>
+                <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Tanlang" /></SelectTrigger>
+                <SelectContent>
+                  {(branches || []).map((b) => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Bekor qilish</Button>
+              <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
+                {(createMut.isPending || updateMut.isPending) ? "Saqlanmoqda..." : editItem ? "Saqlash" : "Qo'shish"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete} loading={deleteMut.isPending} />
     </div>
   );
 };
