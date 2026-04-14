@@ -52,7 +52,7 @@ export const useUpdateStudent = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...student }: Partial<Student> & { id: string }) => {
-      const { data } = await axiosInstance.put(`/students/${id}`, student);
+      const { data } = await axiosInstance.patch(`/students/${id}`, student);
       return data?.data || data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['students'] }),
