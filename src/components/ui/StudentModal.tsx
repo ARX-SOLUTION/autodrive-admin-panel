@@ -427,7 +427,7 @@ const StudentModal = ({
                 </SelectTrigger>
                 <SelectContent>
                   {operators.map((op) => (
-                    <SelectItem key={op.id} value={op.name || op.id}>
+                    <SelectItem key={op.id} value={op.id}>
                       {op.name || op.email}
                     </SelectItem>
                   ))}
