@@ -69,6 +69,7 @@ interface StudentModalProps {
   student?: Student | null;
   courseType: CourseType;
   operators?: User[];
+  disabledFields?: string[];
 }
 
 const StudentModal = ({
@@ -79,6 +80,7 @@ const StudentModal = ({
   student,
   courseType,
   operators = [],
+  disabledFields = [],
 }: StudentModalProps) => {
   const { isOwner, user } = useAuthStore();
   const { data: branches } = useBranches();
@@ -276,7 +278,8 @@ const StudentModal = ({
                 onChange={(e) => setNum("total_price", e.target.value)}
                 required
                 min={0}
-                className="bg-secondary border-border"
+                disabled={disabledFields.includes("total_price")}
+                className={`${disabledFields.includes("total_price") ? "bg-muted" : "bg-secondary"} border-border`}
               />
             </div>
             <div className="space-y-2">
@@ -284,8 +287,9 @@ const StudentModal = ({
               <Select
                 value={form.payment_method || "naqd"}
                 onValueChange={(v) => set("payment_method", v as PaymentMethod)}
+                disabled={disabledFields.includes("payment_method")}
               >
-                <SelectTrigger className="bg-secondary border-border">
+                <SelectTrigger className={`${disabledFields.includes("payment_method") ? "bg-muted" : "bg-secondary"} border-border`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -352,7 +356,8 @@ const StudentModal = ({
                     value={form.initial_payment || ""}
                     onChange={(e) => setNum("initial_payment", e.target.value)}
                     min={0}
-                    className="bg-secondary border-border"
+                    disabled={disabledFields.includes("initial_payment")}
+                    className={`${disabledFields.includes("initial_payment") ? "bg-muted" : "bg-secondary"} border-border`}
                   />
                 </div>
                 <div className="space-y-2">
