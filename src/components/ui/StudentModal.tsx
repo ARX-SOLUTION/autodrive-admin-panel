@@ -287,8 +287,9 @@ const StudentModal = ({
               <Select
                 value={form.payment_method || "naqd"}
                 onValueChange={(v) => set("payment_method", v as PaymentMethod)}
+                disabled={disabledFields.includes("payment_method")}
               >
-                <SelectTrigger className="bg-secondary border-border">
+                <SelectTrigger className={`${disabledFields.includes("payment_method") ? "bg-muted" : "bg-secondary"} border-border`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -355,7 +356,8 @@ const StudentModal = ({
                     value={form.initial_payment || ""}
                     onChange={(e) => setNum("initial_payment", e.target.value)}
                     min={0}
-                    className="bg-secondary border-border"
+                    disabled={disabledFields.includes("initial_payment")}
+                    className={`${disabledFields.includes("initial_payment") ? "bg-muted" : "bg-secondary"} border-border`}
                   />
                 </div>
                 <div className="space-y-2">
