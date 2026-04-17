@@ -75,8 +75,8 @@ const PaymentsPage = () => {
   );
   const { data: branches } = useBranches();
 
-  const { data: tezkorStudents } = useStudents("tezkor", branchId, 1, 200);
-  const { data: avtoStudents } = useStudents("avto_maktab", branchId, 1, 200);
+  const { data: tezkorStudents } = useStudents("tezkor", branchId, 1, 500);
+  const { data: avtoStudents } = useStudents("avto_maktab", branchId, 1, 500);
 
   const allStudents = [...(tezkorStudents ?? []), ...(avtoStudents ?? [])];
 

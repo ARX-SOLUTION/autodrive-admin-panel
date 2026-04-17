@@ -64,7 +64,7 @@ const StudentsPage = () => {
     courseType,
     branchId,
     1,
-    200,
+    500, 
   );
   const { data: branches } = useBranches();
   const { data: operators } = useOperators();
