@@ -130,9 +130,9 @@ const StudentModal = ({
           amount_paid: student.amount_paid || 0,
           initial_payment: student.initial_payment || 0,
           group_id: student.group_id || "",
-          completion_date: student.completion_date,
-          contract_number: student.contract_number,
-          notes: student.notes,
+          completion_date: student.completion_date === undefined ? "" : student.completion_date,
+          contract_number: student.contract_number || null,
+          notes: student.notes === undefined ? "" : student.notes,
           status: student.status || "active",
           registeredBy: student.registered_by || "",
         });

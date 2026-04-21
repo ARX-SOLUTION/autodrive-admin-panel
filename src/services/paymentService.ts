@@ -29,18 +29,23 @@ export const usePaymentSummary = (
   course_type?: string,
 ) =>
   useQuery<PaymentSummary>({
-    queryKey: ["payment-summary", branchId, startDate, endDate, payment_status, payment_type, course_type],
+    queryKey: [
+      "payment-summary",
+      branchId,
+      startDate,
+      endDate,
+      payment_status,
+      payment_type,
+      course_type,
+    ],
     queryFn: async () => {
       try {
-        const adjustedEndDate = endDate ? new Date(endDate) : undefined;
-        if (adjustedEndDate) {
-          adjustedEndDate.setHours(23, 59, 59, 999);
-        }
+
         const { data: res } = await axiosInstance.get("/payments/summary", {
           params: {
             branch_id: branchId,
-            startDate: startDate?.toISOString(),
-            endDate: adjustedEndDate?.toISOString(),
+            startDate: startDate,
+            endDate: endDate,
             payment_status,
             payment_type,
             course_type,
