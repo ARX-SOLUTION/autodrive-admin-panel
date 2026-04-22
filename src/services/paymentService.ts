@@ -45,7 +45,7 @@ export const usePaymentSummary = (
             branchId: branchId,
             startDate: startDate,
             endDate: endDate,
-            payment_status,
+            paymentStatus : payment_status,
             payment_type,
             course_type,
           },
