@@ -455,15 +455,14 @@ const PaymentsPage = () => {
       </section>
 
       {/* SECTION 3: Tanlangan davr natijasi (only when date filter active) */}
-      {hasDateFilter && (
+      {hasAnyFilter && (
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Tanlangan davr natijasi
+              Tanlangan natija
             </h2>
             <span className="text-xs text-muted-foreground">
-              {dateFrom ? format(dateFrom, "dd.MM.yyyy") : "boshidan"} →{" "}
-              {dateTo ? format(dateTo, "dd.MM.yyyy") : "bugungacha"}
+              {filtered.length} ta to'lov bo'yicha
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
