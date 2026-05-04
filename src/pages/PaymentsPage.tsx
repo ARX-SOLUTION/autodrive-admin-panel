@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -125,6 +125,16 @@ const PaymentsPage = () => {
   const { data: avtoStudents } = useStudents("avto_maktab", branchId, 1, 500);
   const allStudents = [...(tezkorStudents ?? []), ...(avtoStudents ?? [])];
   const createPayment = useCreatePayment();
+
+  useEffect(() => {
+    if (isOwner()) {
+      toast.info("Excel yuklab olish mavjud", {
+        description: "Filterlangan to'lovlarni Excel formatida yuklab olishingiz mumkin.",
+        duration: 5000,
+        icon: <Download className="h-4 w-4" />,
+      });
+    }
+  }, []);
 
   // Client-side filter for search/status/method (date is server-side)
   const filtered = useMemo(
@@ -257,8 +267,12 @@ const PaymentsPage = () => {
         </div>
         <div className="flex gap-2">
           {isOwner() && (
-            <Button variant="outline" className="gap-2" onClick={exportToExcel}>
-              <Download className="h-4 w-4" /> Excel
+            <Button
+              variant="outline"
+              className="gap-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-500 dark:text-emerald-400 dark:hover:bg-emerald-950 font-semibold"
+              onClick={exportToExcel}
+            >
+              <Download className="h-4 w-4" /> Excel yuklab olish
             </Button>
           )}
           <Button className="gap-2" onClick={() => setModalOpen(true)}>
