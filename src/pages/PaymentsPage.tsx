@@ -189,12 +189,7 @@ const PaymentsPage = () => {
       "Umumiy narx": p.total_price,
       "Bu to'lov": p.amount_paid,
       "Joriy qoldiq": p.remaining_debt,
-      Turi:
-        p.payment_method === "naqd"
-          ? "Naqd"
-          : p.payment_method === "karta"
-            ? "Karta"
-            : "Perechisleniya",
+      Turi: p.payment_method === "naqd" ? "Naqd" : "Karta",
       Operator: p.recorded_by || "—",
       Sana: formatDate(p.date),
     }));
@@ -390,7 +385,6 @@ const PaymentsPage = () => {
               <SelectItem value="all">Barcha turi</SelectItem>
               <SelectItem value="naqd">Naqd</SelectItem>
               <SelectItem value="karta">Karta</SelectItem>
-              <SelectItem value="perechisleniya">Perechisleniya</SelectItem>
             </SelectContent>
           </Select>
 
@@ -610,11 +604,7 @@ const PaymentsPage = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center text-xs">
-                        {p.payment_method === "naqd"
-                          ? "Naqd"
-                          : p.payment_method === "karta"
-                            ? "Karta"
-                            : "Perechisleniya"}
+                        {p.payment_method === "naqd" ? "Naqd" : "Karta"}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground text-xs">
                         {p.recorded_by || "—"}

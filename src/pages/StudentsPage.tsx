@@ -208,48 +208,38 @@ const StudentsPage = () => {
           </Select>
         )}
 
-        {/* Date range filters */}
+        {/* Date filter — single or range */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               className={cn(
-                "w-[140px] justify-start text-left font-normal bg-secondary border-border",
+                "min-w-[220px] justify-start text-left font-normal bg-secondary border-border",
                 !dateFrom && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {dateFrom ? format(dateFrom, "dd.MM.yyyy") : "Dan"}
+              {!dateFrom
+                ? "Sana tanlang"
+                : dateTo && dateTo.getTime() !== dateFrom.getTime()
+                  ? `${format(dateFrom, "dd.MM.yyyy")} → ${format(dateTo, "dd.MM.yyyy")}`
+                  : format(dateFrom, "dd.MM.yyyy")}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
-              mode="single"
-              selected={dateFrom}
-              onSelect={setDateFrom}
-              initialFocus
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-[140px] justify-start text-left font-normal bg-secondary border-border",
-                !dateTo && "text-muted-foreground",
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {dateTo ? format(dateTo, "dd.MM.yyyy") : "Gacha"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={dateTo}
-              onSelect={setDateTo}
+              mode="range"
+              selected={{ from: dateFrom, to: dateTo }}
+              onSelect={(range) => {
+                if (!range) {
+                  setDateFrom(undefined);
+                  setDateTo(undefined);
+                } else {
+                  setDateFrom(range.from);
+                  setDateTo(range.to ?? range.from);
+                }
+              }}
+              numberOfMonths={2}
               initialFocus
               className={cn("p-3 pointer-events-auto")}
             />

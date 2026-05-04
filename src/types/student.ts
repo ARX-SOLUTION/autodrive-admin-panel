@@ -1,5 +1,5 @@
 export type CourseType = 'tezkor' | 'avto_maktab';
-export type PaymentMethod = 'naqd' | 'karta' | 'perechisleniya';
+export type PaymentMethod = 'naqd' | 'karta';
 export type ResultStatus = 'oqimoqda' | 'topshirdi' | 'yiqildi';
 
 export interface Student {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { useAuditLogs } from "@/services/auditService";
+import { AuditLog } from "@/types/audit";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Search, CalendarIcon, X, ShieldCheck, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +48,12 @@ const ACTION_COLORS: Record<string, string> = {
   DELETE: "text-destructive",
 };
 
+const ACTION_BG: Record<string, string> = {
+  CREATE: "bg-success/10 text-success",
+  UPDATE: "bg-primary/10 text-primary",
+  DELETE: "bg-destructive/10 text-destructive",
+};
+
 const ENTITY_LABELS: Record<string, string> = {
   student: "Talaba",
   payment: "To'lov",
@@ -56,6 +69,174 @@ const ROLE_LABELS: Record<string, string> = {
   teacher: "O'qituvchi",
 };
 
+const FIELD_LABELS: Record<string, string> = {
+  firstName: "Ismi",
+  first_name: "Ismi",
+  lastName: "Familyasi",
+  last_name: "Familyasi",
+  phone: "Telefon",
+  paymentMethod: "To'lov turi",
+  payment_method: "To'lov turi",
+  totalPrice: "Kurs narxi",
+  total_price: "Kurs narxi",
+  amountPaid: "To'langan",
+  amount_paid: "To'langan",
+  amount: "Miqdor",
+  debt: "Qarzdorlik",
+  groupId: "Guruh ID",
+  group_id: "Guruh ID",
+  branchId: "Filial ID",
+  branch_id: "Filial ID",
+  courseType: "Kurs turi",
+  course_type: "Kurs turi",
+  result: "Natijasi",
+  hasDocument: "Hujjat",
+  has_document: "Hujjat",
+  notes: "Izoh",
+  status: "Holati",
+  date: "Sana",
+  recordedBy: "Operator",
+  recorded_by: "Operator",
+  name: "Nomi",
+  isActive: "Faol",
+  is_active: "Faol",
+  role: "Rol",
+  username: "Login",
+  studentId: "Talaba ID",
+  deletedId: "O'chirilgan ID",
+  completionDate: "Tugatish sanasi",
+  completion_date: "Tugatish sanasi",
+  contractNumber: "Shartnoma raqami",
+  contract_number: "Shartnoma raqami",
+  o83: "O83",
+  initialPayment: "Boshlang'ich to'lov",
+  initial_payment: "Boshlang'ich to'lov",
+};
+
+const VALUE_LABELS: Record<string, string> = {
+  naqd: "Naqd",
+  karta: "Karta",
+  tezkor: "Tezkor",
+  avto_maktab: "Avto maktab",
+  oqimoqda: "Oqimoqda",
+  topshirdi: "Topshirdi",
+  yiqildi: "Yiqildi",
+  owner: "Egasi",
+  manager: "Menejer",
+  operator: "Operator",
+  teacher: "O'qituvchi",
+  active: "Faol",
+  inactive: "Nofaol",
+};
+
+const formatValue = (v: unknown): string => {
+  if (v == null) return "—";
+  if (typeof v === "boolean") return v ? "Ha" : "Yo'q";
+  if (typeof v === "number") return new Intl.NumberFormat("uz-UZ").format(v);
+  if (typeof v === "object") return JSON.stringify(v);
+  const s = String(v);
+  if (VALUE_LABELS[s]) return VALUE_LABELS[s];
+  if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+    try { return format(new Date(s), "dd.MM.yyyy HH:mm"); } catch { return s; }
+  }
+  return s;
+};
+
+const AuditChangesView = ({ changes, action }: { changes: Record<string, unknown>; action: string }) => {
+  const hasBefore = "before" in changes;
+  const hasAfter = "after" in changes;
+
+  if (hasBefore || hasAfter) {
+    const before = (changes.before || {}) as Record<string, unknown>;
+    const after = (changes.after || {}) as Record<string, unknown>;
+    const allKeys = [...new Set([...Object.keys(before), ...Object.keys(after)])];
+    const changedKeys = allKeys.filter(
+      (k) => JSON.stringify(before[k]) !== JSON.stringify(after[k]),
+    );
+
+    return (
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">O'zgarishlar</p>
+        {changedKeys.length === 0 ? (
+          <p className="text-sm text-muted-foreground">O'zgarishlar topilmadi</p>
+        ) : (
+          <div className="overflow-x-auto rounded-md border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30 text-xs text-muted-foreground">
+                  <th className="px-3 py-2 text-left font-medium">Maydon</th>
+                  <th className="px-3 py-2 text-left font-medium">Oldingi qiymat</th>
+                  <th className="px-3 py-2 text-left font-medium">Yangi qiymat</th>
+                </tr>
+              </thead>
+              <tbody>
+                {changedKeys.map((k) => (
+                  <tr key={k} className="border-b border-border/50 last:border-0">
+                    <td className="px-3 py-2 font-medium">{FIELD_LABELS[k] || k}</td>
+                    <td className="px-3 py-2 text-destructive">{formatValue(before[k])}</td>
+                    <td className="px-3 py-2 text-success">{formatValue(after[k])}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Flat changes: some fields may be { from, to } objects, others plain values
+  const keys = Object.keys(changes).filter((k) => changes[k] != null);
+
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+        {action === "CREATE" ? "Yaratilgan ma'lumotlar" : action === "DELETE" ? "O'chirilgan ma'lumotlar" : "O'zgarishlar"}
+      </p>
+      <div className="overflow-x-auto rounded-md border border-border">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border bg-muted/30 text-xs text-muted-foreground">
+              <th className="px-3 py-2 text-left font-medium">Maydon</th>
+              {action === "UPDATE"
+                ? <><th className="px-3 py-2 text-left font-medium">Oldingi</th><th className="px-3 py-2 text-left font-medium">Yangi</th></>
+                : <th className="px-3 py-2 text-left font-medium">Qiymat</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            {keys.map((k) => {
+              const val = changes[k];
+              const isFromTo = val !== null && typeof val === "object" && "from" in (val as object) && "to" in (val as object);
+              const fromTo = isFromTo ? val as { from: unknown; to: unknown } : null;
+              return (
+                <tr key={k} className="border-b border-border/50 last:border-0">
+                  <td className="px-3 py-2 font-medium">{FIELD_LABELS[k] || k}</td>
+                  {action === "UPDATE" ? (
+                    fromTo ? (
+                      <>
+                        <td className="px-3 py-2 text-destructive">{formatValue(fromTo.from)}</td>
+                        <td className="px-3 py-2 text-success">{formatValue(fromTo.to)}</td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-3 py-2 text-muted-foreground">—</td>
+                        <td className="px-3 py-2">{formatValue(val)}</td>
+                      </>
+                    )
+                  ) : (
+                    <td className="px-3 py-2 text-muted-foreground">{formatValue(val)}</td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
 const weekAgo = () => { const d = today(); d.setDate(d.getDate()-6); return d; };
 const monthStart = () => { const d = today(); d.setDate(1); return d; };
@@ -69,9 +250,9 @@ const AuditLogPage = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [page, setPage] = useState(1);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const LIMIT = 50;
 
-  // Sort state
   const [sortField, setSortField] = useState("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const toggleSort = (field: string) => {
@@ -92,7 +273,6 @@ const AuditLogPage = () => {
   const total = data?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
-  // Client-side search filter + sort
   const filtered = logs.filter((l) => {
     const name = l.user?.name?.toLowerCase() || "";
     return !search || name.includes(search.toLowerCase());
@@ -166,7 +346,6 @@ const AuditLogPage = () => {
           )}
         </div>
 
-        {/* Date presets */}
         <div className="flex flex-wrap gap-2 mb-3">
           {(["today","week","month","lastMonth","all"] as const).map((p) => (
             <Button key={p} variant="outline" size="sm" onClick={() => setPreset(p)}>
@@ -256,7 +435,11 @@ const AuditLogPage = () => {
                   </tr>
                 ) : (
                   sorted.map((log, idx) => (
-                    <tr key={log.id} className="table-row-striped border-b border-border/50">
+                    <tr
+                      key={log.id}
+                      className="table-row-striped border-b border-border/50 cursor-pointer hover:bg-muted/20 transition-colors"
+                      onClick={() => setSelectedLog(log)}
+                    >
                       <td className="px-4 py-3 text-center text-muted-foreground">{(page - 1) * LIMIT + idx + 1}</td>
                       <td className="px-4 py-3 font-medium">{log.user?.name || "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground text-xs">{ROLE_LABELS[log.user?.role || ""] || log.user?.role || "—"}</td>
@@ -276,7 +459,6 @@ const AuditLogPage = () => {
           </div>
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-4 flex items-center justify-center gap-2">
             <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Oldingi</Button>
@@ -285,6 +467,51 @@ const AuditLogPage = () => {
           </div>
         )}
       </section>
+
+      {/* Detail Modal */}
+      <Dialog open={!!selectedLog} onOpenChange={(o) => !o && setSelectedLog(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-card border-border">
+          {selectedLog && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="font-heading flex items-center gap-2 flex-wrap">
+                  <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", ACTION_BG[selectedLog.action])}>
+                    {ACTION_LABELS[selectedLog.action] || selectedLog.action}
+                  </span>
+                  <span>{ENTITY_LABELS[selectedLog.entity] || selectedLog.entity}</span>
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-5">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm rounded-md bg-muted/30 px-4 py-3">
+                  <div>
+                    <span className="text-muted-foreground text-xs">Foydalanuvchi</span>
+                    <p className="font-medium">{selectedLog.user?.name || "—"}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-xs">Rol</span>
+                    <p>{ROLE_LABELS[selectedLog.user?.role || ""] || selectedLog.user?.role || "—"}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-xs">Vaqt</span>
+                    <p>{formatDate(selectedLog.createdAt)}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-xs">Obyekt ID</span>
+                    <p className="font-mono text-xs truncate">{selectedLog.entityId}</p>
+                  </div>
+                </div>
+
+                {selectedLog.changes ? (
+                  <AuditChangesView changes={selectedLog.changes} action={selectedLog.action} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">Tafsilot ma'lumoti yo'q</p>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

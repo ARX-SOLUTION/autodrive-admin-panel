@@ -56,7 +56,6 @@ interface PaymentModalProps {
 const paymentMethodLabels: Record<PaymentMethod, string> = {
   naqd: "Naqd",
   karta: "Karta",
-  perechisleniya: "Perechileniya",
 };
 
 const PaymentModal = ({

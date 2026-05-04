@@ -52,7 +52,6 @@ export interface CreateStudentPayload {
 const paymentMethodLabels: Record<PaymentMethod, string> = {
   naqd: "Naqd",
   karta: "Karta",
-  perechisleniya: "Perechileniya",
 };
 
 const resultLabels: Record<ResultStatus, string> = {
