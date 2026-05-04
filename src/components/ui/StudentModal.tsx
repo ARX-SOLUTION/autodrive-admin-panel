@@ -125,7 +125,9 @@ const StudentModal = ({
           has_document: student.has_document,
           o83: student.o83,
           total_price: student.total_price,
-          amount_paid: student.amount_paid || 0,
+          // For tezkor edit, amount_paid means "ADD new payment" (backend is additive) — default 0.
+          // For avto_maktab edit, initial_payment is ignored by backend update — keep historical for display.
+          amount_paid: 0,
           initial_payment: student.initial_payment || 0,
           group_id: student.group_id || "",
           completion_date: student.completion_date === undefined ? "" : student.completion_date,
@@ -141,13 +143,23 @@ const StudentModal = ({
   }, [student, courseType, open]);
 
   useEffect(() => {
-    const total = form.total_price || 0;
-    const paid =
-      courseType === "tezkor"
-        ? form.amount_paid || 0
-        : form.initial_payment || 0;
-    setDebt(Math.max(0, total - paid));
-  }, [form.total_price, form.amount_paid, form.initial_payment, courseType]);
+    if (student) {
+      if (courseType === "tezkor") {
+        // amount_paid in edit mode = additional new payment (backend adds it)
+        setDebt(Math.max(0, (student.debt || 0) - (form.amount_paid || 0)));
+      } else {
+        // avto_maktab edit: initial_payment is read-only, debt unchanged
+        setDebt(student.debt || 0);
+      }
+    } else {
+      const total = form.total_price || 0;
+      const paid =
+        courseType === "tezkor"
+          ? form.amount_paid || 0
+          : form.initial_payment || 0;
+      setDebt(Math.max(0, total - paid));
+    }
+  }, [form.total_price, form.amount_paid, form.initial_payment, courseType, student]);
 
   const set = <K extends keyof CreateStudentPayload>(
     key: K,
@@ -306,17 +318,18 @@ const StudentModal = ({
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>To'lov miqdori</Label>
+                  <Label>{student ? "Qo'shimcha to'lov" : "To'lov miqdori"}</Label>
                   <Input
                     type="number"
                     value={form.amount_paid || ""}
                     onChange={(e) => setNum("amount_paid", e.target.value)}
                     min={0}
+                    placeholder={student ? "0 (yangi to'lov qo'shish uchun)" : "0"}
                     className="bg-secondary border-border"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Qarzdorlik</Label>
+                  <Label>{student ? "Joriy qarzdorlik" : "Qarzdorlik"}</Label>
                   <Input
                     value={formatMoney(debt)}
                     disabled
@@ -355,12 +368,12 @@ const StudentModal = ({
                     value={form.initial_payment || ""}
                     onChange={(e) => setNum("initial_payment", e.target.value)}
                     min={0}
-                    disabled={disabledFields.includes("initial_payment")}
-                    className={`${disabledFields.includes("initial_payment") ? "bg-muted" : "bg-secondary"} border-border`}
+                    disabled={!!student || disabledFields.includes("initial_payment")}
+                    className={`${(!!student || disabledFields.includes("initial_payment")) ? "bg-muted" : "bg-secondary"} border-border`}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Qarzdorlik</Label>
+                  <Label>{student ? "Joriy qarzdorlik" : "Qarzdorlik"}</Label>
                   <Input
                     value={formatMoney(debt)}
                     disabled
