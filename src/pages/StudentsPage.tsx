@@ -50,6 +50,15 @@ export const formatDate = (d: string) => {
   }
 };
 
+export const formatDateTime = (d: string) => {
+  try {
+    if (!d) return "—";
+    return format(new Date(d), "dd.MM.yyyy HH:mm:ss");
+  } catch {
+    return d;
+  }
+};
+
 const StudentsPage = () => {
   const { isOwner, user } = useAuthStore();
   const [courseType, setCourseType] = useState<CourseType>("tezkor");
@@ -520,7 +529,7 @@ const StudentsPage = () => {
                         </>
                       )}
                       <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                        {formatDate(s.created_at)}
+                        {formatDateTime(s.created_at)}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">

@@ -54,7 +54,7 @@ import PaginationControls from "@/components/ui/PaginationControls";
 const formatDate = (d: string) => {
   try {
     if (!d) return "—";
-    return format(new Date(d), "dd.MM.yyyy HH:mm");
+    return format(new Date(d), "dd.MM.yyyy HH:mm:ss");
   } catch {
     return d;
   }
