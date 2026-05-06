@@ -1,6 +1,7 @@
 export type CourseType = 'tezkor' | 'avto_maktab';
-export type PaymentMethod = 'naqd' | 'karta';
+export type PaymentMethod = 'naqd' | 'karta' | 'perechisleniya';
 export type ResultStatus = 'oqimoqda' | 'topshirdi' | 'yiqildi';
+export type StudentStatus = 'active' | 'completed' | 'dropped' | 'suspended';
 
 export interface Student {
   id: string;
@@ -19,7 +20,7 @@ export interface Student {
   result: ResultStatus;
   notes?: string;
   created_at: string;
-  status?: string;
+  status?: StudentStatus;
 
   // Tezkor only
   amount_paid?: number;

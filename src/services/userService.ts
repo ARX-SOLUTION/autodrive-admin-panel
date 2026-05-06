@@ -23,19 +23,22 @@ const demoUsers: User[] = [
   },
 ];
 
-export const useUsers = () =>
+export const useUsers = (role?: string) =>
   useQuery<User[]>({
-    queryKey: ["users"],
+    queryKey: ["users", role],
     queryFn: async () => {
       try {
-        const { data: res } = await axiosInstance.get("/users", { params: { role: 'manager' } });
+        const { data: res } = await axiosInstance.get("/users", { params: role ? { role } : {} });
         const arr = res?.data;
-        console.log("Users response:", res);
         if (Array.isArray(arr)) return arr;
         if (Array.isArray(res)) return res;
         return [];
-      } catch {
-        return demoUsers;
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('API failed, returning demo data:', error);
+          return demoUsers;
+        }
+        throw error;
       }
     },
   });
@@ -43,8 +46,8 @@ export const useUsers = () =>
 export const useUpdateUser = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...user }: Partial<User> & { id: string }) => {
-      const { data } = await axiosInstance.put(`/users/${id}`, user);
+    mutationFn: async ({ id, ...op }: { id: string; fullName?: string; phone?: string; branchId?: string; specialization?: 'THEORY' | 'PRACTICE' }) => {
+      const { data } = await axiosInstance.patch(`/users/${id}`, op);
       return data?.data || data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),

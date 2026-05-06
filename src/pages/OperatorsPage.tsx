@@ -90,9 +90,14 @@ const OperatorsPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.fullName.trim() || !form.phone.trim()) return;
+    const payload = {
+      fullName: form.fullName,
+      phone: form.phone || undefined,
+      branchId: form.branchId || undefined,
+    };
     if (editItem) {
       updateMut.mutate(
-        { id: editItem.id, ...form },
+        { id: editItem.id, ...payload },
         {
           onSuccess: () => {
             toast.success("Operator yangilandi");
@@ -102,7 +107,7 @@ const OperatorsPage = () => {
         },
       );
     } else {
-      createMut.mutate(form, {
+      createMut.mutate(payload, {
         onSuccess: () => {
           toast.success("Operator qo'shildi");
           setModalOpen(false);

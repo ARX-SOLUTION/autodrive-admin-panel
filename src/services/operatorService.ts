@@ -11,7 +11,6 @@ export const useOperators = () =>
       try {
         const { data: res } = await axiosInstance.get('/users', { params: { role: 'operator' } });
         const arr = res?.data;
-        console.log("Operators response:", res);
         if (Array.isArray(arr)) return arr;
         if (Array.isArray(res)) return res;
         return [];
@@ -35,8 +34,8 @@ export const useCreateOperator = () => {
 export const useUpdateOperator = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...op }: { id: string; fullName: string; phone: string; branchId: string }) => {
-      const { data } = await axiosInstance.put(`/users/${id}`, { ...op, role: 'operator' });
+    mutationFn: async ({ id, ...op }: { id: string; fullName?: string; phone?: string; branchId?: string }) => {
+      const { data } = await axiosInstance.patch(`/users/${id}`, op);
       return data?.data || data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['operators'] }),

@@ -19,8 +19,12 @@ export const useBranches = () =>
         if (Array.isArray(arr)) return arr;
         if (Array.isArray(res)) return res;
         return [];
-      } catch {
-        return demoBranches;
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('API failed, returning demo data:', error);
+          return demoBranches;
+        }
+        throw error;
       }
     },
   });
@@ -28,8 +32,19 @@ export const useBranches = () =>
 export const useCreateBranch = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (branch: Partial<Branch>) => {
-      const { data } = await axiosInstance.post('/branches', branch);
+    mutationFn: async (b: { name: string; location: string; phone?: string }) => {
+      const { data } = await axiosInstance.post('/branches', b);
+      return data?.data || data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['branches'] }),
+  });
+};
+
+export const useUpdateBranch = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...b }: { id: string; name?: string; location?: string; phone?: string }) => {
+      const { data } = await axiosInstance.patch(`/branches/${id}`, b);
       return data?.data || data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['branches'] }),
