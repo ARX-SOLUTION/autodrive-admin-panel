@@ -35,8 +35,8 @@ export const useCreateTeacher = () => {
 export const useUpdateTeacher = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...t }: { id: string; fullName: string; phone: string; specialization: Specialization; branchId: string }) => {
-      const { data } = await axiosInstance.put(`/users/${id}`, { ...t, role: 'teacher' });
+    mutationFn: async ({ id, ...t }: { id: string; fullName?: string; phone?: string; specialization?: Specialization; branchId?: string }) => {
+      const { data } = await axiosInstance.patch(`/users/${id}`, t);
       return data?.data || data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers'] }),

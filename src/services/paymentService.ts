@@ -103,8 +103,11 @@ export const useCreatePayment = () => {
       return data?.data || data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["payments"] });
-      qc.invalidateQueries({ queryKey: ["payment-summary"] });
+      qc.invalidateQueries({ queryKey: ['payments'] });
+      qc.invalidateQueries({ queryKey: ['payment-summary'] });
+      qc.invalidateQueries({ queryKey: ['payment-snapshot'] });
+      qc.invalidateQueries({ queryKey: ['students'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 };
@@ -116,8 +119,11 @@ export const useDeletePayment = () => {
       await axiosInstance.delete(`/payments/${id}`);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["payments"] });
-      qc.invalidateQueries({ queryKey: ["payment-summary"] });
+      qc.invalidateQueries({ queryKey: ['payments'] });
+      qc.invalidateQueries({ queryKey: ['payment-summary'] });
+      qc.invalidateQueries({ queryKey: ['payment-snapshot'] });
+      qc.invalidateQueries({ queryKey: ['students'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 };

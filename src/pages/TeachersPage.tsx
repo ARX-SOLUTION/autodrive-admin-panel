@@ -73,13 +73,19 @@ const TeachersPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.fullName.trim() || !form.phone.trim()) return;
+    const payload = {
+      fullName: form.fullName,
+      phone: form.phone || undefined,
+      branchId: form.branchId || undefined,
+      specialization: form.specialization || undefined,
+    };
     if (editItem) {
-      updateMut.mutate({ id: editItem.id, ...form }, {
+      updateMut.mutate({ id: editItem.id, ...payload }, {
         onSuccess: () => { toast.success("O'qituvchi yangilandi"); setModalOpen(false); },
         onError: () => toast.error("Xatolik yuz berdi"),
       });
     } else {
-      createMut.mutate(form, {
+      createMut.mutate(payload, {
         onSuccess: () => { toast.success("O'qituvchi qo'shildi"); setModalOpen(false); },
         onError: () => toast.error("Xatolik yuz berdi"),
       });

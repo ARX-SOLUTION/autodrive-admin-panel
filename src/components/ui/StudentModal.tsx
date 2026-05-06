@@ -4,6 +4,7 @@ import {
   CourseType,
   PaymentMethod,
   ResultStatus,
+  StudentStatus,
 } from "@/types/student";
 import {
   Dialog,
@@ -45,7 +46,7 @@ export interface CreateStudentPayload {
   has_document?: boolean;
   result?: ResultStatus;
   notes?: string;
-  status?: string;
+  status?: StudentStatus;
   registered_by?: string;
 }
 
@@ -134,7 +135,7 @@ const StudentModal = ({
           initial_payment: student.initial_payment || 0,
           group_id: student.group_id || "",
           completion_date: student.completion_date === undefined ? "" : student.completion_date,
-          contract_number: student.contract_number || null,
+          contract_number: student.contract_number || "",
           notes: student.notes === undefined ? "" : student.notes,
           status: student.status || "active",
           registered_by: student.registered_by_id || "",
@@ -184,7 +185,7 @@ const StudentModal = ({
       phone: form.phone,
       course_type: courseType,
       total_price: form.total_price,
-      payment_method: form.payment_method,
+      payment_method: form.payment_method || undefined,
       branch_id: form.branch_id || undefined,
       result: form.result,
       has_document: form.has_document,

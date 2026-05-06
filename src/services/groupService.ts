@@ -70,16 +70,17 @@ export const useUpdateGroup = () => {
       ...group
     }: {
       id: string;
-      name: string;
-      branchId: string;
-      courseType: string;
+      name?: string;
+      branchId?: string;
+      courseType?: string;
     }) => {
-      const { data } = await axiosInstance.put(`/groups/${id}`, group);
+      const { data } = await axiosInstance.patch(`/groups/${id}`, group);
       return data?.data || data;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["groups"] });
       qc.invalidateQueries({ queryKey: ["groups-overview"] });
+      qc.invalidateQueries({ queryKey: ["students"] });
     },
   });
 };

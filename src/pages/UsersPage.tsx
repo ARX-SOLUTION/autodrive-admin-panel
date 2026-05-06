@@ -12,7 +12,7 @@ const formatDate = (d?: string) => {
 };
 
 const UsersPage = () => {
-  const { data: users, isLoading } = useUsers();
+  const { data: users, isLoading } = useUsers('manager');
   const [sortField, setSortField] = useState("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
@@ -97,7 +97,10 @@ const UsersPage = () => {
                       <td className="px-4 py-3 text-muted-foreground">{u.phone || "—"}</td>
                       <td className="px-4 py-3 text-center">
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${u.role === "owner" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                          {u.role === "owner" ? "Owner" : "Manager"}
+                          {u.role === "owner" ? "Owner" :
+                           u.role === "manager" ? "Manager" :
+                           u.role === "operator" ? "Operator" :
+                           u.role === "teacher" ? "Teacher" : u.role}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{u.branch_name || "—"}</td>
