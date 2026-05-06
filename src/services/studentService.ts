@@ -115,13 +115,14 @@ export const useStudents = (
   branchId?: string,
   page?: number,
   limit?: number,
+  operatorId?: string,
 ) => {
   return useQuery<Student[]>({
-    queryKey: ["students", courseType, branchId, page, limit],
+    queryKey: ["students", courseType, branchId, page, limit, operatorId],
     queryFn: async () => {
       try {
         const { data: res } = await axiosInstance.get("/students", {
-          params: { course_type: courseType, branch_id: branchId, page, limit },
+          params: { course_type: courseType, branch_id: branchId, page, limit, operator_id: operatorId },
         });
         const arr = res?.data;
         if (Array.isArray(arr)) return arr;

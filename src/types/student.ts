@@ -15,6 +15,7 @@ export interface Student {
   debt: number;
   has_document: boolean;
   registered_by?: string;
+  registered_by_id?: string;
   result: ResultStatus;
   notes?: string;
   created_at: string;

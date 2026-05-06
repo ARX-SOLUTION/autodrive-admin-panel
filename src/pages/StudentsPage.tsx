@@ -73,15 +73,18 @@ const StudentsPage = () => {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [sortField, setSortField] = useState("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [operatorId, setOperatorId] = useState<string | undefined>();
+
+  const { data: branches } = useBranches();
+  const { data: operators } = useOperators();
 
   const { data: students, isLoading } = useStudents(
     courseType,
     branchId,
     1,
     500,
+    operatorId,
   );
-  const { data: branches } = useBranches();
-  const { data: operators } = useOperators();
   const createMutation = useCreateStudent();
   const updateMutation = useUpdateStudent();
   const deleteMutation = useDeleteStudent();
@@ -213,6 +216,28 @@ const StudentsPage = () => {
                   {b.name}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* Operator filter — owner va manager uchun */}
+        {(isOwner() || user?.role === "manager") && (operators || []).length > 0 && (
+          <Select
+            value={operatorId || "all"}
+            onValueChange={(v) => setOperatorId(v === "all" ? undefined : v)}
+          >
+            <SelectTrigger className="w-44 bg-secondary border-border">
+              <SelectValue placeholder="Operator" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Barcha operatorlar</SelectItem>
+              {(operators || [])
+                .filter((op) => isOwner() || op.branch_id === user?.branch_id)
+                .map((op) => (
+                  <SelectItem key={op.id} value={op.id}>
+                    {op.name || op.email}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         )}
