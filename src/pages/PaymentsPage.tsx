@@ -190,23 +190,44 @@ const PaymentsPage = () => {
     });
   };
 
+  // const exportToExcel = () => {
+  //   const rows = sorted.map((p, idx) => ({
+  //     "#": idx + 1,
+  //     Talaba: p.student_name,
+  //     Filial: p.branch_name,
+  //     Kurs: p.course_type === "tezkor" ? "Tezkor" : "Avto maktab",
+  //     "Umumiy narx": p.total_price,
+  //     "Bu to'lov": p.amount_paid,
+  //     "Joriy qoldiq": p.remaining_debt,
+  //     Turi: p.payment_method === "naqd" ? "Naqd" : p.payment_method === "karta" ? "Karta" : "Perechisleniya",
+  //     Operator: p.recorded_by || "—",
+  //     Sana: formatDate(p.date),
+  //   }));
+  //   const ws = XLSX.utils.json_to_sheet(rows);
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "To'lovlar");
+  //   XLSX.writeFile(wb, `tolovlar_${format(new Date(), "dd-MM-yyyy")}.xlsx`);
+  // };
+
   const exportToExcel = () => {
-    const rows = sorted.map((p, idx) => ({
-      "#": idx + 1,
-      Talaba: p.student_name,
-      Filial: p.branch_name,
-      Kurs: p.course_type === "tezkor" ? "Tezkor" : "Avto maktab",
-      "Umumiy narx": p.total_price,
-      "Bu to'lov": p.amount_paid,
-      "Joriy qoldiq": p.remaining_debt,
-      Turi: p.payment_method === "naqd" ? "Naqd" : p.payment_method === "karta" ? "Karta" : "Perechisleniya",
-      Operator: p.recorded_by || "—",
-      Sana: formatDate(p.date),
-    }));
-    const ws = XLSX.utils.json_to_sheet(rows);
+    // Faqat headerlar - data yo'q
+    const headers = {
+      "#": "",
+      Talaba: "",
+      Filial: "",
+      Kurs: "",
+      "Umumiy narx": "",
+      "Bu to'lov": "",
+      "Joriy qoldiq": "",
+      Turi: "",
+      Operator: "",
+      Sana: "",
+    };
+
+    const ws = XLSX.utils.json_to_sheet([headers]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "To'lovlar");
-    XLSX.writeFile(wb, `tolovlar_${format(new Date(), "dd-MM-yyyy")}.xlsx`);
+    XLSX.writeFile(wb, `tolovlar_template_${format(new Date(), "dd-MM-yyyy")}.xlsx`);
   };
 
   const startIndex = (currentPage - 1) * 10;
