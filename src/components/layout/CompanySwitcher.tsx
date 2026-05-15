@@ -38,7 +38,7 @@ export const CompanySwitcher = () => {
     <div className="flex items-center gap-2">
       <Building2 className="h-4 w-4 text-muted-foreground" />
       <Select value={activeCompanyId || ALL} onValueChange={handleChange}>
-        <SelectTrigger className="h-9 w-[220px] text-sm">
+        <SelectTrigger className="h-9 w-[160px] text-sm sm:w-[220px]">
           <SelectValue placeholder={isLoading ? 'Yuklanmoqda…' : 'Kompaniya'} />
         </SelectTrigger>
         <SelectContent>

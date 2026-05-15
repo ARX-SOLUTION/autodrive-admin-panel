@@ -34,6 +34,8 @@ import PaginationControls from "@/components/ui/PaginationControls";
 import { extractErrorMessage } from "@/lib/errors";
 import { formatPhone } from "@/lib/phoneFormater";
 import { User, UserRole } from "@/types/user";
+import { DataCard } from "@/components/ui/DataCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useCompanies } from "@/services/companyService";
 import {
   useCreatePlatformUser,
@@ -296,7 +298,7 @@ const PlatformUsersPage = () => {
       </div>
 
       <div className="glass-card overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
@@ -393,7 +395,81 @@ const PlatformUsersPage = () => {
             </tbody>
           </table>
           {items.length === 0 && !isLoading && (
-            <div className="py-12 text-center text-muted-foreground">Foydalanuvchilar topilmadi</div>
+            <EmptyState
+              icon={KeyRound}
+              title="Foydalanuvchi topilmadi"
+              description="Tanlangan filtrlar bo'yicha foydalanuvchilar yo'q."
+            />
+          )}
+        </div>
+
+        {/* Mobile card list */}
+        <div className="md:hidden p-3">
+          {isLoading ? (
+            <div className="grid gap-3">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-32 w-full" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <EmptyState
+              icon={KeyRound}
+              title="Foydalanuvchi topilmadi"
+              description="Tanlangan filtrlar bo'yicha foydalanuvchilar yo'q."
+            />
+          ) : (
+            <div className="grid gap-3">
+              {paginatedItems.map((u) => (
+                <DataCard
+                  key={u.id}
+                  title={u.name || "—"}
+                  subtitle={u.email}
+                  fields={[
+                    {
+                      label: "Rol",
+                      value: (
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role]}`}
+                        >
+                          {ROLE_LABEL[u.role]}
+                        </span>
+                      ),
+                    },
+                    { label: "Kompaniya", value: u.company_name || "—" },
+                    { label: "Filial", value: u.branch_name || "—" },
+                    { label: "Yaratilgan", value: formatDate(u.created_at) },
+                  ]}
+                  actions={
+                    <>
+                      <button
+                        onClick={() => {
+                          setResetTarget(u);
+                          setNewPassword("");
+                        }}
+                        title="Parolni yangilash"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                      >
+                        <KeyRound className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => openEdit(u)}
+                        title="Tahrirlash"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(u.id)}
+                        title="O'chirish"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  }
+                />
+              ))}
+            </div>
           )}
         </div>
       </div>

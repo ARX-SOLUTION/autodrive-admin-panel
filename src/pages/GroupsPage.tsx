@@ -18,11 +18,13 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Eye, ChevronUp, ChevronsUpDown } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Eye, ChevronUp, ChevronsUpDown, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { usePagination } from "@/hooks/usePagination";
 import PaginationControls from "@/components/ui/PaginationControls";
 import { useAuthStore } from "@/store/authStore";
+import { DataCard } from "@/components/ui/DataCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const formatDate = (d: string) => {
   try { return format(new Date(d), "dd.MM.yyyy"); } catch { return d; }
@@ -213,8 +215,8 @@ const GroupsPage = () => {
         </Select>
       </div>
 
-      {/* Table */}
-      <div className="glass-card overflow-hidden">
+      {/* Table (desktop) */}
+      <div className="hidden md:block glass-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -283,9 +285,79 @@ const GroupsPage = () => {
             </tbody>
           </table>
           {filteredGroups.length === 0 && !isLoading && (
-            <div className="py-12 text-center text-muted-foreground">Guruhlar topilmadi</div>
+            <EmptyState
+              icon={Layers}
+              title="Guruh topilmadi"
+              description="Tanlangan filtrlarga mos guruh yo'q."
+            />
           )}
         </div>
+      </div>
+
+      {/* Card list (mobile) */}
+      <div className="grid gap-3 md:hidden">
+        {isLoading ? (
+          [...Array(3)].map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={Layers}
+            title="Guruh topilmadi"
+            description="Tanlangan filtrlarga mos guruh yo'q."
+          />
+        ) : (
+          filtered.map((g) => (
+            <DataCard
+              key={g.id}
+              title={g.name}
+              subtitle={g.branch_name || getBranchName(g.branch_id)}
+              onClick={() => setDetailGroup(g)}
+              fields={[
+                {
+                  label: "Kurs turi",
+                  value: g.course_type === "avto_maktab" ? "Avto maktab" : "Tezkor",
+                },
+                { label: "Talabalar soni", value: g.active_students },
+                { label: "Yaratilgan", value: formatDate(g.created_at) },
+                {
+                  label: "Holat",
+                  value: (
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${g.is_active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}
+                    >
+                      {g.is_active ? "Faol" : "Nofaol"}
+                    </span>
+                  ),
+                },
+              ]}
+              actions={
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(g);
+                    }}
+                    title="Tahrirlash"
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  {isOwner() && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteId(g.id);
+                      }}
+                      title="O'chirish"
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </>
+              }
+            />
+          ))
+        )}
       </div>
 
       <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />

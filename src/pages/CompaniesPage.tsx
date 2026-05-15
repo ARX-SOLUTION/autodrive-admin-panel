@@ -11,12 +11,15 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { DataCard } from "@/components/ui/DataCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Dialog,
   DialogContent,
@@ -234,7 +237,7 @@ const CompaniesPage = () => {
         </Select>
       </div>
 
-      <div className="glass-card overflow-hidden">
+      <div className="hidden md:block glass-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -343,9 +346,88 @@ const CompaniesPage = () => {
             </tbody>
           </table>
           {items.length === 0 && !isLoading && (
-            <div className="py-12 text-center text-muted-foreground">Kompaniyalar topilmadi</div>
+            <EmptyState
+              icon={Briefcase}
+              title="Kompaniya topilmadi"
+              description="Tanlangan filtrlarga mos kompaniya yo'q."
+            />
           )}
         </div>
+      </div>
+
+      {/* Card list (mobile) */}
+      <div className="grid gap-3 md:hidden">
+        {isLoading ? (
+          [...Array(3)].map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)
+        ) : paginatedItems.length === 0 ? (
+          <EmptyState
+            icon={Briefcase}
+            title="Kompaniya topilmadi"
+            description="Tanlangan filtrlarga mos kompaniya yo'q."
+          />
+        ) : (
+          paginatedItems.map((c) => (
+            <DataCard
+              key={c.id}
+              title={c.name}
+              subtitle={c.slug}
+              fields={[
+                {
+                  label: "Holat",
+                  value: (
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[c.status]}`}
+                    >
+                      {STATUS_LABEL[c.status]}
+                    </span>
+                  ),
+                },
+                { label: "Yaratilgan", value: formatDate(c.created_at) },
+                { label: "Filiallar soni", value: "—" },
+                { label: "Foydalanuvchilar soni", value: "—" },
+                { label: "Aloqa", value: c.contact_phone || c.contact_email || "—" },
+              ]}
+              actions={
+                <>
+                  {c.status !== "active" && (
+                    <button
+                      onClick={() => handleApprove(c.id)}
+                      disabled={approveMut.isPending}
+                      title="Tasdiqlash"
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-success/10 hover:text-success transition-colors"
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                  {c.status !== "suspended" && (
+                    <button
+                      onClick={() => handleSuspend(c.id)}
+                      disabled={suspendMut.isPending}
+                      title="To'xtatish"
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-warning/10 hover:text-warning transition-colors"
+                    >
+                      <Pause className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => openEdit(c)}
+                    title="Tahrirlash"
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(c.id)}
+                    title="O'chirish"
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </>
+              }
+            />
+          ))
+        )}
       </div>
 
       <PaginationControls

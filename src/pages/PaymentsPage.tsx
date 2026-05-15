@@ -3,6 +3,8 @@ import PaymentModal, {
   CreatePaymentPayload,
 } from "@/components/ui/PaymentModal";
 import { SummaryCard } from "@/components/ui/SummaryCard";
+import { DataCard } from "@/components/ui/DataCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -40,6 +42,7 @@ import
     ChevronDown,
     ChevronsUpDown,
     ChevronUp,
+    CreditCard,
     Download,
     Loader2,
     Plus,
@@ -535,7 +538,7 @@ const PaymentsPage = () => {
             </div>
           )}
         <div className={cn("glass-card overflow-hidden transition-opacity duration-200", isFetching && !isLoading && "opacity-50")}>
-          <div className="overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
@@ -656,6 +659,72 @@ const PaymentsPage = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile card list */}
+          <div className="md:hidden p-3">
+            {isLoading ? (
+              <div className="grid gap-3">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-32 w-full" />
+                ))}
+              </div>
+            ) : paginatedItems?.length === 0 ? (
+              <EmptyState
+                icon={CreditCard}
+                title="To'lovlar topilmadi"
+                description="Tanlangan filtrlar bo'yicha to'lovlar yo'q."
+              />
+            ) : (
+              <div className="grid gap-3">
+                {paginatedItems?.map((p) => (
+                  <DataCard
+                    key={p.id}
+                    title={p.student_name}
+                    subtitle={p.branch_name}
+                    fields={[
+                      { label: "Sana", value: formatDate(p.date) },
+                      {
+                        label: "Summa",
+                        value: (
+                          <span className="text-success font-medium">
+                            +{new Intl.NumberFormat("uz-UZ").format(p.amount_paid)}
+                          </span>
+                        ),
+                      },
+                      {
+                        label: "Qoldiq",
+                        value: (
+                          <span
+                            className={
+                              p.remaining_debt > 0 ? "text-destructive" : "text-success"
+                            }
+                          >
+                            {p.remaining_debt > 0
+                              ? new Intl.NumberFormat("uz-UZ").format(p.remaining_debt)
+                              : "To'liq"}
+                          </span>
+                        ),
+                      },
+                      {
+                        label: "To'lov turi",
+                        value:
+                          p.payment_method === "naqd"
+                            ? "Naqd"
+                            : p.payment_method === "karta"
+                              ? "Karta"
+                              : "Perechisleniya",
+                      },
+                      { label: "Operator", value: p.recorded_by || "—" },
+                      {
+                        label: "Kurs turi",
+                        value: p.course_type === "tezkor" ? "Tezkor" : "Avto maktab",
+                      },
+                    ]}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
         </div>
