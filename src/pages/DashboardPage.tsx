@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useDashboardAnalytics } from "@/services/dashboardService";
 import { useBranches } from "@/services/branchService";
+import PlatformDashboard from "./PlatformDashboard";
 import { SummaryCard } from "@/components/ui/SummaryCard";
 import {
   Select,
@@ -85,7 +86,7 @@ const RESULT_COLORS = [
   "hsl(0, 72%, 51%)",
 ];
 
-const DashboardPage = () => {
+const TenantDashboard = () => {
   const { isOwner, user } = useAuthStore();
   const [courseType, setCourseType] = useState<CourseType | undefined>();
   const [branchId, setBranchId] = useState<string | undefined>(
@@ -458,6 +459,12 @@ const DashboardPage = () => {
       )}
     </div>
   );
+};
+
+const DashboardPage = () => {
+  const isDev = useAuthStore((s) => s.isDev);
+  if (isDev()) return <PlatformDashboard />;
+  return <TenantDashboard />;
 };
 
 export default DashboardPage;
