@@ -25,6 +25,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Search, CalendarIcon, X, ShieldCheck, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { DataCard } from "@/components/ui/DataCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
 
 const formatDate = (d: string) => {
@@ -409,7 +411,7 @@ const AuditLogPage = () => {
           <span className="text-xs text-muted-foreground">{total} ta yozuv</span>
         </div>
         <div className="glass-card overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
@@ -456,6 +458,40 @@ const AuditLogPage = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile card list */}
+          <div className="md:hidden p-3">
+            {isLoading ? (
+              <div className="grid gap-3">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-32 w-full" />
+                ))}
+              </div>
+            ) : sorted.length === 0 ? (
+              <EmptyState
+                icon={ShieldCheck}
+                title="Audit yozuvlari yo'q"
+                description="Tanlangan filtrlar bo'yicha yozuvlar topilmadi."
+              />
+            ) : (
+              <div className="grid gap-3">
+                {sorted.map((log) => (
+                  <DataCard
+                    key={log.id}
+                    title={`${log.action} · ${log.entity}`}
+                    subtitle={log.user?.name || "—"}
+                    fields={[
+                      { label: "Sana", value: formatDate(log.createdAt) },
+                      { label: "Entity ID", value: log.entityId?.slice(0, 8) || "—" },
+                      { label: "Filial", value: log.user?.branchId || "—" },
+                      { label: "Kompaniya", value: "—" },
+                    ]}
+                    onClick={() => setSelectedLog(log)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Pencil, Trash2, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Headphones, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { DataCard } from "@/components/ui/DataCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { usePagination } from "@/hooks/usePagination";
 import PaginationControls from "@/components/ui/PaginationControls";
 import {
@@ -156,6 +158,7 @@ const OperatorsPage = () => {
         />
       </div>
       <div className="glass-card overflow-hidden">
+        <div className="hidden md:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/30">
@@ -240,10 +243,71 @@ const OperatorsPage = () => {
           </tbody>
         </table>
         {filtered.length === 0 && !isLoading && (
-          <div className="py-12 text-center text-muted-foreground">
-            Operatorlar topilmadi
-          </div>
+          <EmptyState
+            icon={Headphones}
+            title="Operator topilmadi"
+            description="Qidiruv bo'yicha operatorlar yo'q."
+          />
         )}
+        </div>
+
+        {/* Mobile card list */}
+        <div className="md:hidden p-3">
+          {isLoading ? (
+            <div className="grid gap-3">
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className="h-32 w-full" />
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <EmptyState
+              icon={Headphones}
+              title="Operator topilmadi"
+              description="Qidiruv bo'yicha operatorlar yo'q."
+            />
+          ) : (
+            <div className="grid gap-3">
+              {paginatedItems.map((o) => (
+                <DataCard
+                  key={o.id}
+                  title={o.name || "—"}
+                  subtitle={formatPhone(o.phone)}
+                  fields={[
+                    { label: "Email", value: o.email || "—" },
+                    { label: "Filial", value: o.branch_name || getBranchName(o.branch_id) },
+                    { label: "Yaratilgan", value: o.created_at ? new Date(o.created_at).toLocaleDateString("uz-UZ") : "—" },
+                    {
+                      label: "Holat",
+                      value: (
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${o.is_active !== false ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}
+                        >
+                          {o.is_active !== false ? "Faol" : "Nofaol"}
+                        </span>
+                      ),
+                    },
+                  ]}
+                  actions={
+                    <>
+                      <button
+                        onClick={() => openEdit(o)}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(o.id)}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <PaginationControls

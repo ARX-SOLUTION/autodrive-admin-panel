@@ -53,7 +53,7 @@ const PlatformDashboard = () => {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-64" />
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="h-28 rounded-xl" />
           ))}
@@ -76,7 +76,7 @@ const PlatformDashboard = () => {
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           Kompaniyalar
         </h2>
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           <SummaryCard
             title="Jami kompaniyalar"
             value={stats.total}
@@ -105,7 +105,7 @@ const PlatformDashboard = () => {
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           Foydalanuvchilar
         </h2>
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           <SummaryCard
             title="Jami foydalanuvchilar"
             value={userStats.total}

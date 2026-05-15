@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { format } from "date-fns";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, MapPin, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { DataCard } from "@/components/ui/DataCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Dialog,
@@ -124,47 +126,94 @@ const BranchesPage = () => {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(branches || []).map((b) => (
-            <div key={b.id} className="glass-card p-5 animate-slide-in">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-heading text-lg font-semibold">{b.name}</h3>
-                  <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {b.location}
+        <>
+          <div className="hidden md:block">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(branches || []).map((b) => (
+                <div key={b.id} className="glass-card p-5 animate-slide-in">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-heading text-lg font-semibold">{b.name}</h3>
+                      <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {b.location}
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => openEdit(b)}
+                        title="Tahrirlash"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(b.id)}
+                        title="O'chirish"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-6 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Menejer: </span>
+                      <span className="text-foreground font-medium">{b.manager_name || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Talabalar: </span>
+                      <span className="text-foreground font-medium">{b.active_students}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => openEdit(b)}
-                    title="Tahrirlash"
-                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setDeleteId(b.id)}
-                    title="O'chirish"
-                    className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-6 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Menejer: </span>
-                  <span className="text-foreground font-medium">{b.manager_name || "—"}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Talabalar: </span>
-                  <span className="text-foreground font-medium">{b.active_students}</span>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+
+          <div className="grid gap-3 md:hidden">
+            {(branches || []).map((b) => (
+              <DataCard
+                key={b.id}
+                title={b.name}
+                subtitle={b.location}
+                fields={[
+                  { label: "Telefon", value: "—" },
+                  { label: "Talabalar", value: b.active_students },
+                  {
+                    label: "Yaratilgan",
+                    value: (() => {
+                      try {
+                        return format(new Date(b.created_at), "dd.MM.yyyy");
+                      } catch {
+                        return b.created_at;
+                      }
+                    })(),
+                  },
+                  { label: "Holat", value: "Faol" },
+                ]}
+                actions={
+                  <>
+                    <button
+                      onClick={() => openEdit(b)}
+                      title="Tahrirlash"
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(b.id)}
+                      title="O'chirish"
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                }
+              />
+            ))}
+          </div>
+        </>
       )}
 
       <Dialog open={modalOpen} onOpenChange={(o) => !o && setModalOpen(false)}>

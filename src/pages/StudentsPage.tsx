@@ -29,7 +29,9 @@ import {
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import StudentModal from "@/components/ui/StudentModal";
-import { Plus, Search, Pencil, Trash2, CalendarIcon, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { DataCard } from "@/components/ui/DataCard";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Plus, Search, Pencil, Trash2, CalendarIcon, ChevronUp, ChevronDown, ChevronsUpDown, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePagination } from "@/hooks/usePagination";
@@ -305,7 +307,7 @@ const StudentsPage = () => {
 
       {/* Table */}
       <div className="glass-card overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
@@ -579,8 +581,74 @@ const StudentsPage = () => {
             </tbody>
           </table>
           {filtered?.length === 0 && !isLoading && (
-            <div className="py-12 text-center text-muted-foreground">
-              Talabalar topilmadi
+            <EmptyState
+              icon={GraduationCap}
+              title="Talabalar topilmadi"
+              description="Tanlangan filtrlar bo'yicha talabalar yo'q."
+            />
+          )}
+        </div>
+
+        {/* Mobile card list */}
+        <div className="md:hidden p-3">
+          {isLoading ? (
+            <div className="grid gap-3">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-32 w-full" />
+              ))}
+            </div>
+          ) : filtered?.length === 0 ? (
+            <EmptyState
+              icon={GraduationCap}
+              title="Talabalar topilmadi"
+              description="Tanlangan filtrlar bo'yicha talabalar yo'q."
+            />
+          ) : (
+            <div className="grid gap-3">
+              {paginatedItems?.map((s) => (
+                <DataCard
+                  key={s.id}
+                  title={`${capitalize(s.last_name)} ${capitalize(s.first_name)}`}
+                  subtitle={formatPhone(s.phone)}
+                  fields={[
+                    { label: "Filial", value: s.branch_name ?? "—" },
+                    { label: "Guruh", value: s.group_name ?? "—" },
+                    { label: "Kurs", value: s.course_type ?? "—" },
+                    {
+                      label: "Qarz",
+                      value: (
+                        <span className={s.debt > 0 ? "text-destructive" : "text-success"}>
+                          {s.debt > 0 ? formatMoney(s.debt) : "—"}
+                        </span>
+                      ),
+                    },
+                    { label: "Holat", value: s.status ?? "—" },
+                    { label: "Sana", value: formatDate(s.created_at) },
+                  ]}
+                  actions={
+                    <>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => openEdit(s)}
+                        aria-label="Tahrirlash"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      {isOwner() && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setDeleteId(s.id)}
+                          aria-label="O'chirish"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </>
+                  }
+                />
+              ))}
             </div>
           )}
         </div>
