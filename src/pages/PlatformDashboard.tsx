@@ -8,11 +8,27 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { format } from "date-fns";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { SummaryCard } from "@/components/ui/SummaryCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useCompanies } from "@/services/companyService";
 import { usePlatformUsers } from "@/services/platformUserService";
+import { usePlatformAnalytics } from "@/services/analyticsService";
 
 const formatDate = (d?: string | null) => {
   if (!d) return "—";
@@ -23,9 +39,16 @@ const formatDate = (d?: string | null) => {
   }
 };
 
+const STATUS_COLORS: Record<string, string> = {
+  active: "hsl(var(--success))",
+  pending: "hsl(var(--warning))",
+  suspended: "hsl(var(--destructive))",
+};
+
 const PlatformDashboard = () => {
   const { data: companies, isLoading: companiesLoading } = useCompanies({ limit: 100 });
   const { data: users, isLoading: usersLoading } = usePlatformUsers({ limit: 100 });
+  const { data: analytics, isLoading: analyticsLoading } = usePlatformAnalytics();
 
   const companyItems = companies?.items ?? [];
   const userItems = users?.items ?? [];
@@ -114,6 +137,101 @@ const PlatformDashboard = () => {
           <SummaryCard title="Owner" value={userStats.owners} />
           <SummaryCard title="Manager" value={userStats.managers} />
         </div>
+      </section>
+
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Analitika
+        </h2>
+        {analyticsLoading || !analytics ? (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-64 rounded-xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="glass-card p-5">
+              <h3 className="mb-3 font-heading text-sm font-semibold">
+                Kompaniyalar holati
+              </h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={Object.entries(analytics.companies.by_status).map(([k, v]) => ({
+                      name: k,
+                      value: v,
+                    }))}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={45}
+                    outerRadius={75}
+                    paddingAngle={2}
+                  >
+                    {Object.keys(analytics.companies.by_status).map((status) => (
+                      <Cell key={status} fill={STATUS_COLORS[status] ?? "hsl(var(--primary))"} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="glass-card p-5">
+              <h3 className="mb-3 font-heading text-sm font-semibold">
+                Oylik o'sish (6 oy)
+              </h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={analytics.monthly_growth}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="companies"
+                    name="Kompaniyalar"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="users"
+                    name="Foydalanuvchilar"
+                    stroke="hsl(var(--success))"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="glass-card p-5">
+              <h3 className="mb-3 font-heading text-sm font-semibold">
+                Oylik to'lovlar soni
+              </h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={analytics.monthly_growth}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} allowDecimals={false} />
+                  <Tooltip />
+                  <Bar
+                    dataKey="payments_count"
+                    name="To'lovlar"
+                    fill="hsl(var(--primary))"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
