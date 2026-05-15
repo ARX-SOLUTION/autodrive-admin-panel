@@ -128,7 +128,7 @@ const GroupsPage = () => {
 
   const handleStudentEdit = (data: CreateStudentPayload) => {
     if (!editStudent) return;
-    updateStudentMutation.mutate({ id: editStudent.id, ...data } as any, {
+    updateStudentMutation.mutate({ id: editStudent.id, ...data } as Parameters<typeof updateStudentMutation.mutate>[0], {
       onSuccess: () => {
         toast.success("Talaba yangilandi");
         setEditStudent(null);

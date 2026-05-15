@@ -29,46 +29,45 @@ type NavItem = {
   devOnly?: boolean;
 };
 
-const navItems: NavItem[] = [
+type NavSection = {
+  title?: string;
+  items: NavItem[];
+};
+
+const navSections: NavSection[] = [
   {
-    path: "/dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-  },
-  { path: "/kompaniyalar", label: "Kompaniyalar", icon: Briefcase, devOnly: true },
-  {
-    path: "/platform-foydalanuvchilar",
-    label: "Platform Users",
-    icon: KeyRound,
-    devOnly: true,
-  },
-  { path: "/filiallar", label: "Filiallar", icon: Building2, ownerOnly: true },
-  { path: "/guruhlar", label: "Guruhlar", icon: Layers },
-  {
-    path: "/talabalar",
-    label: "Talabalar",
-    icon: GraduationCap,
-  },
-  { path: "/tolovlar", label: "To'lovlar", icon: CreditCard },
-  // { path: "/hujjatlar", label: "Hujjatlar", icon: FileText },
-  {
-    path: "/operatorlar",
-    label: "Operatorlar",
-    icon: Headphones,
+    items: [{ path: "/dashboard", label: "Dashboard", icon: LayoutDashboard }],
   },
   {
-    path: "/oqituvchilar",
-    label: "O'qituvchilar",
-    icon: Users,
+    title: "Platforma admin",
+    items: [
+      { path: "/kompaniyalar", label: "Kompaniyalar", icon: Briefcase, devOnly: true },
+      { path: "/platform-foydalanuvchilar", label: "Platform Users", icon: KeyRound, devOnly: true },
+    ],
   },
   {
-    path: "/foydalanuvchilar",
-    label: "Foydalanuvchilar",
-    icon: UserCog,
-    ownerOnly: true,
+    title: "Boshqaruv",
+    items: [
+      { path: "/filiallar", label: "Filiallar", icon: Building2, ownerOnly: true },
+      { path: "/guruhlar", label: "Guruhlar", icon: Layers },
+      { path: "/talabalar", label: "Talabalar", icon: GraduationCap },
+      { path: "/tolovlar", label: "To'lovlar", icon: CreditCard },
+    ],
   },
-  { path: "/audit", label: "Audit log", icon: ShieldCheck, ownerOnly: true },
-  { path: "/profile", label: "Profil", icon: User },
+  {
+    title: "Xodimlar",
+    items: [
+      { path: "/operatorlar", label: "Operatorlar", icon: Headphones },
+      { path: "/oqituvchilar", label: "O'qituvchilar", icon: Users },
+      { path: "/foydalanuvchilar", label: "Foydalanuvchilar", icon: UserCog, ownerOnly: true },
+    ],
+  },
+  {
+    items: [
+      { path: "/audit", label: "Audit log", icon: ShieldCheck, ownerOnly: true },
+      { path: "/profile", label: "Profil", icon: User },
+    ],
+  },
 ];
 
 export const Sidebar = () => {
@@ -76,11 +75,18 @@ export const Sidebar = () => {
   const { user, logout, isOwner, isDev } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
 
-  const filteredItems = navItems.filter((item) => {
+  const canSee = (item: NavItem) => {
     if (item.devOnly) return isDev();
     if (item.ownerOnly) return isOwner() || isDev();
     return true;
-  });
+  };
+
+  const visibleSections = navSections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter(canSee),
+    }))
+    .filter((section) => section.items.length > 0);
 
   return (
     <aside
@@ -100,25 +106,34 @@ export const Sidebar = () => {
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {filteredItems.map((item) => {
-          const active = location.pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                active
-                  ? "bg-primary/10 text-primary"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              )}
-            >
-              <item.icon className="h-[18px] w-[18px] shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-4">
+        {visibleSections.map((section, idx) => (
+          <div key={idx} className="space-y-1">
+            {section.title && !collapsed && (
+              <div className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                {section.title}
+              </div>
+            )}
+            {section.items.map((item) => {
+              const active = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-primary/10 text-primary"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  )}
+                >
+                  <item.icon className="h-[18px] w-[18px] shrink-0" />
+                  {!collapsed && <span>{item.label}</span>}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-border p-3">
