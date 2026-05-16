@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { User, Shield, Building2, Briefcase } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -19,7 +20,8 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 const ProfilePage = () => {
-  const { user, setAuth, token } = useAuthStore();
+  const { user, setAuth, token, logout } = useAuthStore();
+  const queryClient = useQueryClient();
   const updateMut = useUpdateUser();
   const passwordMut = useChangePassword();
 
@@ -76,8 +78,15 @@ const ProfilePage = () => {
       },
       {
         onSuccess: () => {
-          toast.success("Parol yangilandi");
+          // Backend bumps tokenVersion on password change (BE #42) — the
+          // current JWT is now stale and the next request will 401. Tear
+          // down auth state explicitly instead of letting that 401 race
+          // with the user's next click.
+          toast.success("Parol yangilandi. Iltimos qaytadan kiring.");
           setPasswords({ currentPassword: "", newPassword: "", confirmPassword: "" });
+          logout();
+          queryClient.clear();
+          window.location.href = "/login";
         },
         onError: (err) => toast.error(extractErrorMessage(err, "Joriy parol noto'g'ri")),
       },
