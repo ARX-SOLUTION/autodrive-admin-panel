@@ -1,11 +1,12 @@
+import { User } from '@/types/user';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User } from '@/types/user';
 
 interface AuthState {
   token: string | null;
   user: User | null;
   isAuthenticated: boolean;
+  hasHydrated: boolean;
   /** Active company a dev user is currently viewing-as. Empty string = cross-company view. */
   activeCompanyId: string;
   setAuth: (token: string, user: User) => void;
@@ -21,9 +22,10 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       user: null,
       isAuthenticated: false,
+      hasHydrated: false,
       activeCompanyId: '',
-      setAuth: (token, user) => set({ token, user, isAuthenticated: true }),
-      logout: () => set({ token: null, user: null, isAuthenticated: false, activeCompanyId: '' }),
+      setAuth: (token, user) => set({ token, user, isAuthenticated: true, hasHydrated: true }),
+      logout: () => set({ token: null, user: null, isAuthenticated: false, hasHydrated: true, activeCompanyId: '' }),
       setActiveCompanyId: (id) => set({ activeCompanyId: id }),
       isOwner: () => get().user?.role === 'owner',
       isDev: () => get().user?.role === 'dev',
@@ -36,8 +38,12 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        hasHydrated: state.hasHydrated,
         activeCompanyId: state.activeCompanyId,
       }),
+      onRehydrateStorage: () => () => {
+        set({ hasHydrated: true });
+      },
     }
   )
 );
