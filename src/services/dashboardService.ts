@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/api/axiosInstance';
+import { useAuthStore } from '@/store/authStore';
 import { CourseType } from '@/types/student';
 
 export interface DashboardAnalytics {
@@ -20,9 +21,10 @@ export interface DashboardAnalytics {
   branch_stats: { branch: string; students: number; revenue: number; debt: number }[];
 }
 
-export const useDashboardAnalytics = (branchId?: string, courseType?: CourseType) =>
-  useQuery<DashboardAnalytics>({
-    queryKey: ['dashboard', branchId, courseType],
+export const useDashboardAnalytics = (branchId?: string, courseType?: CourseType) => {
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
+  return useQuery<DashboardAnalytics>({
+    queryKey: ['dashboard', activeCompanyId, branchId, courseType],
     queryFn: async () => {
       const { data: res } = await axiosInstance.get('/dashboard/analytics', {
         params: { branch_id: branchId, course_type: courseType },
@@ -30,3 +32,4 @@ export const useDashboardAnalytics = (branchId?: string, courseType?: CourseType
       return res?.data || res;
     },
   });
+};

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -92,6 +93,7 @@ const EMPTY_FORM: FormState = {
 };
 
 const PlatformUsersPage = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [companyFilter, setCompanyFilter] = useState<string>("all");
@@ -182,7 +184,7 @@ const PlatformUsersPage = () => {
         },
         {
           onSuccess: () => {
-            toast.success("Foydalanuvchi yangilandi");
+            toast.success(t('platform_users.toast_updated'));
             setModalOpen(false);
           },
           onError: (err) => toast.error(extractErrorMessage(err)),
@@ -206,7 +208,7 @@ const PlatformUsersPage = () => {
         },
         {
           onSuccess: () => {
-            toast.success("Foydalanuvchi qo'shildi");
+            toast.success(t('platform_users.toast_created'));
             setModalOpen(false);
           },
           onError: (err) => toast.error(extractErrorMessage(err)),
@@ -219,7 +221,7 @@ const PlatformUsersPage = () => {
     if (!deleteId) return;
     deleteMut.mutate(deleteId, {
       onSuccess: () => {
-        toast.success("Foydalanuvchi o'chirildi");
+        toast.success(t('platform_users.toast_deleted'));
         setDeleteId(null);
       },
       onError: (err) => toast.error(extractErrorMessage(err)),
@@ -238,7 +240,7 @@ const PlatformUsersPage = () => {
       { id: resetTarget.id, password: newPassword },
       {
         onSuccess: () => {
-          toast.success("Parol yangilandi");
+          toast.success(t('platform_users.toast_password_reset'));
           setResetTarget(null);
           setNewPassword("");
         },
@@ -254,11 +256,11 @@ const PlatformUsersPage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold">Platforma foydalanuvchilari</h1>
-          <p className="text-sm text-muted-foreground">{items.length} ta foydalanuvchi</p>
+          <h1 className="font-heading text-2xl font-bold text-balance">{t('platform_users.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('platform_users.count', { count: items.length })}</p>
         </div>
         <Button className="gap-2" onClick={openCreate}>
-          <Plus className="h-4 w-4" /> Foydalanuvchi qo'shish
+          <Plus className="h-4 w-4" /> {t('platform_users.add_new')}
         </Button>
       </div>
 
@@ -266,7 +268,7 @@ const PlatformUsersPage = () => {
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Ism, email yoki telefon..."
+            placeholder={t('platform_users.search_placeholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 bg-secondary border-border"
@@ -277,12 +279,12 @@ const PlatformUsersPage = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Barcha rollar</SelectItem>
-            <SelectItem value="dev">Dev</SelectItem>
-            <SelectItem value="owner">Owner</SelectItem>
-            <SelectItem value="manager">Manager</SelectItem>
-            <SelectItem value="operator">Operator</SelectItem>
-            <SelectItem value="teacher">Teacher</SelectItem>
+            <SelectItem value="all">{t('platform_users.filter_all_roles')}</SelectItem>
+            <SelectItem value="dev">{t('roles.dev')}</SelectItem>
+            <SelectItem value="owner">{t('roles.owner')}</SelectItem>
+            <SelectItem value="manager">{t('roles.manager')}</SelectItem>
+            <SelectItem value="operator">{t('roles.operator')}</SelectItem>
+            <SelectItem value="teacher">{t('roles.teacher')}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={companyFilter} onValueChange={setCompanyFilter}>
@@ -290,7 +292,7 @@ const PlatformUsersPage = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Barcha kompaniyalar</SelectItem>
+            <SelectItem value="all">{t('platform_users.filter_all_companies')}</SelectItem>
             {companies.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}
@@ -311,7 +313,7 @@ const PlatformUsersPage = () => {
                     onClick={() => toggleSort("name")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
                   >
-                    Ism
+                    {t('platform_users.name')}
                     {sortField === "name" ? (
                       sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
                     ) : (
@@ -319,17 +321,17 @@ const PlatformUsersPage = () => {
                     )}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Email</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Telefon</th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Rol</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Kompaniya</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Filial</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('platform_users.email')}</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('platform_users.phone')}</th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('common.role')}</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('common.company')}</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('common.branch')}</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   <button
                     onClick={() => toggleSort("created_at")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
                   >
-                    Yaratilgan
+                    {t('platform_users.created')}
                     {sortField === "created_at" ? (
                       sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
                     ) : (
@@ -337,7 +339,7 @@ const PlatformUsersPage = () => {
                     )}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Amallar</th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -364,7 +366,7 @@ const PlatformUsersPage = () => {
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{u.company_name || "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground">{u.branch_name || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{formatDate(u.created_at)}</td>
+                      <td className="px-4 py-3 text-muted-foreground tabular-nums">{formatDate(u.created_at)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">
                           <button
@@ -372,21 +374,21 @@ const PlatformUsersPage = () => {
                               setResetTarget(u);
                               setNewPassword("");
                             }}
-                            title="Parolni yangilash"
+                            title={t('platform_users.reset_password_title')}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                           >
                             <KeyRound className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => openEdit(u)}
-                            title="Tahrirlash"
+                            title={t('common.edit')}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => setDeleteId(u.id)}
-                            title="O'chirish"
+                            title={t('common.delete')}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -400,8 +402,8 @@ const PlatformUsersPage = () => {
           {items.length === 0 && !isLoading && (
             <EmptyState
               icon={KeyRound}
-              title="Foydalanuvchi topilmadi"
-              description="Tanlangan filtrlar bo'yicha foydalanuvchilar yo'q."
+              title={t('platform_users.not_found_title')}
+              description={t('platform_users.not_found_desc')}
             />
           )}
         </div>
@@ -417,8 +419,8 @@ const PlatformUsersPage = () => {
           ) : items.length === 0 ? (
             <EmptyState
               icon={KeyRound}
-              title="Foydalanuvchi topilmadi"
-              description="Tanlangan filtrlar bo'yicha foydalanuvchilar yo'q."
+              title={t('platform_users.not_found_title')}
+              description={t('platform_users.not_found_desc')}
             />
           ) : (
             <div className="grid gap-3">
@@ -429,7 +431,7 @@ const PlatformUsersPage = () => {
                   subtitle={u.email}
                   fields={[
                     {
-                      label: "Rol",
+                      label: t('common.role'),
                       value: (
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role]}`}
@@ -438,9 +440,9 @@ const PlatformUsersPage = () => {
                         </span>
                       ),
                     },
-                    { label: "Kompaniya", value: u.company_name || "—" },
-                    { label: "Filial", value: u.branch_name || "—" },
-                    { label: "Yaratilgan", value: formatDate(u.created_at) },
+                    { label: t('common.company'), value: u.company_name || "—" },
+                    { label: t('common.branch'), value: u.branch_name || "—" },
+                    { label: t('platform_users.created'), value: formatDate(u.created_at) },
                   ]}
                   actions={
                     <>
@@ -449,21 +451,21 @@ const PlatformUsersPage = () => {
                           setResetTarget(u);
                           setNewPassword("");
                         }}
-                        title="Parolni yangilash"
+                        title={t('platform_users.reset_password_title')}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                       >
                         <KeyRound className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => openEdit(u)}
-                        title="Tahrirlash"
+                        title={t('common.edit')}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => setDeleteId(u.id)}
-                        title="O'chirish"
+                        title={t('common.delete')}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -487,12 +489,12 @@ const PlatformUsersPage = () => {
         <DialogContent className="max-w-md bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-heading">
-              {editItem ? "Foydalanuvchini tahrirlash" : "Yangi foydalanuvchi qo'shish"}
+              {editItem ? t('platform_users.edit_title') : t('platform_users.add_title')}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Ism *</Label>
+              <Label>{t('platform_users.name_label')}</Label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -501,7 +503,7 @@ const PlatformUsersPage = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Email *</Label>
+              <Label>{t('platform_users.email_label')}</Label>
               <Input
                 type="email"
                 value={form.email}
@@ -512,29 +514,29 @@ const PlatformUsersPage = () => {
             </div>
             {!editItem && (
               <div className="space-y-2">
-                <Label>Parol *</Label>
+                <Label>{t('platform_users.password_label')}</Label>
                 <Input
                   type="password"
                   value={form.password}
                   onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                   required
                   minLength={8}
-                  placeholder="8+ belgi, raqam va katta harf"
+                  placeholder={t('platform_users.password_placeholder')}
                   className="bg-secondary border-border"
                 />
               </div>
             )}
             <div className="space-y-2">
-              <Label>Telefon</Label>
+              <Label>{t('platform_users.phone_label')}</Label>
               <Input
                 value={form.phone}
                 onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                placeholder="+998..."
+                placeholder={t('platform_users.phone_placeholder')}
                 className="bg-secondary border-border"
               />
             </div>
             <div className="space-y-2">
-              <Label>Rol *</Label>
+              <Label>{t('platform_users.role_label')}</Label>
               <Select
                 value={form.role}
                 onValueChange={(v) =>
@@ -550,23 +552,23 @@ const PlatformUsersPage = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="dev">Dev</SelectItem>
-                  <SelectItem value="owner">Owner</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="operator">Operator</SelectItem>
-                  <SelectItem value="teacher">Teacher</SelectItem>
+                  <SelectItem value="dev">{t('roles.dev')}</SelectItem>
+                  <SelectItem value="owner">{t('roles.owner')}</SelectItem>
+                  <SelectItem value="manager">{t('roles.manager')}</SelectItem>
+                  <SelectItem value="operator">{t('roles.operator')}</SelectItem>
+                  <SelectItem value="teacher">{t('roles.teacher')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {showCompanyField && (
               <div className="space-y-2">
-                <Label>Kompaniya {form.role !== "dev" ? "*" : ""}</Label>
+                <Label>{t('platform_users.company_label')}{form.role !== "dev" ? " *" : ""}</Label>
                 <Select
                   value={form.companyId}
                   onValueChange={(v) => setForm((f) => ({ ...f, companyId: v }))}
                 >
                   <SelectTrigger className="bg-secondary border-border">
-                    <SelectValue placeholder="Tanlang" />
+                    <SelectValue placeholder={t('common.select_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {companies.map((c) => (
@@ -580,25 +582,25 @@ const PlatformUsersPage = () => {
             )}
             {showBranchField && (
               <div className="space-y-2">
-                <Label>Filial ID</Label>
+                <Label>{t('platform_users.branch_label')}</Label>
                 <Input
                   value={form.branchId}
                   onChange={(e) => setForm((f) => ({ ...f, branchId: e.target.value }))}
-                  placeholder="UUID"
+                  placeholder={t('platform_users.branch_placeholder')}
                   className="bg-secondary border-border"
                 />
               </div>
             )}
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
-                Bekor qilish
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
                 {createMut.isPending || updateMut.isPending
-                  ? "Saqlanmoqda..."
+                  ? t('common.saving')
                   : editItem
-                    ? "Saqlash"
-                    : "Qo'shish"}
+                    ? t('common.save')
+                    : t('common.add')}
               </Button>
             </div>
           </form>
@@ -616,22 +618,21 @@ const PlatformUsersPage = () => {
       >
         <DialogContent className="max-w-sm bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="font-heading">Parolni yangilash</DialogTitle>
+            <DialogTitle className="font-heading">{t('platform_users.reset_password_title')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleResetPassword} className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{resetTarget?.name || resetTarget?.email}</span>{" "}
-              uchun yangi parol kiriting.
+              {t('platform_users.reset_password_desc', { name: resetTarget?.name || resetTarget?.email })}
             </p>
             <div className="space-y-2">
-              <Label>Yangi parol *</Label>
+              <Label>{t('platform_users.new_password_label')}</Label>
               <Input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 minLength={8}
-                placeholder="8+ belgi, raqam va katta harf"
+                placeholder={t('platform_users.new_password_placeholder')}
                 className="bg-secondary border-border"
               />
             </div>
@@ -644,10 +645,10 @@ const PlatformUsersPage = () => {
                   setNewPassword("");
                 }}
               >
-                Bekor qilish
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={resetMut.isPending}>
-                {resetMut.isPending ? "Yangilanmoqda..." : "Yangilash"}
+                {resetMut.isPending ? t('platform_users.updating_button') : t('platform_users.update_button')}
               </Button>
             </div>
           </form>

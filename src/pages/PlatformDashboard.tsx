@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Briefcase,
   UserCog,
@@ -46,6 +47,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const PlatformDashboard = () => {
+  const { t } = useTranslation();
   const { data: companies, isLoading: companiesLoading } = useCompanies({ limit: 100 });
   const { data: users, isLoading: usersLoading } = usePlatformUsers({ limit: 100 });
   const { data: analytics, isLoading: analyticsLoading } = usePlatformAnalytics();
@@ -89,34 +91,34 @@ const PlatformDashboard = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-heading text-2xl font-bold">Platforma boshqaruvi</h1>
+        <h1 className="font-heading text-2xl font-bold text-balance">{t('dashboard.title')}</h1>
         <p className="text-sm text-muted-foreground">
-          Barcha kompaniyalar va foydalanuvchilarni nazorat qiling
+          {t('dashboard.subtitle')}
         </p>
       </div>
 
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Kompaniyalar
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 text-balance">
+          {t('dashboard.section_companies')}
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           <SummaryCard
-            title="Jami kompaniyalar"
+            title={t('dashboard.total_companies')}
             value={stats.total}
             icon={<Briefcase className="h-5 w-5" />}
           />
           <SummaryCard
-            title="Faol"
+            title={t('common.active')}
             value={stats.active}
             icon={<ShieldCheck className="h-5 w-5" />}
           />
           <SummaryCard
-            title="Kutilmoqda"
+            title={t('companies.status_pending')}
             value={stats.pending}
             icon={<Clock className="h-5 w-5" />}
           />
           <SummaryCard
-            title="To'xtatilgan"
+            title={t('companies.status_suspended')}
             value={stats.suspended}
             icon={<Pause className="h-5 w-5" />}
             trendDown={stats.suspended > 0}
@@ -125,12 +127,12 @@ const PlatformDashboard = () => {
       </section>
 
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Foydalanuvchilar
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 text-balance">
+          {t('dashboard.section_users')}
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           <SummaryCard
-            title="Jami foydalanuvchilar"
+            title={t('dashboard.total_users')}
             value={userStats.total}
             icon={<UserCog className="h-5 w-5" />}
           />
@@ -140,8 +142,8 @@ const PlatformDashboard = () => {
       </section>
 
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Analitika
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 text-balance">
+          {t('dashboard.section_analytics')}
         </h2>
         {analyticsLoading || !analytics ? (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -152,8 +154,8 @@ const PlatformDashboard = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
             <div className="glass-card p-5">
-              <h3 className="mb-3 font-heading text-sm font-semibold">
-                Kompaniyalar holati
+              <h3 className="mb-3 font-heading text-sm font-semibold text-balance">
+                {t('dashboard.company_status')}
               </h3>
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
@@ -181,8 +183,8 @@ const PlatformDashboard = () => {
             </div>
 
             <div className="glass-card p-5">
-              <h3 className="mb-3 font-heading text-sm font-semibold">
-                Oylik o'sish (6 oy)
+              <h3 className="mb-3 font-heading text-sm font-semibold text-balance">
+                {t('dashboard.monthly_growth')}
               </h3>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={analytics.monthly_growth}>
@@ -194,7 +196,7 @@ const PlatformDashboard = () => {
                   <Line
                     type="monotone"
                     dataKey="companies"
-                    name="Kompaniyalar"
+                    name={t('dashboard.legend_companies')}
                     stroke="hsl(var(--primary))"
                     strokeWidth={2}
                     dot={{ r: 3 }}
@@ -202,7 +204,7 @@ const PlatformDashboard = () => {
                   <Line
                     type="monotone"
                     dataKey="users"
-                    name="Foydalanuvchilar"
+                    name={t('dashboard.legend_users')}
                     stroke="hsl(var(--success))"
                     strokeWidth={2}
                     dot={{ r: 3 }}
@@ -212,8 +214,8 @@ const PlatformDashboard = () => {
             </div>
 
             <div className="glass-card p-5">
-              <h3 className="mb-3 font-heading text-sm font-semibold">
-                Oylik to'lovlar soni
+              <h3 className="mb-3 font-heading text-sm font-semibold text-balance">
+                {t('dashboard.monthly_payments')}
               </h3>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={analytics.monthly_growth}>
@@ -223,7 +225,7 @@ const PlatformDashboard = () => {
                   <Tooltip />
                   <Bar
                     dataKey="payments_count"
-                    name="To'lovlar"
+                    name={t('dashboard.legend_payments')}
                     fill="hsl(var(--primary))"
                     radius={[4, 4, 0, 0]}
                   />
@@ -237,23 +239,23 @@ const PlatformDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-heading text-sm font-semibold">
-              So'nggi qo'shilgan kompaniyalar
+            <h3 className="font-heading text-sm font-semibold text-balance">
+              {t('dashboard.recent_companies')}
             </h3>
             <Link to="/kompaniyalar">
               <Button variant="ghost" size="sm" className="gap-1 text-xs">
-                Barchasi <ArrowRight className="h-3 w-3" />
+                {t('common.view_all')} <ArrowRight className="h-3 w-3" />
               </Button>
             </Link>
           </div>
           {recentCompanies.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Hozircha kompaniyalar yo'q
+              {t('dashboard.no_companies')}
             </p>
           ) : (
             <ul className="divide-y divide-border/50">
               {recentCompanies.map((c) => (
-                <li key={c.id} className="flex items-center justify-between py-2.5">
+                <li key={c.id} className="flex items-center justify-between py-2.5 scroll-animate">
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{c.name}</p>
                     <p className="text-xs text-muted-foreground font-mono">{c.slug}</p>
@@ -268,9 +270,9 @@ const PlatformDashboard = () => {
                             : "bg-destructive/10 text-destructive"
                       }`}
                     >
-                      {c.status}
+                      {c.status === "active" ? t('common.active') : c.status === "pending" ? t('companies.status_pending') : t('companies.status_suspended')}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground tabular-nums">
                       {formatDate(c.created_at)}
                     </span>
                   </div>
@@ -282,22 +284,22 @@ const PlatformDashboard = () => {
 
         <div className="glass-card p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-heading text-sm font-semibold">Tezkor amallar</h3>
+            <h3 className="font-heading text-sm font-semibold text-balance">{t('dashboard.quick_actions')}</h3>
           </div>
           <div className="grid grid-cols-1 gap-2">
             <Link to="/kompaniyalar">
               <Button variant="outline" className="w-full justify-start gap-2">
-                <Briefcase className="h-4 w-4" /> Kompaniyalarni boshqarish
+                <Briefcase className="h-4 w-4" /> {t('dashboard.manage_companies')}
               </Button>
             </Link>
             <Link to="/platform-foydalanuvchilar">
               <Button variant="outline" className="w-full justify-start gap-2">
-                <UserCog className="h-4 w-4" /> Foydalanuvchilar va parol
+                <UserCog className="h-4 w-4" /> {t('dashboard.manage_users')}
               </Button>
             </Link>
             <Link to="/audit">
               <Button variant="outline" className="w-full justify-start gap-2">
-                <ShieldCheck className="h-4 w-4" /> Audit jurnali
+                <ShieldCheck className="h-4 w-4" /> {t('dashboard.audit_log')}
               </Button>
             </Link>
           </div>

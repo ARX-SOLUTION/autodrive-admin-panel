@@ -1,13 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/api/axiosInstance";
+import { useAuthStore } from "@/store/authStore";
 import { Payment, PaymentSnapshot, PaymentSummary } from "@/types/payment";
 
 const toLocalDateStr = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-export const usePayments = (branchId?: string, courseType?: string, startDate?: Date, endDate?: Date) =>
-  useQuery<Payment[]>({
-    queryKey: ["payments", branchId, courseType, startDate, endDate],
+export const usePayments = (branchId?: string, courseType?: string, startDate?: Date, endDate?: Date) => {
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
+  return useQuery<Payment[]>({
+    queryKey: ["payments", activeCompanyId, branchId, courseType, startDate, endDate],
     queryFn: async () => {
       try {
         const { data: res } = await axiosInstance.get("/payments", {
@@ -27,10 +29,12 @@ export const usePayments = (branchId?: string, courseType?: string, startDate?: 
       }
     },
   });
+};
 
-export const usePaymentSnapshot = (branchId?: string) =>
-  useQuery<PaymentSnapshot>({
-    queryKey: ["payment-snapshot", branchId],
+export const usePaymentSnapshot = (branchId?: string) => {
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
+  return useQuery<PaymentSnapshot>({
+    queryKey: ["payment-snapshot", activeCompanyId, branchId],
     queryFn: async () => {
       try {
         const { data: res } = await axiosInstance.get("/payments/snapshot", {
@@ -47,6 +51,7 @@ export const usePaymentSnapshot = (branchId?: string) =>
       }
     },
   });
+};
 
 export const usePaymentSummary = (
   branchId?: string,
@@ -56,10 +61,12 @@ export const usePaymentSummary = (
   payment_type?: string,
   course_type?: string,
   enabled = true,
-) =>
-  useQuery<PaymentSummary>({
+) => {
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
+  return useQuery<PaymentSummary>({
     queryKey: [
       "payment-summary",
+      activeCompanyId,
       branchId,
       startDate,
       endDate,
@@ -90,9 +97,11 @@ export const usePaymentSummary = (
       }
     },
   });
+};
 
 export const useCreatePayment = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async (payment: {
       student_id: string;
@@ -103,27 +112,28 @@ export const useCreatePayment = () => {
       return data?.data || data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['payments'] });
-      qc.invalidateQueries({ queryKey: ['payment-summary'] });
-      qc.invalidateQueries({ queryKey: ['payment-snapshot'] });
-      qc.invalidateQueries({ queryKey: ['students'] });
-      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: ['payments', activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ['payment-summary', activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ['payment-snapshot', activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ['students', activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ['dashboard', activeCompanyId] });
     },
   });
 };
 
 export const useDeletePayment = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async (id: string) => {
       await axiosInstance.delete(`/payments/${id}`);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['payments'] });
-      qc.invalidateQueries({ queryKey: ['payment-summary'] });
-      qc.invalidateQueries({ queryKey: ['payment-snapshot'] });
-      qc.invalidateQueries({ queryKey: ['students'] });
-      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: ['payments', activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ['payment-summary', activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ['payment-snapshot', activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ['students', activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ['dashboard', activeCompanyId] });
     },
   });
 };

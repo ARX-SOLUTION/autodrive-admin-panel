@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,12 +17,8 @@ import { useBranches } from '@/services/branchService';
 import { toast } from 'sonner';
 import { User } from '@/types/user';
 
-const specLabels: Record<Specialization, string> = {
-  THEORY: 'Nazariy dars',
-  PRACTICE: 'Amaliy haydash',
-};
-
 const TeachersPage = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -83,13 +80,13 @@ const TeachersPage = () => {
     };
     if (editItem) {
       updateMut.mutate({ id: editItem.id, ...payload }, {
-        onSuccess: () => { toast.success("O'qituvchi yangilandi"); setModalOpen(false); },
-        onError: () => toast.error("Xatolik yuz berdi"),
+        onSuccess: () => { toast.success(t('teachers.toast_updated')); setModalOpen(false); },
+        onError: () => toast.error(t('teachers.toast_error')),
       });
     } else {
       createMut.mutate(payload, {
-        onSuccess: () => { toast.success("O'qituvchi qo'shildi"); setModalOpen(false); },
-        onError: () => toast.error("Xatolik yuz berdi"),
+        onSuccess: () => { toast.success(t('teachers.toast_created')); setModalOpen(false); },
+        onError: () => toast.error(t('teachers.toast_error')),
       });
     }
   };
@@ -97,8 +94,8 @@ const TeachersPage = () => {
   const handleDelete = () => {
     if (!deleteId) return;
     deleteMut.mutate(deleteId, {
-      onSuccess: () => { toast.success("O'qituvchi o'chirildi"); setDeleteId(null); },
-      onError: () => toast.error("Xatolik yuz berdi"),
+      onSuccess: () => { toast.success(t('teachers.toast_deleted')); setDeleteId(null); },
+      onError: () => toast.error(t('teachers.toast_error')),
     });
   };
 
@@ -111,14 +108,14 @@ const TeachersPage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold">O'qituvchilar</h1>
-          <p className="text-sm text-muted-foreground">{filtered.length} ta o'qituvchi</p>
+          <h1 className="font-heading text-2xl font-bold text-balance">{t('teachers.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('teachers.count', { count: filtered.length })}</p>
         </div>
-        <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> O'qituvchi qo'shish</Button>
+        <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> {t('teachers.add_new')}</Button>
       </div>
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Qidirish..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-secondary border-border" />
+        <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-secondary border-border" />
       </div>
       <div className="glass-card overflow-hidden">
         <div className="hidden md:block overflow-x-auto">
@@ -128,20 +125,20 @@ const TeachersPage = () => {
               <th className="px-4 py-3 text-center font-medium text-muted-foreground">#</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                 <button onClick={() => toggleSort('name')} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                  Ism
+                  {t('common.name')}
                   {sortField === 'name' ? (sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                 </button>
               </th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                 <button onClick={() => toggleSort('phone')} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                  Telefon
+                  {t('common.phone')}
                   {sortField === 'phone' ? (sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                 </button>
               </th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Mutaxassisligi</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Filial</th>
-              <th className="px-4 py-3 text-center font-medium text-muted-foreground">Holati</th>
-              <th className="px-4 py-3 text-center font-medium text-muted-foreground">Amallar</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('teachers.specialization')}</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('common.branch')}</th>
+              <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('common.status')}</th>
+              <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -156,17 +153,17 @@ const TeachersPage = () => {
                   <td className="px-4 py-3 text-center text-muted-foreground">{startIndex + idx + 1}</td>
                   <td className="px-4 py-3 font-medium">{t.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{t.phone}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{specLabels[t.specialization] || t.specialization}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{t.specialization === 'THEORY' ? t('teachers.spec_theory') : t('teachers.spec_practice')}</td>
                   <td className="px-4 py-3 text-muted-foreground">{t.branch_name || getBranchName(t.branch_id)}</td>
                   <td className="px-4 py-3 text-center">
                     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${t.is_active !== false ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                      {t.is_active !== false ? 'Faol' : 'Nofaol'}
+                      {t.is_active !== false ? t('common.active') : t('common.inactive')}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => openEdit(t)} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
-                      <button onClick={() => setDeleteId(t.id)} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => openEdit(t)} title={t('common.edit')} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => setDeleteId(t.id)} title={t('common.delete')} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
                     </div>
                   </td>
                 </tr>
@@ -176,8 +173,8 @@ const TeachersPage = () => {
         {filtered.length === 0 && !isLoading && (
           <EmptyState
             icon={Users}
-            title="O'qituvchi topilmadi"
-            description="Qidiruv bo'yicha o'qituvchilar yo'q."
+            title={t('teachers.not_found_title')}
+            description={t('teachers.not_found_desc')}
           />
         )}
         </div>
@@ -193,8 +190,8 @@ const TeachersPage = () => {
           ) : filtered.length === 0 ? (
             <EmptyState
               icon={Users}
-              title="O'qituvchi topilmadi"
-              description="Qidiruv bo'yicha o'qituvchilar yo'q."
+              title={t('teachers.not_found_title')}
+              description={t('teachers.not_found_desc')}
             />
           ) : (
             <div className="grid gap-3">
@@ -204,21 +201,23 @@ const TeachersPage = () => {
                   title={t.name || "—"}
                   subtitle={t.phone || "—"}
                   fields={[
-                    { label: "Mutaxassisligi", value: specLabels[t.specialization] || t.specialization || "—" },
-                    { label: "Email", value: t.email || "—" },
-                    { label: "Filial", value: t.branch_name || getBranchName(t.branch_id) },
-                    { label: "Yaratilgan", value: t.created_at ? new Date(t.created_at).toLocaleDateString("uz-UZ") : "—" },
+                    { label: t('teachers.specialization'), value: t.specialization === 'THEORY' ? t('teachers.spec_theory') : t('teachers.spec_practice') || "—" },
+                    { label: t('common.email'), value: t.email || "—" },
+                    { label: t('common.branch'), value: t.branch_name || getBranchName(t.branch_id) },
+                    { label: t('common.created_at'), value: t.created_at ? new Date(t.created_at).toLocaleDateString("uz-UZ") : "—" },
                   ]}
                   actions={
                     <>
                       <button
                         onClick={() => openEdit(t)}
+                        title={t('common.edit')}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => setDeleteId(t.id)}
+                        title={t('common.delete')}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -237,31 +236,31 @@ const TeachersPage = () => {
       <Dialog open={modalOpen} onOpenChange={(o) => !o && setModalOpen(false)}>
         <DialogContent className="max-w-md bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="font-heading">{editItem ? "O'qituvchini tahrirlash" : "Yangi o'qituvchi qo'shish"}</DialogTitle>
+            <DialogTitle className="font-heading">{editItem ? t('teachers.edit_title') : t('teachers.add_title')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Ism *</Label>
+              <Label>{t('teachers.name_label')}</Label>
               <Input value={form.fullName} onChange={(e) => setForm(f => ({ ...f, fullName: e.target.value }))} required className="bg-secondary border-border" />
             </div>
             <div className="space-y-2">
-              <Label>Telefon *</Label>
-              <Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} required placeholder="+998901234567" className="bg-secondary border-border" />
+              <Label>{t('teachers.phone_label')}</Label>
+              <Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} required placeholder={t('teachers.phone_placeholder')} className="bg-secondary border-border" />
             </div>
             <div className="space-y-2">
-              <Label>Mutaxassisligi *</Label>
+              <Label>{t('teachers.specialization')} *</Label>
               <Select value={form.specialization} onValueChange={(v) => setForm(f => ({ ...f, specialization: v as Specialization }))}>
                 <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="THEORY">Nazariy dars</SelectItem>
-                  <SelectItem value="PRACTICE">Amaliy haydash</SelectItem>
+                  <SelectItem value="THEORY">{t('teachers.spec_theory')}</SelectItem>
+                  <SelectItem value="PRACTICE">{t('teachers.spec_practice')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Filial</Label>
+              <Label>{t('common.branch')}</Label>
               <Select value={form.branchId} onValueChange={(v) => setForm(f => ({ ...f, branchId: v }))}>
-                <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Tanlang" /></SelectTrigger>
+                <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder={t('common.select_placeholder')} /></SelectTrigger>
                 <SelectContent>
                   {(branches || []).map((b) => (
                     <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
@@ -270,9 +269,9 @@ const TeachersPage = () => {
               </Select>
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Bekor qilish</Button>
+              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>{t('common.cancel')}</Button>
               <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
-                {(createMut.isPending || updateMut.isPending) ? "Saqlanmoqda..." : editItem ? "Saqlash" : "Qo'shish"}
+                {(createMut.isPending || updateMut.isPending) ? t('common.saving') : editItem ? t('common.save') : t('common.add')}
               </Button>
             </div>
           </form>

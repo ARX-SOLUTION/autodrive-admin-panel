@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -58,10 +59,9 @@ const formatDate = (d?: string | null) => {
   }
 };
 
-const STATUS_LABEL: Record<CompanyStatus, string> = {
-  active: "Faol",
-  pending: "Kutilmoqda",
-  suspended: "To'xtatilgan",
+const StatusLabel = ({ status }: { status: CompanyStatus }) => {
+  const { t } = useTranslation();
+  return <>{t(`companies.status_${status}`)}</>;
 };
 
 const STATUS_BADGE: Record<CompanyStatus, string> = {
@@ -87,6 +87,7 @@ const EMPTY_FORM: FormState = {
 };
 
 const CompaniesPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<CompanyStatus | "all">("all");
@@ -134,23 +135,18 @@ const CompaniesPage = () => {
   const startIndex = (currentPage - 1) * 10;
 
   const exportToExcel = () => {
-    const statusLabel: Record<CompanyStatus, string> = {
-      active: "Faol",
-      pending: "Kutmoqda",
-      suspended: "To'xtatilgan",
-    };
     const rows = sorted.map((c, idx) => ({
       "#": idx + 1,
-      Nomi: c.name,
-      Slug: c.slug,
-      Holati: statusLabel[c.status],
-      Telefon: c.contact_phone ?? "—",
-      Email: c.contact_email ?? "—",
-      "Yaratilgan sana": formatDate(c.created_at),
+      [t('companies.name')]: c.name,
+      [t('companies.slug')]: c.slug,
+      [t('companies.status')]: c.status === 'active' ? t('common.active') : c.status === 'pending' ? t('companies.status_pending') : t('companies.status_suspended'),
+      [t('common.phone')]: c.contact_phone ?? "—",
+      [t('common.email')]: c.contact_email ?? "—",
+      [t('companies.created')]: formatDate(c.created_at),
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Kompaniyalar");
+    XLSX.utils.book_append_sheet(wb, ws, t('companies.title'));
     XLSX.writeFile(wb, `kompaniyalar_${format(new Date(), "dd-MM-yyyy")}.xlsx`);
   };
 
@@ -187,7 +183,7 @@ const CompaniesPage = () => {
         { id: editItem.id, ...payload },
         {
           onSuccess: () => {
-            toast.success("Kompaniya yangilandi");
+            toast.success(t('companies.toast_updated'));
             setModalOpen(false);
           },
           onError: (err) => toast.error(extractErrorMessage(err)),
@@ -196,7 +192,7 @@ const CompaniesPage = () => {
     } else {
       createMut.mutate(payload, {
         onSuccess: () => {
-          toast.success("Kompaniya qo'shildi");
+          toast.success(t('companies.toast_created'));
           setModalOpen(false);
         },
         onError: (err) => toast.error(extractErrorMessage(err)),
@@ -208,7 +204,7 @@ const CompaniesPage = () => {
     if (!deleteId) return;
     deleteMut.mutate(deleteId, {
       onSuccess: () => {
-        toast.success("Kompaniya o'chirildi");
+        toast.success(t('companies.toast_deleted'));
         setDeleteId(null);
       },
       onError: (err) => toast.error(extractErrorMessage(err)),
@@ -217,13 +213,13 @@ const CompaniesPage = () => {
 
   const handleApprove = (id: string) =>
     approveMut.mutate(id, {
-      onSuccess: () => toast.success("Kompaniya tasdiqlandi"),
+      onSuccess: () => toast.success(t('companies.toast_approved')),
       onError: (err) => toast.error(extractErrorMessage(err)),
     });
 
   const handleSuspend = (id: string) =>
     suspendMut.mutate(id, {
-      onSuccess: () => toast.success("Kompaniya to'xtatildi"),
+      onSuccess: () => toast.success(t('companies.toast_suspended')),
       onError: (err) => toast.error(extractErrorMessage(err)),
     });
 
@@ -231,8 +227,8 @@ const CompaniesPage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold">Kompaniyalar</h1>
-          <p className="text-sm text-muted-foreground">{items.length} ta kompaniya</p>
+          <h1 className="font-heading text-2xl font-bold text-balance">{t('companies.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('companies.count', { count: items.length })}</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -241,10 +237,10 @@ const CompaniesPage = () => {
             onClick={exportToExcel}
             disabled={sorted.length === 0}
           >
-            <Download className="h-4 w-4" /> Excel
+            <Download className="h-4 w-4" /> {t('companies.export')}
           </Button>
           <Button className="gap-2" onClick={openCreate}>
-            <Plus className="h-4 w-4" /> Kompaniya qo'shish
+            <Plus className="h-4 w-4" /> {t('companies.add_new')}
           </Button>
         </div>
       </div>
@@ -253,7 +249,7 @@ const CompaniesPage = () => {
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Nomi yoki slug bo'yicha qidirish..."
+            placeholder={t('companies.search_placeholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 bg-secondary border-border"
@@ -264,10 +260,10 @@ const CompaniesPage = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Barcha holatlar</SelectItem>
-            <SelectItem value="active">Faol</SelectItem>
-            <SelectItem value="pending">Kutilmoqda</SelectItem>
-            <SelectItem value="suspended">To'xtatilgan</SelectItem>
+            <SelectItem value="all">{t('companies.filter_all')}</SelectItem>
+            <SelectItem value="active">{t('companies.status_active')}</SelectItem>
+            <SelectItem value="pending">{t('companies.status_pending')}</SelectItem>
+            <SelectItem value="suspended">{t('companies.status_suspended')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -283,7 +279,7 @@ const CompaniesPage = () => {
                     onClick={() => toggleSort("name")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
                   >
-                    Nomi
+                    {t('companies.name')}
                     {sortField === "name" ? (
                       sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
                     ) : (
@@ -291,15 +287,15 @@ const CompaniesPage = () => {
                     )}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Slug</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Aloqa</th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Holati</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('companies.slug')}</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('companies.contact')}</th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('companies.status')}</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   <button
                     onClick={() => toggleSort("created_at")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
                   >
-                    Yaratilgan
+                    {t('companies.created')}
                     {sortField === "created_at" ? (
                       sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
                     ) : (
@@ -307,7 +303,7 @@ const CompaniesPage = () => {
                     )}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Amallar</th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('companies.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -338,17 +334,17 @@ const CompaniesPage = () => {
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[c.status]}`}
                         >
-                          {STATUS_LABEL[c.status]}
+                          {t(`companies.status_${c.status}`)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{formatDate(c.created_at)}</td>
+                      <td className="px-4 py-3 text-muted-foreground tabular-nums">{formatDate(c.created_at)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">
                           {c.status !== "active" && (
                             <button
                               onClick={() => handleApprove(c.id)}
                               disabled={approveMut.isPending}
-                              title="Tasdiqlash"
+                              title={t('companies.approve_action')}
                               className="rounded-md p-1.5 text-muted-foreground hover:bg-success/10 hover:text-success transition-colors"
                             >
                               <ShieldCheck className="h-3.5 w-3.5" />
@@ -358,7 +354,7 @@ const CompaniesPage = () => {
                             <button
                               onClick={() => handleSuspend(c.id)}
                               disabled={suspendMut.isPending}
-                              title="To'xtatish"
+                              title={t('companies.suspend_action')}
                               className="rounded-md p-1.5 text-muted-foreground hover:bg-warning/10 hover:text-warning transition-colors"
                             >
                               <Pause className="h-3.5 w-3.5" />
@@ -366,14 +362,14 @@ const CompaniesPage = () => {
                           )}
                           <button
                             onClick={() => openEdit(c)}
-                            title="Tahrirlash"
+                            title={t('companies.edit_action')}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => setDeleteId(c.id)}
-                            title="O'chirish"
+                            title={t('companies.delete_action')}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -387,8 +383,8 @@ const CompaniesPage = () => {
           {items.length === 0 && !isLoading && (
             <EmptyState
               icon={Briefcase}
-              title="Kompaniya topilmadi"
-              description="Tanlangan filtrlarga mos kompaniya yo'q."
+              title={t('companies.not_found_title')}
+              description={t('companies.not_found_desc')}
             />
           )}
         </div>
@@ -401,8 +397,8 @@ const CompaniesPage = () => {
         ) : paginatedItems.length === 0 ? (
           <EmptyState
             icon={Briefcase}
-            title="Kompaniya topilmadi"
-            description="Tanlangan filtrlarga mos kompaniya yo'q."
+            title={t('companies.not_found_title')}
+            description={t('companies.not_found_desc')}
           />
         ) : (
           paginatedItems.map((c) => (
@@ -413,19 +409,19 @@ const CompaniesPage = () => {
               onClick={() => navigate(`/kompaniyalar/${c.id}`)}
               fields={[
                 {
-                  label: "Holat",
+                  label: t('companies.status'),
                   value: (
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[c.status]}`}
                     >
-                      {STATUS_LABEL[c.status]}
+                      {t(`companies.status_${c.status}`)}
                     </span>
                   ),
                 },
-                { label: "Yaratilgan", value: formatDate(c.created_at) },
-                { label: "Filiallar soni", value: "—" },
-                { label: "Foydalanuvchilar soni", value: "—" },
-                { label: "Aloqa", value: c.contact_phone || c.contact_email || "—" },
+                { label: t('companies.created'), value: formatDate(c.created_at) },
+                { label: t('companies.branch_count'), value: "—" },
+                { label: t('companies.user_count'), value: "—" },
+                { label: t('companies.contact'), value: c.contact_phone || c.contact_email || "—" },
               ]}
               actions={
                 <>
@@ -433,7 +429,7 @@ const CompaniesPage = () => {
                     <button
                       onClick={() => handleApprove(c.id)}
                       disabled={approveMut.isPending}
-                      title="Tasdiqlash"
+                      title={t('companies.approve_action')}
                       className="rounded-md p-1.5 text-muted-foreground hover:bg-success/10 hover:text-success transition-colors"
                     >
                       <ShieldCheck className="h-3.5 w-3.5" />
@@ -443,7 +439,7 @@ const CompaniesPage = () => {
                     <button
                       onClick={() => handleSuspend(c.id)}
                       disabled={suspendMut.isPending}
-                      title="To'xtatish"
+                      title={t('companies.suspend_action')}
                       className="rounded-md p-1.5 text-muted-foreground hover:bg-warning/10 hover:text-warning transition-colors"
                     >
                       <Pause className="h-3.5 w-3.5" />
@@ -451,14 +447,14 @@ const CompaniesPage = () => {
                   )}
                   <button
                     onClick={() => openEdit(c)}
-                    title="Tahrirlash"
+                    title={t('companies.edit_action')}
                     className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => setDeleteId(c.id)}
-                    title="O'chirish"
+                    title={t('companies.delete_action')}
                     className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -480,12 +476,12 @@ const CompaniesPage = () => {
         <DialogContent className="max-w-md bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-heading">
-              {editItem ? "Kompaniyani tahrirlash" : "Yangi kompaniya qo'shish"}
+              {editItem ? t('companies.edit_title') : t('companies.add_title')}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Nomi *</Label>
+              <Label>{t('companies.name_label')}</Label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -494,19 +490,19 @@ const CompaniesPage = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Slug</Label>
+              <Label>{t('companies.slug_label')}</Label>
               <Input
                 value={form.slug}
                 onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                placeholder="avtomatik nomdan yaratiladi"
+                placeholder={t('companies.slug_placeholder')}
                 className="bg-secondary border-border"
               />
               <p className="text-xs text-muted-foreground">
-                kichik harflar, raqamlar va tire (-) ishlatish mumkin.
+                {t('companies.slug_helper')}
               </p>
             </div>
             <div className="space-y-2">
-              <Label>Holati</Label>
+              <Label>{t('companies.status_label')}</Label>
               <Select
                 value={form.status}
                 onValueChange={(v) => setForm((f) => ({ ...f, status: v as CompanyStatus }))}
@@ -515,41 +511,41 @@ const CompaniesPage = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Faol</SelectItem>
-                  <SelectItem value="pending">Kutilmoqda</SelectItem>
-                  <SelectItem value="suspended">To'xtatilgan</SelectItem>
+                  <SelectItem value="active">{t('companies.status_active')}</SelectItem>
+                  <SelectItem value="pending">{t('companies.status_pending')}</SelectItem>
+                  <SelectItem value="suspended">{t('companies.status_suspended')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Telefon</Label>
+              <Label>{t('companies.phone_label')}</Label>
               <Input
                 value={form.contactPhone}
                 onChange={(e) => setForm((f) => ({ ...f, contactPhone: e.target.value }))}
-                placeholder="+998..."
+                placeholder={t('companies.phone_placeholder')}
                 className="bg-secondary border-border"
               />
             </div>
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label>{t('companies.email_label')}</Label>
               <Input
                 type="email"
                 value={form.contactEmail}
                 onChange={(e) => setForm((f) => ({ ...f, contactEmail: e.target.value }))}
-                placeholder="contact@example.com"
+                placeholder={t('companies.email_placeholder')}
                 className="bg-secondary border-border"
               />
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
-                Bekor qilish
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
                 {createMut.isPending || updateMut.isPending
-                  ? "Saqlanmoqda..."
+                  ? t('common.saving')
                   : editItem
-                    ? "Saqlash"
-                    : "Qo'shish"}
+                    ? t('common.save')
+                    : t('common.add')}
               </Button>
             </div>
           </form>

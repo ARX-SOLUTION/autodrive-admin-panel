@@ -1,4 +1,5 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   Building2,
@@ -81,6 +82,7 @@ const StatTile = ({
 );
 
 const CompanyDetailPage = () => {
+  const { t } = useTranslation();
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const setActiveCompanyId = useAuthStore((s) => s.setActiveCompanyId);
@@ -110,9 +112,9 @@ const CompanyDetailPage = () => {
     return (
       <EmptyState
         icon={Briefcase}
-        title="Kompaniya topilmadi"
-        description="Bu ID bilan kompaniya yo'q yoki o'chirib yuborilgan."
-        action={{ label: "Kompaniyalarga qaytish", onClick: () => navigate("/kompaniyalar") }}
+        title={t('company_detail.not_found_title')}
+        description={t('company_detail.not_found_desc')}
+        action={{ label: t('company_detail.not_found_action'), onClick: () => navigate("/kompaniyalar") }}
       />
     );
   }
@@ -120,7 +122,7 @@ const CompanyDetailPage = () => {
   const handleApprove = async () => {
     try {
       await approve.mutateAsync(id);
-      toast.success("Kompaniya tasdiqlandi");
+      toast.success(t('company_detail.toast_approved'));
     } catch (e) {
       toast.error(extractErrorMessage(e));
     } finally {
@@ -131,7 +133,7 @@ const CompanyDetailPage = () => {
   const handleSuspend = async () => {
     try {
       await suspend.mutateAsync(id);
-      toast.success("Kompaniya bloklandi");
+      toast.success(t('company_detail.toast_blocked'));
     } catch (e) {
       toast.error(extractErrorMessage(e));
     } finally {
@@ -141,7 +143,7 @@ const CompanyDetailPage = () => {
 
   const handleViewAs = () => {
     setActiveCompanyId(id);
-    toast.success(`Endi "${company.name}" sifatida ko'rmoqdasiz`);
+    toast.success(t('company_detail.toast_view_as', { name: company.name }));
     navigate("/dashboard");
   };
 
@@ -152,13 +154,13 @@ const CompanyDetailPage = () => {
           <Link
             to="/kompaniyalar"
             className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Orqaga"
+            aria-label={t('common.back')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate font-heading text-2xl font-bold text-foreground">
+              <h1 className="truncate font-heading text-2xl font-bold text-foreground text-balance">
                 {company.name}
               </h1>
               <Badge variant={statusVariant[company.status]}>{company.status}</Badge>
@@ -168,11 +170,11 @@ const CompanyDetailPage = () => {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={handleViewAs}>
-            Bu kompaniya sifatida ko'rish
+            {t('company_detail.view_as')}
           </Button>
           {company.status !== "active" && (
             <Button size="sm" onClick={() => setConfirmApprove(true)}>
-              <CheckCircle2 className="mr-1 h-4 w-4" /> Tasdiqlash
+              <CheckCircle2 className="mr-1 h-4 w-4" /> {t('company_detail.approve')}
             </Button>
           )}
           {company.status === "active" && (
@@ -181,56 +183,56 @@ const CompanyDetailPage = () => {
               size="sm"
               onClick={() => setConfirmSuspend(true)}
             >
-              <PauseCircle className="mr-1 h-4 w-4" /> Bloklash
+              <PauseCircle className="mr-1 h-4 w-4" /> {t('company_detail.block')}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={() => navigate("/kompaniyalar")}>
-            <Pencil className="mr-1 h-4 w-4" /> Tahrirlash
+            <Pencil className="mr-1 h-4 w-4" /> {t('company_detail.edit')}
           </Button>
         </div>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">Umumiy</TabsTrigger>
-          <TabsTrigger value="branches">Filiallar</TabsTrigger>
-          <TabsTrigger value="users">Foydalanuvchilar</TabsTrigger>
-          <TabsTrigger value="audit">Audit</TabsTrigger>
+          <TabsTrigger value="overview">{t('company_detail.tab_overview')}</TabsTrigger>
+          <TabsTrigger value="branches">{t('company_detail.tab_branches')}</TabsTrigger>
+          <TabsTrigger value="users">{t('company_detail.tab_users')}</TabsTrigger>
+          <TabsTrigger value="audit">{t('company_detail.tab_audit')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
-            <StatTile icon={Building2} label="Filiallar" value={company.stats?.branches ?? 0} />
-            <StatTile icon={Users} label="Foydalanuvchilar" value={company.stats?.users ?? 0} />
-            <StatTile icon={GraduationCap} label="Talabalar" value={company.stats?.students ?? 0} />
-            <StatTile icon={CreditCard} label="To'lovlar" value={company.stats?.payments ?? 0} />
+            <StatTile icon={Building2} label={t('company_detail.stat_branches')} value={company.stats?.branches ?? 0} />
+            <StatTile icon={Users} label={t('company_detail.stat_users')} value={company.stats?.users ?? 0} />
+            <StatTile icon={GraduationCap} label={t('company_detail.stat_students')} value={company.stats?.students ?? 0} />
+            <StatTile icon={CreditCard} label={t('company_detail.stat_payments')} value={company.stats?.payments ?? 0} />
           </div>
 
           <Card className="p-4">
-            <h2 className="mb-3 font-heading text-sm font-semibold text-foreground">
-              Aloqa va metadata
+            <h2 className="mb-3 font-heading text-sm font-semibold text-foreground text-balance">
+              {t('company_detail.section_contact')}
             </h2>
             <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <dt className="text-muted-foreground">Telefon:</dt>
+                <dt className="text-muted-foreground">{t('company_detail.label_phone')}</dt>
                 <dd className="text-foreground">{company.contact_phone ?? "—"}</dd>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <dt className="text-muted-foreground">Email:</dt>
+                <dt className="text-muted-foreground">{t('company_detail.label_email')}</dt>
                 <dd className="text-foreground">{company.contact_email ?? "—"}</dd>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <dt className="text-muted-foreground">Yaratilgan:</dt>
+                <dt className="text-muted-foreground">{t('company_detail.label_created')}</dt>
                 <dd className="text-foreground">
                   {format(new Date(company.created_at), "dd-MMM-yyyy HH:mm")}
                 </dd>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <dt className="text-muted-foreground">Yangilangan:</dt>
+                <dt className="text-muted-foreground">{t('company_detail.label_updated')}</dt>
                 <dd className="text-foreground">
                   {format(new Date(company.updated_at), "dd-MMM-yyyy HH:mm")}
                 </dd>
@@ -239,13 +241,11 @@ const CompanyDetailPage = () => {
           </Card>
 
           <Card className="p-4">
-            <h2 className="mb-2 font-heading text-sm font-semibold text-foreground">
-              Tez harakatlar
+            <h2 className="mb-2 font-heading text-sm font-semibold text-foreground text-balance">
+              {t('company_detail.section_quick')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Filial yoki to'lovlar bo'yicha ishlash uchun yuqorida "Bu kompaniya
-              sifatida ko'rish" tugmasini bosing — topbar'dagi kompaniya tanlovi
-              avtomatik shu kompaniyaga o'tadi va barcha sahifalarda data filtrlanadi.
+              {t('company_detail.quick_help')}
             </p>
           </Card>
         </TabsContent>
@@ -260,8 +260,8 @@ const CompanyDetailPage = () => {
           ) : !branches || branches.length === 0 ? (
             <EmptyState
               icon={Building2}
-              title="Filiallar yo'q"
-              description="Bu kompaniyaga hali filial qo'shilmagan."
+              title={t('company_detail.branches_empty_title')}
+              description={t('company_detail.branches_empty_desc')}
             />
           ) : (
             <div className="grid gap-3">
@@ -271,10 +271,10 @@ const CompanyDetailPage = () => {
                   title={b.name}
                   subtitle={b.location}
                   fields={[
-                    { label: "Menejer", value: b.manager_name ?? "—" },
-                    { label: "Faol talabalar", value: b.active_students ?? 0 },
+                    { label: t('company_detail.branch_manager'), value: b.manager_name ?? "—" },
+                    { label: t('company_detail.branch_active_students'), value: b.active_students ?? 0 },
                     {
-                      label: "Yaratilgan",
+                      label: t('company_detail.branch_created'),
                       value: b.created_at
                         ? format(new Date(b.created_at), "dd-MMM-yyyy")
                         : "—",
@@ -296,10 +296,10 @@ const CompanyDetailPage = () => {
           ) : !users || users.items.length === 0 ? (
             <EmptyState
               icon={UserCog}
-              title="Foydalanuvchilar yo'q"
-              description="Bu kompaniyaga hali hech kim biriktirilmagan."
+              title={t('company_detail.users_empty_title')}
+              description={t('company_detail.users_empty_desc')}
               action={{
-                label: "Platform Users sahifasiga o'tish",
+                label: t('company_detail.users_empty_action'),
                 onClick: () => navigate("/platform-foydalanuvchilar"),
               }}
             />
@@ -311,11 +311,11 @@ const CompanyDetailPage = () => {
                   title={u.name || u.email}
                   subtitle={u.email}
                   fields={[
-                    { label: "Rol", value: roleLabel[u.role] ?? u.role },
-                    { label: "Filial", value: u.branch_name ?? "—" },
-                    { label: "Telefon", value: u.phone ?? "—" },
+                    { label: t('company_detail.user_role'), value: roleLabel[u.role] ?? u.role },
+                    { label: t('company_detail.user_branch'), value: u.branch_name ?? "—" },
+                    { label: t('company_detail.user_phone'), value: u.phone ?? "—" },
                     {
-                      label: "Yaratilgan",
+                      label: t('company_detail.user_created'),
                       value: u.created_at
                         ? format(new Date(u.created_at), "dd-MMM-yyyy")
                         : "—",
@@ -324,7 +324,7 @@ const CompanyDetailPage = () => {
                   actions={
                     <Link
                       to="/platform-foydalanuvchilar"
-                      aria-label="Foydalanuvchini tahrirlash"
+                      aria-label={t('common.edit')}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
                     >
                       <KeyRound className="h-4 w-4" />
@@ -340,12 +340,12 @@ const CompanyDetailPage = () => {
           <Card className="p-4">
             <div className="mb-3 flex items-center gap-2">
               <Layers className="h-4 w-4 text-muted-foreground" />
-              <h2 className="font-heading text-sm font-semibold text-foreground">
-                Audit jurnali
+              <h2 className="font-heading text-sm font-semibold text-foreground text-balance">
+                {t('company_detail.audit_section_title')}
               </h2>
             </div>
             <p className="text-sm text-muted-foreground">
-              Audit log to'liq tarixini ko'rish uchun{' '}
+              {t('company_detail.audit_help')}{' '}
               <Button
                 variant="link"
                 className="h-auto p-0 align-baseline"
@@ -354,10 +354,9 @@ const CompanyDetailPage = () => {
                   navigate("/audit");
                 }}
               >
-                /audit sahifasiga o'ting
+                {t('company_detail.audit_link')}
               </Button>
-              . Topbar'dagi kompaniya tanlovi bu kompaniyaga o'tadi va audit
-              avtomatik filtrlanadi.
+              {t('company_detail.audit_help_tail')}
             </p>
           </Card>
         </TabsContent>
@@ -366,16 +365,16 @@ const CompanyDetailPage = () => {
       <ConfirmDialog
         open={confirmApprove}
         onClose={() => setConfirmApprove(false)}
-        title="Kompaniyani tasdiqlash"
-        description={`"${company.name}" kompaniyasini "active" holatiga o'tkazasizmi?`}
+        title={t('company_detail.confirm_approve_title')}
+        description={t('company_detail.confirm_approve_desc', { name: company.name })}
         onConfirm={handleApprove}
         loading={approve.isPending}
       />
       <ConfirmDialog
         open={confirmSuspend}
         onClose={() => setConfirmSuspend(false)}
-        title="Kompaniyani bloklash"
-        description={`"${company.name}" kompaniyasini "suspended" holatiga o'tkazasizmi? Foydalanuvchilar login qila olmaydi.`}
+        title={t('company_detail.confirm_block_title')}
+        description={t('company_detail.confirm_block_desc', { name: company.name })}
         onConfirm={handleSuspend}
         loading={suspend.isPending}
       />

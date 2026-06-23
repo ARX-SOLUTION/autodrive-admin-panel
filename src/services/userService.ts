@@ -28,8 +28,9 @@ export const useUsers = (role?: string) => {
   const branchId = useAuthStore((s) => s.user?.branch_id);
   const actorRole = useAuthStore((s) => s.user?.role);
   const isCrossTenantRole = actorRole === "owner" || actorRole === "dev";
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useQuery<User[]>({
-    queryKey: ["users", branchId, role],
+    queryKey: ["users", activeCompanyId, branchId, role],
     queryFn: async () => {
       try {
         const { data: res } = await axiosInstance.get("/users", { params: role ? { role } : {} });
@@ -51,11 +52,12 @@ export const useUsers = (role?: string) => {
 
 export const useUpdateUser = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async ({ id, ...op }: { id: string; fullName?: string; phone?: string; branchId?: string; specialization?: 'THEORY' | 'PRACTICE' }) => {
       const { data } = await axiosInstance.patch(`/users/${id}`, op);
       return data?.data || data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["users", activeCompanyId] }),
   });
 };

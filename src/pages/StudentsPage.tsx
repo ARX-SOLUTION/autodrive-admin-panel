@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -37,6 +37,10 @@ import { cn } from "@/lib/utils";
 import { usePagination } from "@/hooks/usePagination";
 import PaginationControls from "@/components/ui/PaginationControls";
 import { formatPhone } from "@/lib/phoneFormater";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { FilterBar } from "@/components/layout/FilterBar";
+import { useStudentFilters } from "@/hooks/useStudentFilters";
 
 const formatMoney = (n: number) => new Intl.NumberFormat("uz-UZ").format(n);
 const capitalize = (str?: string) =>
@@ -63,19 +67,29 @@ export const formatDateTime = (d: string) => {
 
 const StudentsPage = () => {
   const { isOwner, user } = useAuthStore();
-  const [courseType, setCourseType] = useState<CourseType>("tezkor");
-  const [branchId, setBranchId] = useState<string | undefined>(
-    isOwner() ? undefined : user?.branch_id || undefined,
-  );
-  const [search, setSearch] = useState("");
+  const defaultBranchId = isOwner() ? undefined : user?.branch_id || undefined;
+  
+  const {
+    courseType, setCourseType,
+    branchId, setBranchId,
+    search, setSearch,
+    dateFrom, setDateFrom,
+    dateTo, setDateTo,
+    sortField, sortDir, toggleSort,
+    operatorId, setOperatorId
+  } = useStudentFilters(defaultBranchId);
+
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editStudent, setEditStudent] = useState<Student | null>(null);
-  const [dateFrom, setDateFrom] = useState<Date | undefined>();
-  const [dateTo, setDateTo] = useState<Date | undefined>();
-  const [sortField, setSortField] = useState("created_at");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [operatorId, setOperatorId] = useState<string | undefined>();
 
   const { data: branches } = useBranches();
   const { data: operators } = useOperators();
@@ -91,41 +105,40 @@ const StudentsPage = () => {
   const updateMutation = useUpdateStudent();
   const deleteMutation = useDeleteStudent();
 
-  const filtered = (students || []).filter((s) => {
-    const matchSearch =
-      s?.last_name?.toLowerCase().includes(search?.toLowerCase()) ||
-      s?.first_name?.toLowerCase().includes(search?.toLowerCase()) ||
-      s?.phone?.includes(search);
+  const filtered = useMemo(() => {
+    return (students || []).filter((s) => {
+      const matchSearch =
+        s?.last_name?.toLowerCase().includes(debouncedSearch?.toLowerCase()) ||
+        s?.first_name?.toLowerCase().includes(debouncedSearch?.toLowerCase()) ||
+        s?.phone?.includes(debouncedSearch);
 
-    let matchDate = true;
-    if (dateFrom || dateTo) {
-      const created = new Date(s.created_at);
-      if (dateFrom && created < dateFrom) matchDate = false;
-      if (dateTo) {
-        const toEnd = new Date(dateTo);
-        toEnd.setHours(23, 59, 59, 999);
-        if (created > toEnd) matchDate = false;
+      let matchDate = true;
+      if (dateFrom || dateTo) {
+        const created = new Date(s.created_at);
+        if (dateFrom && created < dateFrom) matchDate = false;
+        if (dateTo) {
+          const toEnd = new Date(dateTo);
+          toEnd.setHours(23, 59, 59, 999);
+          if (created > toEnd) matchDate = false;
+        }
       }
-    }
-    return matchSearch && matchDate;
-  });
+      return matchSearch && matchDate;
+    });
+  }, [students, debouncedSearch, dateFrom, dateTo]);
 
-  const toggleSort = (field: string) => {
-    if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortField(field); setSortDir("asc"); }
-  };
-
-  const sorted = [...filtered].sort((a, b) => {
-    const va = a[sortField as keyof typeof a];
-    const vb = b[sortField as keyof typeof b];
-    if (va == null && vb == null) return 0;
-    if (va == null) return 1;
-    if (vb == null) return -1;
-    if (typeof va === "string" && typeof vb === "string") {
-      return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
-    }
-    return sortDir === "asc" ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
-  });
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      const va = a[sortField as keyof typeof a];
+      const vb = b[sortField as keyof typeof b];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === "string" && typeof vb === "string") {
+        return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+      }
+      return sortDir === "asc" ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
+    });
+  }, [filtered, sortField, sortDir]);
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage } =
     usePagination(sorted);
@@ -179,21 +192,19 @@ const StudentsPage = () => {
   const startIndex = (currentPage - 1) * 10;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-bold">Talabalar</h1>
-          <p className="text-sm text-muted-foreground">
-            {filtered?.length || 0} ta talaba topildi
-          </p>
-        </div>
-        <Button className="gap-2" onClick={openCreate}>
-          <Plus className="h-4 w-4" /> Talaba qo'shish
-        </Button>
-      </div>
+    <PageContainer>
+      <PageHeader 
+        title="Talabalar" 
+        description={`${filtered?.length || 0} ta talaba topildi`}
+        actions={
+          <Button className="gap-2" onClick={openCreate}>
+            <Plus className="h-4 w-4" /> Talaba qo'shish
+          </Button>
+        }
+      />
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <FilterBar>
         <Tabs
           value={courseType}
           onValueChange={(v) => setCourseType(v as CourseType)}
@@ -303,7 +314,7 @@ const StudentsPage = () => {
             className="pl-9 bg-secondary border-border"
           />
         </div>
-      </div>
+      </FilterBar>
 
       {/* Table */}
       <div className="glass-card overflow-hidden">
@@ -446,12 +457,12 @@ const StudentsPage = () => {
                       <td className="px-4 py-3 text-muted-foreground">
                         {formatPhone(s.phone)}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right tabular-nums">
                         {formatMoney(s.total_price)}
                       </td>
                       {courseType === "tezkor" ? (
                         <>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-4 py-3 text-right tabular-nums">
                             {formatMoney(s.amount_paid || 0)}
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -494,13 +505,13 @@ const StudentsPage = () => {
                         </>
                       ) : (
                         <>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-4 py-3 text-right tabular-nums">
                             {formatMoney(s.initial_payment || 0)}
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-4 py-3 text-right tabular-nums">
                             {formatMoney(s.second_payment || 0)}
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-4 py-3 text-right tabular-nums">
                             {formatMoney(s.third_payment || 0)}
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -520,7 +531,7 @@ const StudentsPage = () => {
                                 : "Transfer"}
                           </td>
                           <td className="px-4 py-3">{s.group_name}</td>
-                          <td className="px-4 py-3 text-muted-foreground">
+                          <td className="px-4 py-3 text-muted-foreground tabular-nums">
                             {formatDate(s.completion_date)}
                           </td>
                           <td className="px-4 py-3 text-center">
@@ -555,7 +566,7 @@ const StudentsPage = () => {
                           </td>
                         </>
                       )}
-                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap tabular-nums">
                         {formatDateTime(s.created_at)}
                       </td>
                       <td className="px-4 py-3">
@@ -677,7 +688,7 @@ const StudentsPage = () => {
         onConfirm={handleDelete}
         loading={deleteMutation.isPending}
       />
-    </div>
+    </PageContainer>
   );
 };
 

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/api/axiosInstance';
+import { useAuthStore } from '@/store/authStore';
 import { Branch } from '@/types/branch';
 
 const demoBranches: Branch[] = [
@@ -9,9 +10,10 @@ const demoBranches: Branch[] = [
   { id: 'samarqand', name: 'Samarqand', location: 'Samarqand shahri', manager_name: 'Bekzod Tursunov', active_students: 28, created_at: '2024-01-01' },
 ];
 
-export const useBranches = (params: { companyId?: string } = {}) =>
-  useQuery<Branch[]>({
-    queryKey: ['branches', params],
+export const useBranches = (params: { companyId?: string } = {}) => {
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
+  return useQuery<Branch[]>({
+    queryKey: ['branches', activeCompanyId, params],
     queryFn: async () => {
       try {
         const { data: res } = await axiosInstance.get('/branches', {
@@ -30,33 +32,37 @@ export const useBranches = (params: { companyId?: string } = {}) =>
       }
     },
   });
+};
 
 export const useCreateBranch = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async (b: { name: string; location: string; phone?: string }) => {
       const { data } = await axiosInstance.post('/branches', b);
       return data?.data || data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['branches'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['branches', activeCompanyId] }),
   });
 };
 
 export const useUpdateBranch = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async ({ id, ...b }: { id: string; name?: string; location?: string; phone?: string }) => {
       const { data } = await axiosInstance.patch(`/branches/${id}`, b);
       return data?.data || data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['branches'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['branches', activeCompanyId] }),
   });
 };
 
 export const useDeleteBranch = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async (id: string) => { await axiosInstance.delete(`/branches/${id}`); },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['branches'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['branches', activeCompanyId] }),
   });
 };

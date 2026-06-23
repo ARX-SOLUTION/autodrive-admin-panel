@@ -100,7 +100,7 @@ const BranchesPage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold">Filiallar</h1>
+          <h1 className="font-heading text-2xl font-bold text-balance">Filiallar</h1>
           <p className="text-sm text-muted-foreground">
             {(branches || []).length} ta filial
           </p>
@@ -133,7 +133,7 @@ const BranchesPage = () => {
                 <div key={b.id} className="glass-card p-5 animate-slide-in">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-heading text-lg font-semibold">{b.name}</h3>
+                      <h3 className="font-heading text-lg font-semibold text-balance">{b.name}</h3>
                       <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
                         <MapPin className="h-3.5 w-3.5" />
                         {b.location}

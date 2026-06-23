@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useAuditLogs } from "@/services/auditService";
 import { AuditLog } from "@/types/audit";
@@ -38,12 +39,6 @@ const formatDate = (d: string) => {
   }
 };
 
-const ACTION_LABELS: Record<string, string> = {
-  CREATE: "Yaratildi",
-  UPDATE: "Yangilandi",
-  DELETE: "O'chirildi",
-};
-
 const ACTION_COLORS: Record<string, string> = {
   CREATE: "text-success",
   UPDATE: "text-primary",
@@ -54,21 +49,6 @@ const ACTION_BG: Record<string, string> = {
   CREATE: "bg-success/10 text-success",
   UPDATE: "bg-primary/10 text-primary",
   DELETE: "bg-destructive/10 text-destructive",
-};
-
-const ENTITY_LABELS: Record<string, string> = {
-  student: "Talaba",
-  payment: "To'lov",
-  user: "Foydalanuvchi",
-  branch: "Filial",
-  group: "Guruh",
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  owner: "Egasi",
-  manager: "Menejer",
-  operator: "Operator",
-  teacher: "O'qituvchi",
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -145,6 +125,7 @@ const formatValue = (v: unknown): string => {
 };
 
 const AuditChangesView = ({ changes, action }: { changes: Record<string, unknown>; action: string }) => {
+  const { t } = useTranslation();
   const hasBefore = "before" in changes;
   const hasAfter = "after" in changes;
 
@@ -158,17 +139,17 @@ const AuditChangesView = ({ changes, action }: { changes: Record<string, unknown
 
     return (
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">O'zgarishlar</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('audit.detail_changes')}</p>
         {changedKeys.length === 0 ? (
-          <p className="text-sm text-muted-foreground">O'zgarishlar topilmadi</p>
+          <p className="text-sm text-muted-foreground">{t('audit.detail_no_changes')}</p>
         ) : (
           <div className="overflow-x-auto rounded-md border border-border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30 text-xs text-muted-foreground">
-                  <th className="px-3 py-2 text-left font-medium">Maydon</th>
-                  <th className="px-3 py-2 text-left font-medium">Oldingi qiymat</th>
-                  <th className="px-3 py-2 text-left font-medium">Yangi qiymat</th>
+                  <th className="px-3 py-2 text-left font-medium">{t('audit.detail_field')}</th>
+                  <th className="px-3 py-2 text-left font-medium">{t('audit.detail_old_value')}</th>
+                  <th className="px-3 py-2 text-left font-medium">{t('audit.detail_new_value')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -187,22 +168,21 @@ const AuditChangesView = ({ changes, action }: { changes: Record<string, unknown
     );
   }
 
-  // Flat changes: some fields may be { from, to } objects, others plain values
   const keys = Object.keys(changes).filter((k) => changes[k] != null);
 
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-        {action === "CREATE" ? "Yaratilgan ma'lumotlar" : action === "DELETE" ? "O'chirilgan ma'lumotlar" : "O'zgarishlar"}
+        {action === "CREATE" ? t('audit.detail_created_data') : action === "DELETE" ? t('audit.detail_deleted_data') : t('audit.detail_changes')}
       </p>
       <div className="overflow-x-auto rounded-md border border-border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/30 text-xs text-muted-foreground">
-              <th className="px-3 py-2 text-left font-medium">Maydon</th>
+              <th className="px-3 py-2 text-left font-medium">{t('audit.detail_field')}</th>
               {action === "UPDATE"
-                ? <><th className="px-3 py-2 text-left font-medium">Oldingi</th><th className="px-3 py-2 text-left font-medium">Yangi</th></>
-                : <th className="px-3 py-2 text-left font-medium">Qiymat</th>
+                ? <><th className="px-3 py-2 text-left font-medium">{t('audit.detail_old')}</th><th className="px-3 py-2 text-left font-medium">{t('audit.detail_new_value')}</th></>
+                : <th className="px-3 py-2 text-left font-medium">{t('audit.detail_value')}</th>
               }
             </tr>
           </thead>
@@ -222,7 +202,7 @@ const AuditChangesView = ({ changes, action }: { changes: Record<string, unknown
                       </>
                     ) : (
                       <>
-                        <td className="px-3 py-2 text-muted-foreground">—</td>
+                        <td className="px-3 py-2 text-muted-foreground">{"—"}</td>
                         <td className="px-3 py-2">{formatValue(val)}</td>
                       </>
                     )
@@ -246,6 +226,8 @@ const lastMonthStart = () => { const d = today(); d.setMonth(d.getMonth()-1,1); 
 const lastMonthEnd = () => { const d = today(); d.setDate(0); return d; };
 
 const AuditLogPage = () => {
+  const { t } = useTranslation();
+  const tt = (key: string) => t(key);
   const [search, setSearch] = useState("");
   const [entityFilter, setEntityFilter] = useState("all");
   const [actionFilter, setActionFilter] = useState("all");
@@ -329,21 +311,21 @@ const AuditLogPage = () => {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
-          <ShieldCheck className="h-6 w-6" /> Audit log
+        <h1 className="font-heading text-2xl font-bold flex items-center gap-2 text-balance">
+          <ShieldCheck className="h-6 w-6" /> {t('audit.title')}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Tizimda amalga oshirilgan barcha o'zgarishlar
+          {t('audit.subtitle')}
         </p>
       </div>
 
       {/* Filters */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Filterlash</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-balance">{t('audit.filter_title')}</h2>
           {hasAnyFilter && (
             <Button variant="ghost" size="sm" onClick={clearAll} className="h-7 gap-1 text-xs">
-              <X className="h-3 w-3" /> Hammasini tozalash
+              <X className="h-3 w-3" /> {t('audit.clear_all')}
             </Button>
           )}
         </div>
@@ -351,7 +333,7 @@ const AuditLogPage = () => {
         <div className="flex flex-wrap gap-2 mb-3">
           {(["today","week","month","lastMonth","all"] as const).map((p) => (
             <Button key={p} variant="outline" size="sm" onClick={() => setPreset(p)}>
-              {p === "today" ? "Bugun" : p === "week" ? "So'nggi 7 kun" : p === "month" ? "Bu oy" : p === "lastMonth" ? "O'tgan oy" : "Barcha vaqt"}
+              {p === "today" ? t('audit.preset_today') : p === "week" ? t('audit.preset_week') : p === "month" ? t('audit.preset_month') : p === "lastMonth" ? t('audit.preset_last_month') : t('audit.preset_all')}
             </Button>
           ))}
         </div>
@@ -360,22 +342,22 @@ const AuditLogPage = () => {
           <Select value={entityFilter} onValueChange={(v) => { setEntityFilter(v); setPage(1); }}>
             <SelectTrigger className="w-44 bg-secondary border-border"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Barcha obyekt</SelectItem>
-              <SelectItem value="student">Talaba</SelectItem>
-              <SelectItem value="payment">To'lov</SelectItem>
-              <SelectItem value="user">Foydalanuvchi</SelectItem>
-              <SelectItem value="branch">Filial</SelectItem>
-              <SelectItem value="group">Guruh</SelectItem>
+              <SelectItem value="all">{t('audit.entity_all')}</SelectItem>
+              <SelectItem value="student">{t('audit.entity_student')}</SelectItem>
+              <SelectItem value="payment">{t('audit.entity_payment')}</SelectItem>
+              <SelectItem value="user">{t('audit.entity_user')}</SelectItem>
+              <SelectItem value="branch">{t('audit.entity_branch')}</SelectItem>
+              <SelectItem value="group">{t('audit.entity_group')}</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setPage(1); }}>
             <SelectTrigger className="w-44 bg-secondary border-border"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Barcha amal</SelectItem>
-              <SelectItem value="CREATE">Yaratildi</SelectItem>
-              <SelectItem value="UPDATE">Yangilandi</SelectItem>
-              <SelectItem value="DELETE">O'chirildi</SelectItem>
+              <SelectItem value="all">{t('audit.action_all')}</SelectItem>
+              <SelectItem value="CREATE">{t('audit.action_create')}</SelectItem>
+              <SelectItem value="UPDATE">{t('audit.action_update')}</SelectItem>
+              <SelectItem value="DELETE">{t('audit.action_delete')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -383,7 +365,7 @@ const AuditLogPage = () => {
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("min-w-[200px] justify-start text-left font-normal bg-secondary border-border", !dateFrom && "text-muted-foreground")}>
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {!dateFrom ? "Sana tanlang" : dateTo && dateTo.getTime() !== dateFrom.getTime()
+                {!dateFrom ? t('audit.date_placeholder') : dateTo && dateTo.getTime() !== dateFrom.getTime()
                   ? `${format(dateFrom,"dd.MM.yyyy")} → ${format(dateTo,"dd.MM.yyyy")}`
                   : format(dateFrom,"dd.MM.yyyy")}
               </Button>
@@ -397,7 +379,7 @@ const AuditLogPage = () => {
 
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Foydalanuvchi ismi bo'yicha..." value={search}
+            <Input placeholder={t('audit.search_placeholder')} value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="pl-9 bg-secondary border-border" />
           </div>
@@ -407,8 +389,8 @@ const AuditLogPage = () => {
       {/* Table */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">O'zgarishlar ro'yxati</h2>
-          <span className="text-xs text-muted-foreground">{total} ta yozuv</span>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-balance">{t('audit.list_title')}</h2>
+          <span className="text-xs text-muted-foreground">{t('audit.record_count', { count: total })}</span>
         </div>
         <div className="glass-card overflow-hidden">
           <div className="hidden md:block overflow-x-auto">
@@ -416,12 +398,12 @@ const AuditLogPage = () => {
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="px-4 py-3 text-center font-medium text-muted-foreground">#</th>
-                  <SortTh field="userName" label="Foydalanuvchi" />
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Rol</th>
-                  <SortTh field="action" label="Amal" />
-                  <SortTh field="entity" label="Obyekt" />
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Tafsilot</th>
-                  <SortTh field="createdAt" label="Vaqt" />
+                  <SortTh field="userName" label={t('audit.col_user')} />
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('audit.col_role')}</th>
+                  <SortTh field="action" label={t('audit.col_action')} />
+                  <SortTh field="entity" label={t('audit.col_entity')} />
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('audit.col_detail')}</th>
+                  <SortTh field="createdAt" label={t('audit.col_time')} />
                 </tr>
               </thead>
               <tbody>
@@ -433,7 +415,7 @@ const AuditLogPage = () => {
                   ))
                 ) : sorted.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-muted-foreground">Yozuvlar topilmadi</td>
+                    <td colSpan={7} className="py-12 text-center text-muted-foreground">{t('audit.no_records')}</td>
                   </tr>
                 ) : (
                   sorted.map((log, idx) => (
@@ -444,15 +426,15 @@ const AuditLogPage = () => {
                     >
                       <td className="px-4 py-3 text-center text-muted-foreground">{(page - 1) * LIMIT + idx + 1}</td>
                       <td className="px-4 py-3 font-medium">{log.user?.name || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">{ROLE_LABELS[log.user?.role || ""] || log.user?.role || "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs">{tt(`roles.${log.user?.role}`) || log.user?.role || "—"}</td>
                       <td className="px-4 py-3">
-                        <span className={cn("font-medium text-xs", ACTION_COLORS[log.action])}>{ACTION_LABELS[log.action] || log.action}</span>
+                        <span className={cn("font-medium text-xs", ACTION_COLORS[log.action])}>{tt(`audit.action_${log.action.toLowerCase()}`) || log.action}</span>
                       </td>
-                      <td className="px-4 py-3 text-xs">{ENTITY_LABELS[log.entity] || log.entity}</td>
+                      <td className="px-4 py-3 text-xs">{tt(`audit.entity_${log.entity.toLowerCase()}`) || log.entity}</td>
                       <td className="px-4 py-3 text-muted-foreground text-xs max-w-[240px] truncate">
                         {log.changes ? JSON.stringify(log.changes) : log.entityId}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{formatDate(log.createdAt)}</td>
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap tabular-nums">{formatDate(log.createdAt)}</td>
                     </tr>
                   ))
                 )}
@@ -471,21 +453,21 @@ const AuditLogPage = () => {
             ) : sorted.length === 0 ? (
               <EmptyState
                 icon={ShieldCheck}
-                title="Audit yozuvlari yo'q"
-                description="Tanlangan filtrlar bo'yicha yozuvlar topilmadi."
+                title={t('audit.not_found_title')}
+                description={t('audit.not_found_desc')}
               />
             ) : (
               <div className="grid gap-3">
                 {sorted.map((log) => (
                   <DataCard
                     key={log.id}
-                    title={`${log.action} · ${log.entity}`}
+                    title={`${tt(`audit.action_${log.action.toLowerCase()}`) || log.action} · ${tt(`audit.entity_${log.entity.toLowerCase()}`) || log.entity}`}
                     subtitle={log.user?.name || "—"}
                     fields={[
-                      { label: "Sana", value: formatDate(log.createdAt) },
-                      { label: "Entity ID", value: log.entityId?.slice(0, 8) || "—" },
-                      { label: "Filial", value: log.user?.branchId || "—" },
-                      { label: "Kompaniya", value: "—" },
+                      { label: t('common.date'), value: formatDate(log.createdAt) },
+                      { label: t('audit.detail_entity_id'), value: log.entityId?.slice(0, 8) || "—" },
+                      { label: t('common.branch'), value: log.user?.branchId || "—" },
+                      { label: t('common.company'), value: "—" },
                     ]}
                     onClick={() => setSelectedLog(log)}
                   />
@@ -497,9 +479,9 @@ const AuditLogPage = () => {
 
         {totalPages > 1 && (
           <div className="mt-4 flex items-center justify-center gap-2">
-            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Oldingi</Button>
+            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>{t('audit.previous')}</Button>
             <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
-            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Keyingi</Button>
+            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>{t('audit.next')}</Button>
           </div>
         )}
       </section>
@@ -512,28 +494,28 @@ const AuditLogPage = () => {
               <DialogHeader>
                 <DialogTitle className="font-heading flex items-center gap-2 flex-wrap">
                   <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", ACTION_BG[selectedLog.action])}>
-                    {ACTION_LABELS[selectedLog.action] || selectedLog.action}
+                    {tt(`audit.action_${selectedLog.action.toLowerCase()}`) || selectedLog.action}
                   </span>
-                  <span>{ENTITY_LABELS[selectedLog.entity] || selectedLog.entity}</span>
+                  <span>{tt(`audit.entity_${selectedLog.entity.toLowerCase()}`) || selectedLog.entity}</span>
                 </DialogTitle>
               </DialogHeader>
 
               <div className="space-y-5">
                 <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm rounded-md bg-muted/30 px-4 py-3">
                   <div>
-                    <span className="text-muted-foreground text-xs">Foydalanuvchi</span>
+                    <span className="text-muted-foreground text-xs">{t('audit.detail_user')}</span>
                     <p className="font-medium">{selectedLog.user?.name || "—"}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground text-xs">Rol</span>
-                    <p>{ROLE_LABELS[selectedLog.user?.role || ""] || selectedLog.user?.role || "—"}</p>
+                    <span className="text-muted-foreground text-xs">{t('audit.detail_role')}</span>
+                    <p>{tt(`roles.${selectedLog.user?.role}`) || selectedLog.user?.role || "—"}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground text-xs">Vaqt</span>
+                    <span className="text-muted-foreground text-xs tabular-nums">{t('audit.detail_time')}</span>
                     <p>{formatDate(selectedLog.createdAt)}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground text-xs">Obyekt ID</span>
+                    <span className="text-muted-foreground text-xs">{t('audit.detail_entity_id')}</span>
                     <p className="font-mono text-xs truncate">{selectedLog.entityId}</p>
                   </div>
                 </div>
@@ -541,7 +523,7 @@ const AuditLogPage = () => {
                 {selectedLog.changes ? (
                   <AuditChangesView changes={selectedLog.changes} action={selectedLog.action} />
                 ) : (
-                  <p className="text-sm text-muted-foreground">Tafsilot ma'lumoti yo'q</p>
+                  <p className="text-sm text-muted-foreground">{t('audit.detail_no_detail')}</p>
                 )}
               </div>
             </>

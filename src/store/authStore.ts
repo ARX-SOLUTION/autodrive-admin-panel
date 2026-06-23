@@ -14,6 +14,7 @@ interface AuthState {
   setActiveCompanyId: (id: string) => void;
   isOwner: () => boolean;
   isDev: () => boolean;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -29,6 +30,7 @@ export const useAuthStore = create<AuthState>()(
       setActiveCompanyId: (id) => set({ activeCompanyId: id }),
       isOwner: () => get().user?.role === 'owner',
       isDev: () => get().user?.role === 'dev',
+      setHasHydrated: (state) => set({ hasHydrated: state }),
     }),
     {
       name: 'autodrive-auth',
@@ -41,8 +43,10 @@ export const useAuthStore = create<AuthState>()(
         hasHydrated: state.hasHydrated,
         activeCompanyId: state.activeCompanyId,
       }),
-      onRehydrateStorage: () => () => {
-        set({ hasHydrated: true });
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHasHydrated(true);
+        }
       },
     }
   )
