@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Search } from 'lucide-react';
@@ -12,6 +13,7 @@ const demoDocuments = [
 ];
 
 const DocumentsPage = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const filtered = demoDocuments.filter((d) =>
     d.student_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -25,15 +27,15 @@ const DocumentsPage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold">Hujjatlar</h1>
-          <p className="text-sm text-muted-foreground">Talabalar hujjatlarini boshqarish</p>
+          <h1 className="font-heading text-2xl font-bold text-balance">{t('documents.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('documents.subtitle')}</p>
         </div>
-        <Button className="gap-2"><Plus className="h-4 w-4" /> Hujjat qo'shish</Button>
+        <Button className="gap-2"><Plus className="h-4 w-4" /> {t('documents.add_new')}</Button>
       </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Qidirish..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-secondary border-border" />
+        <Input placeholder={t('documents.search_placeholder')} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-secondary border-border" />
       </div>
 
       <div className="glass-card overflow-hidden">
@@ -41,11 +43,11 @@ const DocumentsPage = () => {
           <thead>
             <tr className="border-b border-border bg-muted/30">
               <th className="px-4 py-3 text-center font-medium text-muted-foreground">#</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Talaba</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Hujjat turi</th>
-              <th className="px-4 py-3 text-center font-medium text-muted-foreground">Holati</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Filial</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Sana</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('documents.col_student')}</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('documents.col_type')}</th>
+              <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('documents.col_status')}</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('documents.col_branch')}</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('documents.col_date')}</th>
             </tr>
           </thead>
           <tbody>
@@ -64,7 +66,7 @@ const DocumentsPage = () => {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div className="py-12 text-center text-muted-foreground">Hujjatlar topilmadi</div>
+          <div className="py-12 text-center text-muted-foreground">{t('documents.not_found')}</div>
         )}
       </div>
 

@@ -10,8 +10,9 @@ export const useTeachers = () => {
   const branchId = useAuthStore((s) => s.user?.branch_id);
   const role = useAuthStore((s) => s.user?.role);
   const isCrossTenantRole = role === 'owner' || role === 'dev';
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useQuery<User[]>({
-    queryKey: ['teachers', branchId],
+    queryKey: ['teachers', activeCompanyId, branchId],
     queryFn: async () => {
       try {
         const { data: res } = await axiosInstance.get('/users', { params: { role: 'teacher' } });
@@ -29,32 +30,35 @@ export const useTeachers = () => {
 
 export const useCreateTeacher = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async (t: { fullName: string; phone: string; specialization: Specialization; branchId: string }) => {
       const { data } = await axiosInstance.post('/users', { ...t, role: 'teacher' });
       return data?.data || data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers', activeCompanyId] }),
   });
 };
 
 export const useUpdateTeacher = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async ({ id, ...t }: { id: string; fullName?: string; phone?: string; specialization?: Specialization; branchId?: string }) => {
       const { data } = await axiosInstance.patch(`/users/${id}`, t);
       return data?.data || data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers', activeCompanyId] }),
   });
 };
 
 export const useDeleteTeacher = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async (id: string) => {
       await axiosInstance.delete(`/users/${id}`);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers', activeCompanyId] }),
   });
 };

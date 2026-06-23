@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useUsers } from "@/services/userService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
@@ -12,6 +13,7 @@ const formatDate = (d?: string) => {
 };
 
 const UsersPage = () => {
+  const { t } = useTranslation();
   const { data: users, isLoading } = useUsers('manager');
   const [sortField, setSortField] = useState("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -40,8 +42,8 @@ const UsersPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-2xl font-bold">Foydalanuvchilar</h1>
-        <p className="text-sm text-muted-foreground">{(users || []).length} ta foydalanuvchi</p>
+        <h1 className="font-heading text-2xl font-bold text-balance">{t('users.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('users.count', { count: (users || []).length })}</p>
       </div>
 
       <div className="glass-card overflow-hidden">
@@ -52,32 +54,32 @@ const UsersPage = () => {
                 <th className="px-4 py-3 text-center font-medium text-muted-foreground">#</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   <button onClick={() => toggleSort("email")} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                    Email
+                    {t('common.email')}
                     {sortField === "email" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                   </button>
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   <button onClick={() => toggleSort("phone")} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                    Telefon
+                    {t('common.phone')}
                     {sortField === "phone" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                   </button>
                 </th>
                 <th className="px-4 py-3 text-center font-medium text-muted-foreground">
                   <button onClick={() => toggleSort("role")} className="flex items-center gap-1 hover:text-foreground transition-colors mx-auto">
-                    Rol
+                    {t('common.role')}
                     {sortField === "role" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                   </button>
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   <button onClick={() => toggleSort("branch_name")} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                    Filial
+                    {t('common.branch')}
                     {sortField === "branch_name" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Holati</th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('common.status')}</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   <button onClick={() => toggleSort("created_at")} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                    Yaratilgan
+                    {t('common.created_at')}
                     {sortField === "created_at" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                   </button>
                 </th>
@@ -97,25 +99,25 @@ const UsersPage = () => {
                       <td className="px-4 py-3 text-muted-foreground">{u.phone || "—"}</td>
                       <td className="px-4 py-3 text-center">
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${u.role === "owner" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                          {u.role === "owner" ? "Owner" :
-                           u.role === "manager" ? "Manager" :
-                           u.role === "operator" ? "Operator" :
-                           u.role === "teacher" ? "Teacher" : u.role}
+                          {u.role === "owner" ? t('roles.owner') :
+                           u.role === "manager" ? t('roles.manager') :
+                           u.role === "operator" ? t('roles.operator') :
+                           u.role === "teacher" ? t('roles.teacher') : u.role}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{u.branch_name || "—"}</td>
                       <td className="px-4 py-3 text-center">
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${u.is_active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                          {u.is_active ? "Faol" : "Nofaol"}
+                          {u.is_active ? t('common.active') : t('common.inactive')}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{formatDate(u.created_at)}</td>
+                      <td className="px-4 py-3 text-muted-foreground tabular-nums">{formatDate(u.created_at)}</td>
                     </tr>
                   ))}
             </tbody>
           </table>
           {(users || []).length === 0 && !isLoading && (
-            <div className="py-12 text-center text-muted-foreground">Foydalanuvchilar topilmadi</div>
+            <div className="py-12 text-center text-muted-foreground">{t('users.not_found')}</div>
           )}
         </div>
       </div>

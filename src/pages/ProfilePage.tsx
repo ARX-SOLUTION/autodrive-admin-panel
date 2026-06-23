@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { User, Shield, Building2, Briefcase } from "lucide-react";
@@ -11,15 +12,9 @@ import { useUpdateUser } from "@/services/userService";
 import { extractErrorMessage } from "@/lib/errors";
 import { validateNewPassword } from "@/lib/password";
 
-const ROLE_LABEL: Record<string, string> = {
-  dev: "Platforma admin",
-  owner: "Biznes egasi",
-  manager: "Filial menejeri",
-  operator: "Operator",
-  teacher: "O'qituvchi",
-};
-
 const ProfilePage = () => {
+  const { t } = useTranslation();
+  const tt = (key: string) => t(key);
   const { user, setAuth, token, logout } = useAuthStore();
   const queryClient = useQueryClient();
   const updateMut = useUpdateUser();
@@ -48,7 +43,7 @@ const ProfilePage = () => {
       },
       {
         onSuccess: () => {
-          toast.success("Profil yangilandi");
+          toast.success(t('profile.toast_updated'));
           setAuth(token ?? "cookie", {
             ...user,
             name: profile.fullName.trim(),
@@ -68,7 +63,7 @@ const ProfilePage = () => {
       return;
     }
     if (passwords.newPassword !== passwords.confirmPassword) {
-      toast.error("Yangi parol va tasdiq parol mos kelmadi");
+      toast.error(t('profile.toast_password_mismatch'));
       return;
     }
     passwordMut.mutate(
@@ -78,17 +73,13 @@ const ProfilePage = () => {
       },
       {
         onSuccess: () => {
-          // Backend bumps tokenVersion on password change (BE #42) — the
-          // current JWT is now stale and the next request will 401. Tear
-          // down auth state explicitly instead of letting that 401 race
-          // with the user's next click.
-          toast.success("Parol yangilandi. Iltimos qaytadan kiring.");
+          toast.success(t('profile.toast_password_updated'));
           setPasswords({ currentPassword: "", newPassword: "", confirmPassword: "" });
           logout();
           queryClient.clear();
           window.location.href = "/login";
         },
-        onError: (err) => toast.error(extractErrorMessage(err, "Joriy parol noto'g'ri")),
+        onError: (err) => toast.error(extractErrorMessage(err, t('profile.toast_password_mismatch'))),
       },
     );
   };
@@ -96,8 +87,8 @@ const ProfilePage = () => {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="font-heading text-2xl font-bold">Profil</h1>
-        <p className="text-sm text-muted-foreground">Shaxsiy ma'lumotlar va parolni boshqarish</p>
+        <h1 className="font-heading text-2xl font-bold text-balance">{t('profile.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('profile.subtitle')}</p>
       </div>
 
       <div className="glass-card p-6 space-y-6">
@@ -106,11 +97,11 @@ const ProfilePage = () => {
             <User className="h-8 w-8" />
           </div>
           <div>
-            <h2 className="font-heading text-lg font-semibold">{user.name || user.email}</h2>
+            <h2 className="font-heading text-lg font-semibold text-balance">{user.name || user.email}</h2>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                 <Shield className="h-3 w-3" />
-                {ROLE_LABEL[user.role] ?? user.role}
+                {tt(`profile.role_label_${user.role}`) || user.role}
               </span>
               {user.company_name && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
@@ -131,7 +122,7 @@ const ProfilePage = () => {
         <form onSubmit={handleProfileSave} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label>Ism</Label>
+              <Label>{t('common.name')}</Label>
               <Input
                 value={profile.fullName}
                 onChange={(e) => setProfile((p) => ({ ...p, fullName: e.target.value }))}
@@ -140,7 +131,7 @@ const ProfilePage = () => {
               />
             </div>
             <div>
-              <Label>Email</Label>
+              <Label>{t('common.email')}</Label>
               <Input
                 value={user.email}
                 disabled
@@ -148,7 +139,7 @@ const ProfilePage = () => {
               />
             </div>
             <div>
-              <Label>Telefon</Label>
+              <Label>{t('common.phone')}</Label>
               <Input
                 value={profile.phone}
                 onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
@@ -158,21 +149,21 @@ const ProfilePage = () => {
             </div>
           </div>
           <Button type="submit" disabled={updateMut.isPending}>
-            {updateMut.isPending ? "Saqlanmoqda..." : "Saqlash"}
+            {updateMut.isPending ? t('common.saving') : t('common.save')}
           </Button>
         </form>
       </div>
 
       <form onSubmit={handlePasswordChange} className="glass-card p-6 space-y-4">
         <div>
-          <h3 className="font-heading font-semibold">Parolni o'zgartirish</h3>
+          <h3 className="font-heading font-semibold text-balance">{t('profile.change_password')}</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Kamida 8 ta belgi, 1 ta raqam va 1 ta katta harf bo'lishi kerak
+            {t('profile.password_hint')}
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
-            <Label>Joriy parol</Label>
+            <Label>{t('profile.current_password')}</Label>
             <Input
               type="password"
               value={passwords.currentPassword}
@@ -182,7 +173,7 @@ const ProfilePage = () => {
             />
           </div>
           <div>
-            <Label>Yangi parol</Label>
+            <Label>{t('profile.new_password')}</Label>
             <Input
               type="password"
               value={passwords.newPassword}
@@ -193,7 +184,7 @@ const ProfilePage = () => {
             />
           </div>
           <div>
-            <Label>Yangi parolni tasdiqlash</Label>
+            <Label>{t('profile.confirm_password')}</Label>
             <Input
               type="password"
               value={passwords.confirmPassword}
@@ -205,7 +196,7 @@ const ProfilePage = () => {
           </div>
         </div>
         <Button type="submit" variant="outline" disabled={passwordMut.isPending}>
-          {passwordMut.isPending ? "Yangilanmoqda..." : "Parolni yangilash"}
+          {passwordMut.isPending ? t('profile.updating') : t('profile.update_password')}
         </Button>
       </form>
     </div>

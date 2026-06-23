@@ -57,6 +57,10 @@ import
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { FilterBar } from "@/components/layout/FilterBar";
+import { usePaymentFilters } from "@/hooks/usePaymentFilters";
 
 const formatDate = (d: string) => {
   try {
@@ -99,18 +103,29 @@ const lastMonthEnd = () => {
 
 const PaymentsPage = () => {
   const { isOwner, user } = useAuthStore();
-  const [branchId, setBranchId] = useState<string | undefined>(
-    isOwner() ? undefined : user?.branch_id || undefined,
-  );
-  const [search, setSearch] = useState("");
+  const defaultBranchId = isOwner() ? undefined : user?.branch_id || undefined;
+  
+  const {
+    branchId, setBranchId,
+    search, setSearch,
+    paymentStatus, setPaymentStatus,
+    paymentMethodFilter, setPaymentMethodFilter,
+    courseTypeFilter, setCourseTypeFilter,
+    dateFrom, setDateFrom,
+    dateTo, setDateTo,
+    sortField, sortDir, toggleSort,
+    clearAllFilters
+  } = usePaymentFilters(defaultBranchId);
+
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<string>("all");
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
-  const [courseTypeFilter, setCourseTypeFilter] = useState<string>("all");
-  const [dateFrom, setDateFrom] = useState<Date | undefined>();
-  const [dateTo, setDateTo] = useState<Date | undefined>();
-  const [sortField, setSortField] = useState("date");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
 
   const hasDebt =
     paymentStatus === "unpaid"
@@ -149,7 +164,7 @@ const PaymentsPage = () => {
       (payments || []).filter((p) => {
         const matchSearch = (p.student_name || "")
           .toLowerCase()
-          .includes(search.toLowerCase());
+          .includes(debouncedSearch.toLowerCase());
         let matchStatus = true;
         if (paymentStatus === "paid") matchStatus = p.remaining_debt <= 0;
         else if (paymentStatus === "unpaid") matchStatus = p.remaining_debt > 0;
@@ -158,7 +173,7 @@ const PaymentsPage = () => {
           matchPaymentMethod = p.payment_method === paymentMethodFilter;
         return matchSearch && matchStatus && matchPaymentMethod;
       }),
-    [payments, search, paymentStatus, paymentMethodFilter],
+    [payments, debouncedSearch, paymentStatus, paymentMethodFilter],
   );
 
   const displayedSummary = useMemo(() => ({
@@ -167,22 +182,19 @@ const PaymentsPage = () => {
     period_debt: filtered.reduce((sum, p) => sum + (p.remaining_debt || 0), 0),
   }), [filtered]);
 
-  const toggleSort = (field: string) => {
-    if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortField(field); setSortDir("asc"); }
-  };
-
-  const sorted = [...filtered].sort((a, b) => {
-    const va = a[sortField as keyof typeof a];
-    const vb = b[sortField as keyof typeof b];
-    if (va == null && vb == null) return 0;
-    if (va == null) return 1;
-    if (vb == null) return -1;
-    if (typeof va === "string" && typeof vb === "string") {
-      return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
-    }
-    return sortDir === "asc" ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
-  });
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      const va = a[sortField as keyof typeof a];
+      const vb = b[sortField as keyof typeof b];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === "string" && typeof vb === "string") {
+        return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+      }
+      return sortDir === "asc" ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
+    });
+  }, [filtered, sortField, sortDir]);
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage } =
     usePagination(sorted);
@@ -274,45 +286,33 @@ const PaymentsPage = () => {
     }
   };
 
-  const clearAllFilters = () => {
-    setDateFrom(undefined);
-    setDateTo(undefined);
-    setPaymentStatus("all");
-    setPaymentMethodFilter("all");
-    setCourseTypeFilter("all");
-    setSearch("");
-  };
-
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-bold">To'lovlar</h1>
-          <p className="text-sm text-muted-foreground">
-            Talabalar to'lovlarini boshqarish va hisob-kitob
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {isOwner() && (
-            <Button
-              variant="outline"
-              className="gap-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-500 dark:text-emerald-400 dark:hover:bg-emerald-950 font-semibold"
-              onClick={exportToExcel}
-            >
-              <Download className="h-4 w-4" /> Excel yuklab olish
+    <PageContainer>
+      <PageHeader
+        title="To'lovlar"
+        description="Talabalar to'lovlarini boshqarish va hisob-kitob"
+        actions={
+          <>
+            {isOwner() && (
+              <Button
+                variant="outline"
+                className="gap-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-500 dark:text-emerald-400 dark:hover:bg-emerald-950 font-semibold"
+                onClick={exportToExcel}
+              >
+                <Download className="h-4 w-4" /> Excel yuklab olish
+              </Button>
+            )}
+            <Button className="gap-2" onClick={() => setModalOpen(true)}>
+              <Plus className="h-4 w-4" /> To'lov qo'shish
             </Button>
-          )}
-          <Button className="gap-2" onClick={() => setModalOpen(true)}>
-            <Plus className="h-4 w-4" /> To'lov qo'shish
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* SECTION 1: Joriy holat (Always visible snapshot) */}
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center justify-between mb-3 tabular-nums">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-balance">
             Joriy holat
           </h2>
           <span className="text-xs text-muted-foreground">
@@ -346,7 +346,7 @@ const PaymentsPage = () => {
       {/* SECTION 2: Filterlar */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-balance">
             Filterlash
           </h2>
           {hasAnyFilter && (
@@ -385,7 +385,7 @@ const PaymentsPage = () => {
         </div>
 
         {/* Filter row */}
-        <div className="flex flex-wrap items-center gap-3">
+        <FilterBar>
           {isOwner() && (
             <Select
               value={branchId || "all"}
@@ -487,21 +487,21 @@ const PaymentsPage = () => {
               className="pl-9 bg-secondary border-border"
             />
           </div>
-        </div>
+        </FilterBar>
       </section>
 
       {/* SECTION 3: Tanlangan davr natijasi (only when date filter active) */}
       {hasAnyFilter && (
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-primary">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-primary text-balance">
               Tanlangan natija
             </h2>
             <span className="text-xs text-muted-foreground">
               {filtered.length} ta to'lov bo'yicha
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 tabular-nums">
             <SummaryCard
               title="Yig'ilgan summa"
               value={formatMoney(displayedSummary.period_collected)}
@@ -524,7 +524,7 @@ const PaymentsPage = () => {
       {/* SECTION 4: Table */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-balance">
             To'lovlar ro'yxati
           </h2>
           <span className="text-xs text-muted-foreground">
@@ -651,7 +651,7 @@ const PaymentsPage = () => {
                       <td className="px-4 py-3 text-muted-foreground text-xs">
                         {p.recorded_by || "—"}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-4 py-3 text-muted-foreground tabular-nums">
                         {formatDate(p.date)}
                       </td>
                     </tr>
@@ -745,7 +745,7 @@ const PaymentsPage = () => {
         loading={createPayment.isPending}
         students={allStudents}
       />
-    </div>
+    </PageContainer>
   );
 };
 

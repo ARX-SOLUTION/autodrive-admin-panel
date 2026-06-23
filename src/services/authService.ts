@@ -45,7 +45,7 @@ export const useRestoreSession = () => {
   }, [query.data, setAuth]);
 
   useEffect(() => {
-    if (query.error) logout();
+    if ((query.error as any)?.response?.status === 401) logout();
   }, [query.error, logout]);
 
   return query;

@@ -7,8 +7,9 @@ export const useGroups = () => {
   const branchId = useAuthStore((s) => s.user?.branch_id);
   const role = useAuthStore((s) => s.user?.role);
   const isCrossTenantRole = role === "owner" || role === "dev";
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useQuery<Group[]>({
-    queryKey: ["groups", branchId],
+    queryKey: ["groups", activeCompanyId, branchId],
     queryFn: async () => {
       try {
         const { data: res } = await axiosInstance.get("/groups");
@@ -28,8 +29,9 @@ export const useGroupsOverview = () => {
   const branchId = useAuthStore((s) => s.user?.branch_id);
   const role = useAuthStore((s) => s.user?.role);
   const isCrossTenantRole = role === "owner" || role === "dev";
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useQuery<GroupOverview[]>({
-    queryKey: ["groups-overview", branchId],
+    queryKey: ["groups-overview", activeCompanyId, branchId],
     queryFn: async () => {
       try {
         const { data: res } = await axiosInstance.get("/groups/overview");
@@ -45,9 +47,10 @@ export const useGroupsOverview = () => {
   });
 };
 
-export const useGroupsById = ({ id }: { id: string }) =>
-  useQuery<GroupsById>({
-    queryKey: ["groups", "detail", id],
+export const useGroupsById = ({ id }: { id: string }) => {
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
+  return useQuery<GroupsById>({
+    queryKey: ["groups", activeCompanyId, "detail", id],
     queryFn: async () =>
       axiosInstance
         .get(`/groups/${id}`)
@@ -55,9 +58,11 @@ export const useGroupsById = ({ id }: { id: string }) =>
         .catch(() => null),
     enabled: !!id,
   });
+};
 
 export const useCreateGroup = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async (group: {
       name: string;
@@ -68,14 +73,15 @@ export const useCreateGroup = () => {
       return data?.data || data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["groups"] });
-      qc.invalidateQueries({ queryKey: ["groups-overview"] });
+      qc.invalidateQueries({ queryKey: ["groups", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["groups-overview", activeCompanyId] });
     },
   });
 };
 
 export const useUpdateGroup = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async ({
       id,
@@ -90,22 +96,23 @@ export const useUpdateGroup = () => {
       return data?.data || data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["groups"] });
-      qc.invalidateQueries({ queryKey: ["groups-overview"] });
-      qc.invalidateQueries({ queryKey: ["students"] });
+      qc.invalidateQueries({ queryKey: ["groups", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["groups-overview", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["students", activeCompanyId] });
     },
   });
 };
 
 export const useDeleteGroup = () => {
   const qc = useQueryClient();
+  const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async (id: string) => {
       await axiosInstance.delete(`/groups/${id}`);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["groups"] });
-      qc.invalidateQueries({ queryKey: ["groups-overview"] });
+      qc.invalidateQueries({ queryKey: ["groups", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["groups-overview", activeCompanyId] });
     },
   });
 };

@@ -28,7 +28,7 @@ const SystemHealthPage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold">Tizim holati</h1>
+          <h1 className="font-heading text-2xl font-bold text-balance">Tizim holati</h1>
           <p className="text-sm text-muted-foreground">
             Backend va ma'lumotlar bazasining real-time holati. 30 soniyada bir avto-yangilanadi.
           </p>

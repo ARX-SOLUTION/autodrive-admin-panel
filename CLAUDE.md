@@ -85,9 +85,87 @@ npm run lint
 npm run test
 ```
 
+## Agent skills
+
+### Issue tracker
+
+Issues tracked on GitHub. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+5 canonical labels: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context — one `CONTEXT.md` at repo root. See `docs/agents/domain.md`.
+
 ## When in doubt
 
 - Read the existing `src/pages/*` and `src/services/*` patterns before introducing a new page or service.
 - Match existing UI and API patterns rather than inventing a new approach.
 - If the task touches backend contract assumptions, verify against `autodrive-backend`.
 - Keep changes minimal and directly tied to the requested scope.
+
+---
+
+## 🔄 Cross-Repo Dependency & Multi-Language Rules
+
+**Rules that ensure FE+Admin+BE stay in sync, and every feature supports all 3 languages (uz/ru/en).**
+
+### API contract changes → types must update
+
+When backend API response shape or DTO changes:
+
+- [ ] Update `src/types/*.ts` in this repo to match BE response DTOs.
+- [ ] Update `src/services/*Service.ts` hooks (query keys, params, return types).
+- [ ] Verify: `tsc --noEmit` builds clean.
+- [ ] Also check `autodrive-frontend` — same endpoint may be consumed there.
+
+### Every feature must support uz/ru/en (MANDATORY)
+
+**Admin panel currently has NO i18n setup.** Every new page or component must use `useTranslation()` / `t()` from `react-i18next`. No hardcoded strings.
+
+- [ ] New page → add translation keys to all 3 locale files **before** writing the component.
+- [ ] Toast messages, button labels, placeholders, empty states, errors — all must use `t()`.
+- [ ] Never commit a component without checking if it needs translations.
+
+**Translation key naming convention:**
+```
+"pagename.element.action": "Uzbek text"
+"students.table.name": "Ism"
+"attendance.status.present": "Keldi"
+"schedule.legends.theory": "Teoriya"
+```
+
+### Frontend ↔ Admin panel parity
+
+- When adding a feature to `autodrive-frontend`, check if `autodrive-admin-panel` needs the same feature.
+- Shared translation keys should be consistent between Admin and FE (same key names where possible).
+
+### After adding translations
+
+- [ ] Verify: all keys in `uz.json` exist in `ru.json` and `en.json`.
+- [ ] Build check: `tsc --noEmit` passes.
+- [ ] PR must include all 3 locale files.
+
+---
+
+## Matt Pocock Engineering Skills
+
+Globally installed at `~/.agents/skills/`. Vanilla (original).
+
+### Workflow (sinab koʻrilgan)
+1. `/grill-with-docs` → design decisions
+2. `/to-prd` → PRD
+3. `/to-issues` → GitHub Issues (BEADS tracker)
+4. `/tdd` → implement
+
+### Key skills
+- `/triage` — backlog management
+- `/implement` — plan execution
+- `/prototype` — throwaway prototypes
+- `/review` — parallel code review
+- `/handoff` — cross-session context
+- `/diagnosing-bugs` — bug investigation
+- `/ask-matt` — router (lists all skills)
+

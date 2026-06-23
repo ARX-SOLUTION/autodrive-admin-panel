@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,7 @@ import { User } from "@/types/user";
 import { formatPhone } from "@/lib/phoneFormater";
 
 const OperatorsPage = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -102,19 +104,19 @@ const OperatorsPage = () => {
         { id: editItem.id, ...payload },
         {
           onSuccess: () => {
-            toast.success("Operator yangilandi");
+            toast.success(t('operators.toast_updated'));
             setModalOpen(false);
           },
-          onError: () => toast.error("Xatolik yuz berdi"),
+          onError: () => toast.error(t('operators.toast_error')),
         },
       );
     } else {
       createMut.mutate(payload, {
         onSuccess: () => {
-          toast.success("Operator qo'shildi");
+          toast.success(t('operators.toast_created'));
           setModalOpen(false);
         },
-        onError: () => toast.error("Xatolik yuz berdi"),
+        onError: () => toast.error(t('operators.toast_error')),
       });
     }
   };
@@ -123,10 +125,10 @@ const OperatorsPage = () => {
     if (!deleteId) return;
     deleteMut.mutate(deleteId, {
       onSuccess: () => {
-        toast.success("Operator o'chirildi");
+        toast.success(t('operators.toast_deleted'));
         setDeleteId(null);
       },
-      onError: () => toast.error("Xatolik yuz berdi"),
+      onError: () => toast.error(t('operators.toast_error')),
     });
   };
 
@@ -139,19 +141,19 @@ const OperatorsPage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold">Operatorlar</h1>
+          <h1 className="font-heading text-2xl font-bold text-balance">{t('operators.title')}</h1>
           <p className="text-sm text-muted-foreground">
-            {filtered.length} ta operator
+            {t('operators.count', { count: filtered.length })}
           </p>
         </div>
         <Button className="gap-2" onClick={openCreate}>
-          <Plus className="h-4 w-4" /> Operator qo'shish
+          <Plus className="h-4 w-4" /> {t('operators.add_new')}
         </Button>
       </div>
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Qidirish..."
+          placeholder={t('common.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9 bg-secondary border-border"
@@ -162,33 +164,27 @@ const OperatorsPage = () => {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/30">
-              <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                #
-              </th>
+              <th className="px-4 py-3 text-center font-medium text-muted-foreground">#</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                 <button onClick={() => toggleSort("name")} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                  Ism
+                  {t('common.name')}
                   {sortField === "name" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                 </button>
               </th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                 <button onClick={() => toggleSort("phone")} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                  Telefon
+                  {t('common.phone')}
                   {sortField === "phone" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                 </button>
               </th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                 <button onClick={() => toggleSort("branch_name")} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                  Filial
+                  {t('common.branch')}
                   {sortField === "branch_name" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
                 </button>
               </th>
-              <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                Holati
-              </th>
-              <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                Amallar
-              </th>
+              <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('common.status')}</th>
+              <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -205,33 +201,29 @@ const OperatorsPage = () => {
                     key={o.id}
                     className="table-row-striped border-b border-border/50"
                   >
-                    <td className="px-4 py-3 text-center text-muted-foreground">
-                      {startIndex + idx + 1}
-                    </td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{startIndex + idx + 1}</td>
                     <td className="px-4 py-3 font-medium">{o?.name}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {formatPhone(o?.phone)}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {o?.branch_name || getBranchName(o?.branch_id)}
-                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{formatPhone(o?.phone)}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{o?.branch_name || getBranchName(o?.branch_id)}</td>
                     <td className="px-4 py-3 text-center">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${o.is_active !== false ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}
                       >
-                        {o.is_active !== false ? "Faol" : "Nofaol"}
+                        {o.is_active !== false ? t('common.active') : t('common.inactive')}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => openEdit(o)}
+                          title={t('common.edit')}
                           className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteId(o.id)}
+                          title={t('common.delete')}
                           className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -245,8 +237,8 @@ const OperatorsPage = () => {
         {filtered.length === 0 && !isLoading && (
           <EmptyState
             icon={Headphones}
-            title="Operator topilmadi"
-            description="Qidiruv bo'yicha operatorlar yo'q."
+            title={t('operators.not_found_title')}
+            description={t('operators.not_found_desc')}
           />
         )}
         </div>
@@ -262,8 +254,8 @@ const OperatorsPage = () => {
           ) : filtered.length === 0 ? (
             <EmptyState
               icon={Headphones}
-              title="Operator topilmadi"
-              description="Qidiruv bo'yicha operatorlar yo'q."
+              title={t('operators.not_found_title')}
+              description={t('operators.not_found_desc')}
             />
           ) : (
             <div className="grid gap-3">
@@ -273,16 +265,16 @@ const OperatorsPage = () => {
                   title={o.name || "—"}
                   subtitle={formatPhone(o.phone)}
                   fields={[
-                    { label: "Email", value: o.email || "—" },
-                    { label: "Filial", value: o.branch_name || getBranchName(o.branch_id) },
-                    { label: "Yaratilgan", value: o.created_at ? new Date(o.created_at).toLocaleDateString("uz-UZ") : "—" },
+                    { label: t('common.email'), value: o.email || "—" },
+                    { label: t('common.branch'), value: o.branch_name || getBranchName(o.branch_id) },
+                    { label: t('common.created_at'), value: o.created_at ? new Date(o.created_at).toLocaleDateString("uz-UZ") : "—" },
                     {
-                      label: "Holat",
+                      label: t('common.status'),
                       value: (
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${o.is_active !== false ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}
                         >
-                          {o.is_active !== false ? "Faol" : "Nofaol"}
+                          {o.is_active !== false ? t('common.active') : t('common.inactive')}
                         </span>
                       ),
                     },
@@ -291,12 +283,14 @@ const OperatorsPage = () => {
                     <>
                       <button
                         onClick={() => openEdit(o)}
+                        title={t('common.edit')}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => setDeleteId(o.id)}
+                        title={t('common.delete')}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -320,41 +314,37 @@ const OperatorsPage = () => {
         <DialogContent className="max-w-md bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-heading">
-              {editItem ? "Operatorni tahrirlash" : "Yangi operator qo'shish"}
+              {editItem ? t('operators.edit_title') : t('operators.add_title')}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Ism *</Label>
+              <Label>{t('operators.name_label')}</Label>
               <Input
                 value={form.fullName}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, fullName: e.target.value }))
-                }
+                onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
                 required
                 className="bg-secondary border-border"
               />
             </div>
             <div className="space-y-2">
-              <Label>Telefon *</Label>
+              <Label>{t('operators.phone_label')}</Label>
               <Input
                 value={form.phone}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, phone: e.target.value }))
-                }
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 required
-                placeholder="+998901234567"
+                placeholder={t('operators.phone_placeholder')}
                 className="bg-secondary border-border"
               />
             </div>
             <div className="space-y-2">
-              <Label>Filial</Label>
+              <Label>{t('common.branch')}</Label>
               <Select
                 value={form.branchId}
                 onValueChange={(v) => setForm((f) => ({ ...f, branchId: v }))}
               >
                 <SelectTrigger className="bg-secondary border-border">
-                  <SelectValue placeholder="Tanlang" />
+                  <SelectValue placeholder={t('common.select_placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {(branches || []).map((b) => (
@@ -366,22 +356,11 @@ const OperatorsPage = () => {
               </Select>
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setModalOpen(false)}
-              >
-                Bekor qilish
+              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+                {t('common.cancel')}
               </Button>
-              <Button
-                type="submit"
-                disabled={createMut.isPending || updateMut.isPending}
-              >
-                {createMut.isPending || updateMut.isPending
-                  ? "Saqlanmoqda..."
-                  : editItem
-                    ? "Saqlash"
-                    : "Qo'shish"}
+              <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
+                {(createMut.isPending || updateMut.isPending) ? t('common.saving') : editItem ? t('common.save') : t('common.add')}
               </Button>
             </div>
           </form>
