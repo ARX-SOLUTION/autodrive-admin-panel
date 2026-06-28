@@ -54,7 +54,7 @@ const CHART_STYLE = {
 };
 
 const AXIS_PROPS = {
-  stroke: "hsl(220, 10%, 55%)",
+  stroke: "hsl(var(--muted-foreground))",
   fontSize: 11,
   tickLine: false,
   axisLine: false,
@@ -71,14 +71,14 @@ const formatSumRaw = (n: number) =>
   new Intl.NumberFormat("uz-UZ").format(Math.round(n));
 
 const PIE_COLORS = [
-  "hsl(142, 70%, 45%)",
-  "hsl(38, 92%, 50%)",
-  "hsl(0, 72%, 51%)",
+  "hsl(var(--success))",
+  "hsl(var(--warning))",
+  "hsl(var(--destructive))",
 ];
 const RESULT_COLORS = [
-  "hsl(217, 85%, 63%)",
-  "hsl(142, 70%, 45%)",
-  "hsl(0, 72%, 51%)",
+  "hsl(var(--info))",
+  "hsl(var(--success))",
+  "hsl(var(--destructive))",
 ];
 
 const TenantDashboard = () => {
@@ -354,7 +354,7 @@ const TenantDashboard = () => {
               <BarChart data={analytics.monthly_revenue} barSize={28}>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="hsl(228, 12%, 18%)"
+                  stroke="hsl(var(--border))"
                   vertical={false}
                 />
                 <XAxis dataKey="month" {...AXIS_PROPS} />
@@ -372,7 +372,7 @@ const TenantDashboard = () => {
                 />
                 <Bar
                   dataKey="amount"
-                  fill="hsl(217, 85%, 63%)"
+                  fill="hsl(var(--info))"
                   radius={[4, 4, 0, 0]}
                   name={t("dashboard.chart_legend_revenue")}
                 />
@@ -390,7 +390,7 @@ const TenantDashboard = () => {
             <BarChart data={analytics.monthly_enrollment} barSize={16}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="hsl(228, 12%, 18%)"
+                stroke="hsl(var(--border))"
                 vertical={false}
               />
               <XAxis dataKey="month" {...AXIS_PROPS} />
@@ -398,18 +398,21 @@ const TenantDashboard = () => {
               <Tooltip {...CHART_STYLE} />
               <Bar
                 dataKey="tezkor"
-                fill="hsl(217, 85%, 63%)"
+                fill="hsl(var(--info))"
                 radius={[4, 4, 0, 0]}
                 name={t("dashboard.chart_legend_fast")}
               />
               <Bar
                 dataKey="avto_maktab"
-                fill="hsl(142, 70%, 45%)"
+                fill="hsl(var(--success))"
                 radius={[4, 4, 0, 0]}
                 name={t("dashboard.chart_legend_school")}
               />
               <Legend
-                wrapperStyle={{ fontSize: 11, color: "hsl(220, 10%, 65%)" }}
+                wrapperStyle={{
+                  fontSize: 11,
+                  color: "hsl(var(--muted-foreground))",
+                }}
                 iconType="circle"
                 iconSize={8}
               />
@@ -491,7 +494,7 @@ const TenantDashboard = () => {
             <BarChart data={resultData} layout="vertical" barSize={20}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="hsl(228, 12%, 18%)"
+                stroke="hsl(var(--border))"
                 horizontal={false}
               />
               <XAxis type="number" {...AXIS_PROPS} allowDecimals={false} />
@@ -542,7 +545,7 @@ const TenantDashboard = () => {
             <BarChart data={analytics.branch_stats} barSize={22}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="hsl(228, 12%, 18%)"
+                stroke="hsl(var(--border))"
                 vertical={false}
               />
               <XAxis dataKey="branch" {...AXIS_PROPS} />
@@ -569,28 +572,31 @@ const TenantDashboard = () => {
                 }
               />
               <Legend
-                wrapperStyle={{ fontSize: 11, color: "hsl(220, 10%, 65%)" }}
+                wrapperStyle={{
+                  fontSize: 11,
+                  color: "hsl(var(--muted-foreground))",
+                }}
                 iconType="circle"
                 iconSize={8}
               />
               <Bar
                 yAxisId="students"
                 dataKey="students"
-                fill="hsl(217, 85%, 63%)"
+                fill="hsl(var(--info))"
                 radius={[4, 4, 0, 0]}
                 name={t("dashboard.chart_legend_students")}
               />
               <Bar
                 yAxisId="money"
                 dataKey="revenue"
-                fill="hsl(142, 70%, 45%)"
+                fill="hsl(var(--success))"
                 radius={[4, 4, 0, 0]}
                 name={t("dashboard.chart_legend_revenue")}
               />
               <Bar
                 yAxisId="money"
                 dataKey="debt"
-                fill="hsl(0, 72%, 51%)"
+                fill="hsl(var(--destructive))"
                 radius={[4, 4, 0, 0]}
                 name={t("dashboard.chart_legend_debt")}
               />
