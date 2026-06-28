@@ -9,6 +9,7 @@ export const useAuditLogs = (params: {
   entity?: string;
   action?: string;
   userId?: string;
+  companyId?: string;
   startDate?: Date;
   endDate?: Date;
   page?: number;
@@ -18,13 +19,18 @@ export const useAuditLogs = (params: {
     queryKey: ["audit-logs", params],
     queryFn: async () => {
       try {
-        const { data: res } = await axiosInstance.get("/audit-logs", {
+        const { data: res } = await axiosInstance.get("/platform/audit-log", {
           params: {
             entity: params.entity,
             action: params.action,
-            userId: params.userId,
-            startDate: params.startDate ? toLocalDateStr(params.startDate) : undefined,
-            endDate: params.endDate ? toLocalDateStr(params.endDate) : undefined,
+            user_id: params.userId,
+            company_id: params.companyId,
+            start_date: params.startDate
+              ? toLocalDateStr(params.startDate)
+              : undefined,
+            end_date: params.endDate
+              ? toLocalDateStr(params.endDate)
+              : undefined,
             page: params.page,
             limit: params.limit,
           },

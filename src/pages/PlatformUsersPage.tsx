@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -122,29 +122,33 @@ const PlatformUsersPage = () => {
   const deleteMut = useDeletePlatformUser();
   const resetMut = useResetPlatformUserPassword();
 
-  const items = data?.items ?? [];
+  const sorted = useMemo(() => {
+    const items = data?.items ?? [];
+    return [...items].sort((a, b) => {
+      const va = a[sortField];
+      const vb = b[sortField];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === "string" && typeof vb === "string") {
+        return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+      }
+      return sortDir === "asc"
+        ? va < vb
+          ? -1
+          : va > vb
+            ? 1
+            : 0
+        : va > vb
+          ? -1
+          : va < vb
+            ? 1
+            : 0;
+    });
+  }, [data?.items, sortField, sortDir]);
 
-  const toggleSort = (field: keyof User) => {
-    if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSortField(field);
-      setSortDir("asc");
-    }
-  };
-
-  const sorted = [...items].sort((a, b) => {
-    const va = a[sortField];
-    const vb = b[sortField];
-    if (va == null && vb == null) return 0;
-    if (va == null) return 1;
-    if (vb == null) return -1;
-    if (typeof va === "string" && typeof vb === "string") {
-      return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
-    }
-    return sortDir === "asc" ? (va < vb ? -1 : va > vb ? 1 : 0) : va > vb ? -1 : va < vb ? 1 : 0;
-  });
-
-  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(sorted);
+  const { currentPage, totalPages, paginatedItems, setCurrentPage } =
+    usePagination(sorted);
   const startIndex = (currentPage - 1) * 10;
 
   const openCreate = () => {
@@ -184,7 +188,7 @@ const PlatformUsersPage = () => {
         },
         {
           onSuccess: () => {
-            toast.success(t('platform_users.toast_updated'));
+            toast.success(t("platform_users.toast_updated"));
             setModalOpen(false);
           },
           onError: (err) => toast.error(extractErrorMessage(err)),
@@ -208,7 +212,7 @@ const PlatformUsersPage = () => {
         },
         {
           onSuccess: () => {
-            toast.success(t('platform_users.toast_created'));
+            toast.success(t("platform_users.toast_created"));
             setModalOpen(false);
           },
           onError: (err) => toast.error(extractErrorMessage(err)),
@@ -221,7 +225,7 @@ const PlatformUsersPage = () => {
     if (!deleteId) return;
     deleteMut.mutate(deleteId, {
       onSuccess: () => {
-        toast.success(t('platform_users.toast_deleted'));
+        toast.success(t("platform_users.toast_deleted"));
         setDeleteId(null);
       },
       onError: (err) => toast.error(extractErrorMessage(err)),
@@ -240,7 +244,7 @@ const PlatformUsersPage = () => {
       { id: resetTarget.id, password: newPassword },
       {
         onSuccess: () => {
-          toast.success(t('platform_users.toast_password_reset'));
+          toast.success(t("platform_users.toast_password_reset"));
           setResetTarget(null);
           setNewPassword("");
         },
@@ -250,17 +254,24 @@ const PlatformUsersPage = () => {
   };
 
   const showCompanyField = form.role !== "dev";
-  const showBranchField = form.role === "manager" || form.role === "operator" || form.role === "teacher";
+  const showBranchField =
+    form.role === "manager" ||
+    form.role === "operator" ||
+    form.role === "teacher";
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-balance">{t('platform_users.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('platform_users.count', { count: items.length })}</p>
+          <h1 className="font-heading text-2xl font-bold text-balance">
+            {t("platform_users.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t("platform_users.count", { count: items.length })}
+          </p>
         </div>
         <Button className="gap-2" onClick={openCreate}>
-          <Plus className="h-4 w-4" /> {t('platform_users.add_new')}
+          <Plus className="h-4 w-4" /> {t("platform_users.add_new")}
         </Button>
       </div>
 
@@ -268,23 +279,28 @@ const PlatformUsersPage = () => {
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={t('platform_users.search_placeholder')}
+            placeholder={t("platform_users.search_placeholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 bg-secondary border-border"
           />
         </div>
-        <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as UserRole | "all")}>
+        <Select
+          value={roleFilter}
+          onValueChange={(v) => setRoleFilter(v as UserRole | "all")}
+        >
           <SelectTrigger className="w-44 bg-secondary border-border">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t('platform_users.filter_all_roles')}</SelectItem>
-            <SelectItem value="dev">{t('roles.dev')}</SelectItem>
-            <SelectItem value="owner">{t('roles.owner')}</SelectItem>
-            <SelectItem value="manager">{t('roles.manager')}</SelectItem>
-            <SelectItem value="operator">{t('roles.operator')}</SelectItem>
-            <SelectItem value="teacher">{t('roles.teacher')}</SelectItem>
+            <SelectItem value="all">
+              {t("platform_users.filter_all_roles")}
+            </SelectItem>
+            <SelectItem value="dev">{t("roles.dev")}</SelectItem>
+            <SelectItem value="owner">{t("roles.owner")}</SelectItem>
+            <SelectItem value="manager">{t("roles.manager")}</SelectItem>
+            <SelectItem value="operator">{t("roles.operator")}</SelectItem>
+            <SelectItem value="teacher">{t("roles.teacher")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={companyFilter} onValueChange={setCompanyFilter}>
@@ -292,7 +308,9 @@ const PlatformUsersPage = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t('platform_users.filter_all_companies')}</SelectItem>
+            <SelectItem value="all">
+              {t("platform_users.filter_all_companies")}
+            </SelectItem>
             {companies.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}
@@ -307,39 +325,61 @@ const PlatformUsersPage = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">#</th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                  #
+                </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   <button
                     onClick={() => toggleSort("name")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
                   >
-                    {t('platform_users.name')}
+                    {t("platform_users.name")}
                     {sortField === "name" ? (
-                      sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                      sortDir === "asc" ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )
                     ) : (
                       <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
                     )}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('platform_users.email')}</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('platform_users.phone')}</th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('common.role')}</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('common.company')}</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('common.branch')}</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  {t("platform_users.email")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  {t("platform_users.phone")}
+                </th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                  {t("common.role")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  {t("common.company")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  {t("common.branch")}
+                </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   <button
                     onClick={() => toggleSort("created_at")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
                   >
-                    {t('platform_users.created')}
+                    {t("platform_users.created")}
                     {sortField === "created_at" ? (
-                      sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                      sortDir === "asc" ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )
                     ) : (
                       <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
                     )}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('common.actions')}</th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                  {t("common.actions")}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -352,11 +392,20 @@ const PlatformUsersPage = () => {
                     </tr>
                   ))
                 : paginatedItems.map((u, idx) => (
-                    <tr key={u.id} className="table-row-striped border-b border-border/50">
-                      <td className="px-4 py-3 text-center text-muted-foreground">{startIndex + idx + 1}</td>
+                    <tr
+                      key={u.id}
+                      className="table-row-striped border-b border-border/50"
+                    >
+                      <td className="px-4 py-3 text-center text-muted-foreground">
+                        {startIndex + idx + 1}
+                      </td>
                       <td className="px-4 py-3 font-medium">{u.name || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{formatPhone(u.phone)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {u.email}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {formatPhone(u.phone)}
+                      </td>
                       <td className="px-4 py-3 text-center">
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role]}`}
@@ -364,9 +413,15 @@ const PlatformUsersPage = () => {
                           {ROLE_LABEL[u.role]}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{u.company_name || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{u.branch_name || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground tabular-nums">{formatDate(u.created_at)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {u.company_name || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {u.branch_name || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground tabular-nums">
+                        {formatDate(u.created_at)}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">
                           <button
@@ -374,21 +429,21 @@ const PlatformUsersPage = () => {
                               setResetTarget(u);
                               setNewPassword("");
                             }}
-                            title={t('platform_users.reset_password_title')}
+                            title={t("platform_users.reset_password_title")}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                           >
                             <KeyRound className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => openEdit(u)}
-                            title={t('common.edit')}
+                            title={t("common.edit")}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => setDeleteId(u.id)}
-                            title={t('common.delete')}
+                            title={t("common.delete")}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -402,8 +457,8 @@ const PlatformUsersPage = () => {
           {items.length === 0 && !isLoading && (
             <EmptyState
               icon={KeyRound}
-              title={t('platform_users.not_found_title')}
-              description={t('platform_users.not_found_desc')}
+              title={t("platform_users.not_found_title")}
+              description={t("platform_users.not_found_desc")}
             />
           )}
         </div>
@@ -419,8 +474,8 @@ const PlatformUsersPage = () => {
           ) : items.length === 0 ? (
             <EmptyState
               icon={KeyRound}
-              title={t('platform_users.not_found_title')}
-              description={t('platform_users.not_found_desc')}
+              title={t("platform_users.not_found_title")}
+              description={t("platform_users.not_found_desc")}
             />
           ) : (
             <div className="grid gap-3">
@@ -431,7 +486,7 @@ const PlatformUsersPage = () => {
                   subtitle={u.email}
                   fields={[
                     {
-                      label: t('common.role'),
+                      label: t("common.role"),
                       value: (
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role]}`}
@@ -440,9 +495,15 @@ const PlatformUsersPage = () => {
                         </span>
                       ),
                     },
-                    { label: t('common.company'), value: u.company_name || "—" },
-                    { label: t('common.branch'), value: u.branch_name || "—" },
-                    { label: t('platform_users.created'), value: formatDate(u.created_at) },
+                    {
+                      label: t("common.company"),
+                      value: u.company_name || "—",
+                    },
+                    { label: t("common.branch"), value: u.branch_name || "—" },
+                    {
+                      label: t("platform_users.created"),
+                      value: formatDate(u.created_at),
+                    },
                   ]}
                   actions={
                     <>
@@ -451,21 +512,21 @@ const PlatformUsersPage = () => {
                           setResetTarget(u);
                           setNewPassword("");
                         }}
-                        title={t('platform_users.reset_password_title')}
+                        title={t("platform_users.reset_password_title")}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                       >
                         <KeyRound className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => openEdit(u)}
-                        title={t('common.edit')}
+                        title={t("common.edit")}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => setDeleteId(u.id)}
-                        title={t('common.delete')}
+                        title={t("common.delete")}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -489,54 +550,64 @@ const PlatformUsersPage = () => {
         <DialogContent className="max-w-md bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-heading">
-              {editItem ? t('platform_users.edit_title') : t('platform_users.add_title')}
+              {editItem
+                ? t("platform_users.edit_title")
+                : t("platform_users.add_title")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>{t('platform_users.name_label')}</Label>
+              <Label>{t("platform_users.name_label")}</Label>
               <Input
                 value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
                 required
                 className="bg-secondary border-border"
               />
             </div>
             <div className="space-y-2">
-              <Label>{t('platform_users.email_label')}</Label>
+              <Label>{t("platform_users.email_label")}</Label>
               <Input
                 type="email"
                 value={form.email}
-                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, email: e.target.value }))
+                }
                 required
                 className="bg-secondary border-border"
               />
             </div>
             {!editItem && (
               <div className="space-y-2">
-                <Label>{t('platform_users.password_label')}</Label>
+                <Label>{t("platform_users.password_label")}</Label>
                 <Input
                   type="password"
                   value={form.password}
-                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, password: e.target.value }))
+                  }
                   required
                   minLength={8}
-                  placeholder={t('platform_users.password_placeholder')}
+                  placeholder={t("platform_users.password_placeholder")}
                   className="bg-secondary border-border"
                 />
               </div>
             )}
             <div className="space-y-2">
-              <Label>{t('platform_users.phone_label')}</Label>
+              <Label>{t("platform_users.phone_label")}</Label>
               <Input
                 value={form.phone}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                placeholder={t('platform_users.phone_placeholder')}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, phone: e.target.value }))
+                }
+                placeholder={t("platform_users.phone_placeholder")}
                 className="bg-secondary border-border"
               />
             </div>
             <div className="space-y-2">
-              <Label>{t('platform_users.role_label')}</Label>
+              <Label>{t("platform_users.role_label")}</Label>
               <Select
                 value={form.role}
                 onValueChange={(v) =>
@@ -552,23 +623,30 @@ const PlatformUsersPage = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="dev">{t('roles.dev')}</SelectItem>
-                  <SelectItem value="owner">{t('roles.owner')}</SelectItem>
-                  <SelectItem value="manager">{t('roles.manager')}</SelectItem>
-                  <SelectItem value="operator">{t('roles.operator')}</SelectItem>
-                  <SelectItem value="teacher">{t('roles.teacher')}</SelectItem>
+                  <SelectItem value="dev">{t("roles.dev")}</SelectItem>
+                  <SelectItem value="owner">{t("roles.owner")}</SelectItem>
+                  <SelectItem value="manager">{t("roles.manager")}</SelectItem>
+                  <SelectItem value="operator">
+                    {t("roles.operator")}
+                  </SelectItem>
+                  <SelectItem value="teacher">{t("roles.teacher")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {showCompanyField && (
               <div className="space-y-2">
-                <Label>{t('platform_users.company_label')}{form.role !== "dev" ? " *" : ""}</Label>
+                <Label>
+                  {t("platform_users.company_label")}
+                  {form.role !== "dev" ? " *" : ""}
+                </Label>
                 <Select
                   value={form.companyId}
-                  onValueChange={(v) => setForm((f) => ({ ...f, companyId: v }))}
+                  onValueChange={(v) =>
+                    setForm((f) => ({ ...f, companyId: v }))
+                  }
                 >
                   <SelectTrigger className="bg-secondary border-border">
-                    <SelectValue placeholder={t('common.select_placeholder')} />
+                    <SelectValue placeholder={t("common.select_placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {companies.map((c) => (
@@ -582,25 +660,34 @@ const PlatformUsersPage = () => {
             )}
             {showBranchField && (
               <div className="space-y-2">
-                <Label>{t('platform_users.branch_label')}</Label>
+                <Label>{t("platform_users.branch_label")}</Label>
                 <Input
                   value={form.branchId}
-                  onChange={(e) => setForm((f) => ({ ...f, branchId: e.target.value }))}
-                  placeholder={t('platform_users.branch_placeholder')}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, branchId: e.target.value }))
+                  }
+                  placeholder={t("platform_users.branch_placeholder")}
                   className="bg-secondary border-border"
                 />
               </div>
             )}
             <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
-                {t('common.cancel')}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setModalOpen(false)}
+              >
+                {t("common.cancel")}
               </Button>
-              <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
+              <Button
+                type="submit"
+                disabled={createMut.isPending || updateMut.isPending}
+              >
                 {createMut.isPending || updateMut.isPending
-                  ? t('common.saving')
+                  ? t("common.saving")
                   : editItem
-                    ? t('common.save')
-                    : t('common.add')}
+                    ? t("common.save")
+                    : t("common.add")}
               </Button>
             </div>
           </form>
@@ -618,21 +705,25 @@ const PlatformUsersPage = () => {
       >
         <DialogContent className="max-w-sm bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="font-heading">{t('platform_users.reset_password_title')}</DialogTitle>
+            <DialogTitle className="font-heading">
+              {t("platform_users.reset_password_title")}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleResetPassword} className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              {t('platform_users.reset_password_desc', { name: resetTarget?.name || resetTarget?.email })}
+              {t("platform_users.reset_password_desc", {
+                name: resetTarget?.name || resetTarget?.email,
+              })}
             </p>
             <div className="space-y-2">
-              <Label>{t('platform_users.new_password_label')}</Label>
+              <Label>{t("platform_users.new_password_label")}</Label>
               <Input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 minLength={8}
-                placeholder={t('platform_users.new_password_placeholder')}
+                placeholder={t("platform_users.new_password_placeholder")}
                 className="bg-secondary border-border"
               />
             </div>
@@ -645,10 +736,12 @@ const PlatformUsersPage = () => {
                   setNewPassword("");
                 }}
               >
-                {t('common.cancel')}
+                {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={resetMut.isPending}>
-                {resetMut.isPending ? t('platform_users.updating_button') : t('platform_users.update_button')}
+                {resetMut.isPending
+                  ? t("platform_users.updating_button")
+                  : t("platform_users.update_button")}
               </Button>
             </div>
           </form>

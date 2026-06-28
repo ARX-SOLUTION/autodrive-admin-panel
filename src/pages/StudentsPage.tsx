@@ -31,7 +31,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import StudentModal from "@/components/ui/StudentModal";
 import { DataCard } from "@/components/ui/DataCard";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Plus, Search, Pencil, Trash2, CalendarIcon, ChevronUp, ChevronDown, ChevronsUpDown, GraduationCap } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+  CalendarIcon,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  GraduationCap,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePagination } from "@/hooks/usePagination";
@@ -68,15 +78,23 @@ export const formatDateTime = (d: string) => {
 const StudentsPage = () => {
   const { isOwner, user } = useAuthStore();
   const defaultBranchId = isOwner() ? undefined : user?.branch_id || undefined;
-  
+
   const {
-    courseType, setCourseType,
-    branchId, setBranchId,
-    search, setSearch,
-    dateFrom, setDateFrom,
-    dateTo, setDateTo,
-    sortField, sortDir, toggleSort,
-    operatorId, setOperatorId
+    courseType,
+    setCourseType,
+    branchId,
+    setBranchId,
+    search,
+    setSearch,
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    sortField,
+    sortDir,
+    toggleSort,
+    operatorId,
+    setOperatorId,
   } = useStudentFilters(defaultBranchId);
 
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -91,14 +109,29 @@ const StudentsPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editStudent, setEditStudent] = useState<Student | null>(null);
 
+  const PAGE_SIZE = 50;
+  const { currentPage, setCurrentPage } = usePagination<Student>([], PAGE_SIZE);
+
   const { data: branches } = useBranches();
   const { data: operators } = useOperators();
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    courseType,
+    branchId,
+    operatorId,
+    debouncedSearch,
+    dateFrom,
+    dateTo,
+    setCurrentPage,
+  ]);
 
   const { data: students, isLoading } = useStudents(
     courseType,
     branchId,
-    1,
-    500,
+    currentPage,
+    PAGE_SIZE,
     operatorId,
   );
   const createMutation = useCreateStudent();
@@ -136,12 +169,23 @@ const StudentsPage = () => {
       if (typeof va === "string" && typeof vb === "string") {
         return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
       }
-      return sortDir === "asc" ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
+      return sortDir === "asc"
+        ? va < vb
+          ? -1
+          : va > vb
+            ? 1
+            : 0
+        : va > vb
+          ? -1
+          : va < vb
+            ? 1
+            : 0;
     });
   }, [filtered, sortField, sortDir]);
 
-  const { currentPage, totalPages, paginatedItems, setCurrentPage } =
-    usePagination(sorted);
+  const paginatedItems = sorted;
+  const totalPages =
+    sorted.length === PAGE_SIZE ? currentPage + 1 : Math.max(1, currentPage);
 
   const handleDelete = () => {
     if (!deleteId) return;
@@ -188,13 +232,12 @@ const StudentsPage = () => {
     setModalOpen(true);
   };
 
-  // Calculate the starting index for current page
-  const startIndex = (currentPage - 1) * 10;
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   return (
     <PageContainer>
-      <PageHeader 
-        title="Talabalar" 
+      <PageHeader
+        title="Talabalar"
         description={`${filtered?.length || 0} ta talaba topildi`}
         actions={
           <Button className="gap-2" onClick={openCreate}>
@@ -234,26 +277,27 @@ const StudentsPage = () => {
         )}
 
         {/* Operator filter — owner va manager uchun */}
-        {(isOwner() || user?.role === "manager") && (operators || []).length > 0 && (
-          <Select
-            value={operatorId || "all"}
-            onValueChange={(v) => setOperatorId(v === "all" ? undefined : v)}
-          >
-            <SelectTrigger className="w-44 bg-secondary border-border">
-              <SelectValue placeholder="Operator" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Barcha operatorlar</SelectItem>
-              {(operators || [])
-                .filter((op) => isOwner() || op.branch_id === user?.branch_id)
-                .map((op) => (
-                  <SelectItem key={op.id} value={op.id}>
-                    {op.name || op.email}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        )}
+        {(isOwner() || user?.role === "manager") &&
+          (operators || []).length > 0 && (
+            <Select
+              value={operatorId || "all"}
+              onValueChange={(v) => setOperatorId(v === "all" ? undefined : v)}
+            >
+              <SelectTrigger className="w-44 bg-secondary border-border">
+                <SelectValue placeholder="Operator" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barcha operatorlar</SelectItem>
+                {(operators || [])
+                  .filter((op) => isOwner() || op.branch_id === user?.branch_id)
+                  .map((op) => (
+                    <SelectItem key={op.id} value={op.id}>
+                      {op.name || op.email}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          )}
 
         {/* Date filter — single or range */}
         <Popover>
@@ -326,24 +370,57 @@ const StudentsPage = () => {
                   #
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  <button onClick={() => toggleSort("last_name")} className="flex items-center gap-1 hover:text-foreground transition-colors">
+                  <button
+                    onClick={() => toggleSort("last_name")}
+                    className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  >
                     Familya
-                    {sortField === "last_name" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
+                    {sortField === "last_name" ? (
+                      sortDir === "asc" ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )
+                    ) : (
+                      <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                    )}
                   </button>
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  <button onClick={() => toggleSort("first_name")} className="flex items-center gap-1 hover:text-foreground transition-colors">
+                  <button
+                    onClick={() => toggleSort("first_name")}
+                    className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  >
                     Ismi
-                    {sortField === "first_name" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
+                    {sortField === "first_name" ? (
+                      sortDir === "asc" ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )
+                    ) : (
+                      <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                    )}
                   </button>
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   Telefon
                 </th>
                 <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                  <button onClick={() => toggleSort("total_price")} className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
+                  <button
+                    onClick={() => toggleSort("total_price")}
+                    className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
+                  >
                     Kurs narxi
-                    {sortField === "total_price" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
+                    {sortField === "total_price" ? (
+                      sortDir === "asc" ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )
+                    ) : (
+                      <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                    )}
                   </button>
                 </th>
                 {courseType === "tezkor" ? (
@@ -352,9 +429,20 @@ const StudentsPage = () => {
                       To'lov
                     </th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                      <button onClick={() => toggleSort("debt")} className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
+                      <button
+                        onClick={() => toggleSort("debt")}
+                        className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
+                      >
                         Qarzdorlik
-                        {sortField === "debt" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
+                        {sortField === "debt" ? (
+                          sortDir === "asc" ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                        )}
                       </button>
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
@@ -388,9 +476,20 @@ const StudentsPage = () => {
                       3-tulov
                     </th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                      <button onClick={() => toggleSort("debt")} className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
+                      <button
+                        onClick={() => toggleSort("debt")}
+                        className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
+                      >
                         Qarzdorlik
-                        {sortField === "debt" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
+                        {sortField === "debt" ? (
+                          sortDir === "asc" ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                        )}
                       </button>
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
@@ -423,9 +522,20 @@ const StudentsPage = () => {
                   </>
                 )}
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  <button onClick={() => toggleSort("created_at")} className="flex items-center gap-1 hover:text-foreground transition-colors">
+                  <button
+                    onClick={() => toggleSort("created_at")}
+                    className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  >
                     Sana
-                    {sortField === "created_at" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
+                    {sortField === "created_at" ? (
+                      sortDir === "asc" ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )
+                    ) : (
+                      <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                    )}
                   </button>
                 </th>
                 <th className="px-4 py-3 text-center font-medium text-muted-foreground">
@@ -628,7 +738,11 @@ const StudentsPage = () => {
                     {
                       label: "Qarz",
                       value: (
-                        <span className={s.debt > 0 ? "text-destructive" : "text-success"}>
+                        <span
+                          className={
+                            s.debt > 0 ? "text-destructive" : "text-success"
+                          }
+                        >
                           {s.debt > 0 ? formatMoney(s.debt) : "—"}
                         </span>
                       ),

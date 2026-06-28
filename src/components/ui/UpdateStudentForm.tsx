@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Student, CourseType } from "@/types/student";
-import { CreateStudentPayload, studentFormSchema, StudentFormValues } from "@/lib/schemas/student.schema";
+import {
+  CreateStudentPayload,
+  studentFormSchema,
+  StudentFormValues,
+} from "@/lib/schemas/student.schema";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useAuthStore } from "@/store/authStore";
@@ -52,7 +56,8 @@ export function UpdateStudentForm({
       amount_paid: 0,
       initial_payment: student.initial_payment || 0,
       group_id: student.group_id || "",
-      completion_date: student.completion_date === undefined ? "" : student.completion_date,
+      completion_date:
+        student.completion_date === undefined ? "" : student.completion_date,
       contract_number: student.contract_number || "",
       notes: student.notes === undefined ? "" : student.notes,
       status: student.status || "active",
@@ -77,37 +82,46 @@ export function UpdateStudentForm({
   );
 
   useEffect(() => {
-    form.reset({
-      first_name: student.first_name,
-      last_name: student.last_name,
-      phone: student.phone,
-      course_type: student.course_type,
-      branch_id: student.branch_id,
-      payment_method: student.payment_method,
-      result: student.result,
-      has_document: student.has_document,
-      o83: student.o83,
-      total_price: student.total_price,
-      amount_paid: 0,
-      initial_payment: student.initial_payment || 0,
-      group_id: student.group_id || "",
-      completion_date: student.completion_date === undefined ? "" : student.completion_date,
-      contract_number: student.contract_number || "",
-      notes: student.notes === undefined ? "" : student.notes,
-      status: student.status || "active",
-      registered_by: student.registered_by_id || "",
-    });
-  }, [student, courseType]);
+    if (student) {
+      form.reset({
+        first_name: student.first_name,
+        last_name: student.last_name,
+        phone: student.phone,
+        total_price: student.total_price,
+        initial_payment: student.initial_payment || 0,
+        amount_paid: 0,
+        payment_method: student.payment_method || "naqd",
+        group_id: student.group_id || "",
+        branch_id: student.branch_id || "",
+        has_document: student.has_document,
+        notes: student.notes || "",
+        result: student.result || "oqimoqda",
+        course_type: student.course_type,
+        completion_date: student.completion_date
+          ? new Date(student.completion_date).toISOString().split("T")[0]
+          : undefined,
+        contract_number: student.contract_number || undefined,
+        o83: student.o83,
+        registered_by: student.registered_by || undefined,
+        status: student.status || "active",
+      });
+    }
+  }, [student, courseType, form]);
 
   useEffect(() => {
-    setDebt(Math.max(0, (student.debt || 0) - (Number(watchedAmountPaid) || 0)));
+    setDebt(
+      Math.max(0, (student.debt || 0) - (Number(watchedAmountPaid) || 0)),
+    );
   }, [watchedAmountPaid, student]);
 
   useEffect(() => {
     if (watchedGroupId && !groupList.some((g) => g.id === watchedGroupId)) {
       form.setValue("group_id", "");
     }
-    if (watchedRegisteredBy && !operatorList.some((op) => op.id === watchedRegisteredBy)) {
+    if (
+      watchedRegisteredBy &&
+      !operatorList.some((op) => op.id === watchedRegisteredBy)
+    ) {
       form.setValue("registered_by", "");
     }
   }, [form, groupList, operatorList, watchedGroupId, watchedRegisteredBy]);
@@ -145,7 +159,9 @@ export function UpdateStudentForm({
   });
 
   const currentBranchName =
-    branchList.find((b) => b.id === watchedBranchId)?.name || watchedBranchId || "";
+    branchList.find((b) => b.id === watchedBranchId)?.name ||
+    watchedBranchId ||
+    "";
 
   return (
     <Form {...form}>
@@ -166,8 +182,13 @@ export function UpdateStudentForm({
           <Button type="button" variant="outline" onClick={onCancel}>
             Bekor qilish
           </Button>
-          <Button type="submit" disabled={loading || form.formState.isSubmitting}>
-            {loading || form.formState.isSubmitting ? "Saqlanmoqda..." : "Saqlash"}
+          <Button
+            type="submit"
+            disabled={loading || form.formState.isSubmitting}
+          >
+            {loading || form.formState.isSubmitting
+              ? "Saqlanmoqda..."
+              : "Saqlash"}
           </Button>
         </div>
       </form>

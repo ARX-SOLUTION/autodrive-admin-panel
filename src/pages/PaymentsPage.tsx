@@ -8,52 +8,48 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
-import
-  {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-  } from "@/components/ui/popover";
-import
-  {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
 import { cn } from "@/lib/utils";
 import { useBranches } from "@/services/branchService";
-import
-  {
-    useCreatePayment,
-    usePayments,
-    usePaymentSnapshot,
-  } from "@/services/paymentService";
+import {
+  useCreatePayment,
+  usePayments,
+  usePaymentSnapshot,
+} from "@/services/paymentService";
 import { useStudents } from "@/services/studentService";
 import { useAuthStore } from "@/store/authStore";
 import { format } from "date-fns";
-import
-  {
-    AlertTriangle,
-    CalendarIcon,
-    ChevronDown,
-    ChevronsUpDown,
-    ChevronUp,
-    CreditCard,
-    Download,
-    Loader2,
-    Plus,
-    Receipt,
-    Search,
-    Sun,
-    TrendingUp,
-    Users,
-    Wallet,
-    X,
-  } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarIcon,
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronUp,
+  CreditCard,
+  Download,
+  Loader2,
+  Plus,
+  Receipt,
+  Search,
+  Sun,
+  TrendingUp,
+  Users,
+  Wallet,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -104,17 +100,26 @@ const lastMonthEnd = () => {
 const PaymentsPage = () => {
   const { isOwner, user } = useAuthStore();
   const defaultBranchId = isOwner() ? undefined : user?.branch_id || undefined;
-  
+
   const {
-    branchId, setBranchId,
-    search, setSearch,
-    paymentStatus, setPaymentStatus,
-    paymentMethodFilter, setPaymentMethodFilter,
-    courseTypeFilter, setCourseTypeFilter,
-    dateFrom, setDateFrom,
-    dateTo, setDateTo,
-    sortField, sortDir, toggleSort,
-    clearAllFilters
+    branchId,
+    setBranchId,
+    search,
+    setSearch,
+    paymentStatus,
+    setPaymentStatus,
+    paymentMethodFilter,
+    setPaymentMethodFilter,
+    courseTypeFilter,
+    setCourseTypeFilter,
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    sortField,
+    sortDir,
+    toggleSort,
+    clearAllFilters,
   } = usePaymentFilters(defaultBranchId);
 
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -134,7 +139,11 @@ const PaymentsPage = () => {
         ? false
         : undefined;
 
-  const { data: payments, isLoading, isFetching } = usePayments(
+  const {
+    data: payments,
+    isLoading,
+    isFetching,
+  } = usePayments(
     branchId,
     courseTypeFilter !== "all" ? courseTypeFilter : undefined,
     dateFrom,
@@ -143,20 +152,39 @@ const PaymentsPage = () => {
   const hasDateFilter = !!dateFrom || !!dateTo;
   const { data: snapshot } = usePaymentSnapshot(branchId);
   const { data: branches } = useBranches();
-  const { data: tezkorStudents } = useStudents("tezkor", branchId, 1, 500);
-  const { data: avtoStudents } = useStudents("avto_maktab", branchId, 1, 500);
+  const { data: tezkorStudents } = useStudents(
+    "tezkor",
+    branchId,
+    1,
+    500,
+    undefined,
+    {
+      enabled: modalOpen,
+    },
+  );
+  const { data: avtoStudents } = useStudents(
+    "avto_maktab",
+    branchId,
+    1,
+    500,
+    undefined,
+    {
+      enabled: modalOpen,
+    },
+  );
   const allStudents = [...(tezkorStudents ?? []), ...(avtoStudents ?? [])];
   const createPayment = useCreatePayment();
 
   useEffect(() => {
     if (isOwner()) {
       toast.info("Excel yuklab olish mavjud", {
-        description: "Filterlangan to'lovlarni Excel formatida yuklab olishingiz mumkin.",
+        description:
+          "Filterlangan to'lovlarni Excel formatida yuklab olishingiz mumkin.",
         duration: 5000,
         icon: <Download className="h-4 w-4" />,
       });
     }
-  }, []);
+  }, [isOwner]);
 
   // Client-side filter for search/status/method (date is server-side)
   const filtered = useMemo(
@@ -176,11 +204,20 @@ const PaymentsPage = () => {
     [payments, debouncedSearch, paymentStatus, paymentMethodFilter],
   );
 
-  const displayedSummary = useMemo(() => ({
-    period_collected: filtered.reduce((sum, p) => sum + (p.amount_paid || 0), 0),
-    period_payments_count: filtered.length,
-    period_debt: filtered.reduce((sum, p) => sum + (p.remaining_debt || 0), 0),
-  }), [filtered]);
+  const displayedSummary = useMemo(
+    () => ({
+      period_collected: filtered.reduce(
+        (sum, p) => sum + (p.amount_paid || 0),
+        0,
+      ),
+      period_payments_count: filtered.length,
+      period_debt: filtered.reduce(
+        (sum, p) => sum + (p.remaining_debt || 0),
+        0,
+      ),
+    }),
+    [filtered],
+  );
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -192,7 +229,17 @@ const PaymentsPage = () => {
       if (typeof va === "string" && typeof vb === "string") {
         return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
       }
-      return sortDir === "asc" ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
+      return sortDir === "asc"
+        ? va < vb
+          ? -1
+          : va > vb
+            ? 1
+            : 0
+        : va > vb
+          ? -1
+          : va < vb
+            ? 1
+            : 0;
     });
   }, [filtered, sortField, sortDir]);
 
@@ -363,13 +410,21 @@ const PaymentsPage = () => {
 
         {/* Quick date presets */}
         <div className="flex flex-wrap gap-2 mb-3">
-          <Button variant="outline" size="sm" onClick={() => setPreset("today")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPreset("today")}
+          >
             Bugun
           </Button>
           <Button variant="outline" size="sm" onClick={() => setPreset("week")}>
             So'nggi 7 kun
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setPreset("month")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPreset("month")}
+          >
             Bu oy
           </Button>
           <Button
@@ -537,196 +592,260 @@ const PaymentsPage = () => {
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           )}
-        <div className={cn("glass-card overflow-hidden transition-opacity duration-200", isFetching && !isLoading && "opacity-50")}>
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                    #
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                    <button onClick={() => toggleSort("student_name")} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                      Talaba
-                      {sortField === "student_name" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                    Filial
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                    Kurs
-                  </th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                    Umumiy narx
-                  </th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                    <button onClick={() => toggleSort("amount_paid")} className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
-                      Bu to'lov
-                      {sortField === "amount_paid" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                    <button onClick={() => toggleSort("remaining_debt")} className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
-                      Joriy qoldiq
-                      {sortField === "remaining_debt" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                    Turi
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                    Operator
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                    <button onClick={() => toggleSort("date")} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                      Sana
-                      {sortField === "date" ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />}
-                    </button>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  [...Array(4)].map((_, i) => (
-                    <tr key={i} className="border-b border-border/50">
-                      <td colSpan={10} className="p-4">
-                        <Skeleton className="h-5" />
-                      </td>
-                    </tr>
-                  ))
-                ) : paginatedItems?.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={10}
-                      className="py-12 text-center text-muted-foreground"
-                    >
-                      To'lovlar topilmadi
-                    </td>
+          <div
+            className={cn(
+              "glass-card overflow-hidden transition-opacity duration-200",
+              isFetching && !isLoading && "opacity-50",
+            )}
+          >
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                      #
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      <button
+                        onClick={() => toggleSort("student_name")}
+                        className="flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        Talaba
+                        {sortField === "student_name" ? (
+                          sortDir === "asc" ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Filial
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Kurs
+                    </th>
+                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                      Umumiy narx
+                    </th>
+                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                      <button
+                        onClick={() => toggleSort("amount_paid")}
+                        className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
+                      >
+                        Bu to'lov
+                        {sortField === "amount_paid" ? (
+                          sortDir === "asc" ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                      <button
+                        onClick={() => toggleSort("remaining_debt")}
+                        className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
+                      >
+                        Joriy qoldiq
+                        {sortField === "remaining_debt" ? (
+                          sortDir === "asc" ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">
+                      Turi
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      Operator
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      <button
+                        onClick={() => toggleSort("date")}
+                        className="flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        Sana
+                        {sortField === "date" ? (
+                          sortDir === "asc" ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )
+                        ) : (
+                          <ChevronsUpDown className="h-3 w-3 text-muted-foreground/50" />
+                        )}
+                      </button>
+                    </th>
                   </tr>
-                ) : (
-                  paginatedItems?.map((p, idx) => (
-                    <tr
-                      key={p.id}
-                      className="table-row-striped border-b border-border/50"
-                    >
-                      <td className="px-4 py-3 text-center text-muted-foreground">
-                        {startIndex + idx + 1}
-                      </td>
-                      <td className="px-4 py-3 font-medium">
-                        {p.student_name}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {p.branch_name}
-                      </td>
-                      <td className="px-4 py-3 text-xs">
-                        {p.course_type === "tezkor"
-                          ? "Tezkor"
-                          : "Avto maktab"}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {new Intl.NumberFormat("uz-UZ").format(p.total_price)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-success font-medium">
-                        +{new Intl.NumberFormat("uz-UZ").format(p.amount_paid)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <span
-                          className={
-                            p.remaining_debt > 0
-                              ? "text-destructive"
-                              : "text-success"
-                          }
-                        >
-                          {p.remaining_debt > 0
-                            ? new Intl.NumberFormat("uz-UZ").format(
-                                p.remaining_debt,
-                              )
-                            : "To'liq"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center text-xs">
-                        {p.payment_method === "naqd" ? "Naqd" : p.payment_method === "karta" ? "Karta" : "Perechisleniya"}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">
-                        {p.recorded_by || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground tabular-nums">
-                        {formatDate(p.date)}
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    [...Array(4)].map((_, i) => (
+                      <tr key={i} className="border-b border-border/50">
+                        <td colSpan={10} className="p-4">
+                          <Skeleton className="h-5" />
+                        </td>
+                      </tr>
+                    ))
+                  ) : paginatedItems?.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={10}
+                        className="py-12 text-center text-muted-foreground"
+                      >
+                        To'lovlar topilmadi
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile card list */}
-          <div className="md:hidden p-3">
-            {isLoading ? (
-              <div className="grid gap-3">
-                {[...Array(4)].map((_, i) => (
-                  <Skeleton key={i} className="h-32 w-full" />
-                ))}
-              </div>
-            ) : paginatedItems?.length === 0 ? (
-              <EmptyState
-                icon={CreditCard}
-                title="To'lovlar topilmadi"
-                description="Tanlangan filtrlar bo'yicha to'lovlar yo'q."
-              />
-            ) : (
-              <div className="grid gap-3">
-                {paginatedItems?.map((p) => (
-                  <DataCard
-                    key={p.id}
-                    title={p.student_name}
-                    subtitle={p.branch_name}
-                    fields={[
-                      { label: "Sana", value: formatDate(p.date) },
-                      {
-                        label: "Summa",
-                        value: (
-                          <span className="text-success font-medium">
-                            +{new Intl.NumberFormat("uz-UZ").format(p.amount_paid)}
-                          </span>
-                        ),
-                      },
-                      {
-                        label: "Qoldiq",
-                        value: (
+                  ) : (
+                    paginatedItems?.map((p, idx) => (
+                      <tr
+                        key={p.id}
+                        className="table-row-striped border-b border-border/50"
+                      >
+                        <td className="px-4 py-3 text-center text-muted-foreground">
+                          {startIndex + idx + 1}
+                        </td>
+                        <td className="px-4 py-3 font-medium">
+                          {p.student_name}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {p.branch_name}
+                        </td>
+                        <td className="px-4 py-3 text-xs">
+                          {p.course_type === "tezkor"
+                            ? "Tezkor"
+                            : "Avto maktab"}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {new Intl.NumberFormat("uz-UZ").format(p.total_price)}
+                        </td>
+                        <td className="px-4 py-3 text-right text-success font-medium">
+                          +
+                          {new Intl.NumberFormat("uz-UZ").format(p.amount_paid)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
                           <span
                             className={
-                              p.remaining_debt > 0 ? "text-destructive" : "text-success"
+                              p.remaining_debt > 0
+                                ? "text-destructive"
+                                : "text-success"
                             }
                           >
                             {p.remaining_debt > 0
-                              ? new Intl.NumberFormat("uz-UZ").format(p.remaining_debt)
+                              ? new Intl.NumberFormat("uz-UZ").format(
+                                  p.remaining_debt,
+                                )
                               : "To'liq"}
                           </span>
-                        ),
-                      },
-                      {
-                        label: "To'lov turi",
-                        value:
-                          p.payment_method === "naqd"
+                        </td>
+                        <td className="px-4 py-3 text-center text-xs">
+                          {p.payment_method === "naqd"
                             ? "Naqd"
                             : p.payment_method === "karta"
                               ? "Karta"
-                              : "Perechisleniya",
-                      },
-                      { label: "Operator", value: p.recorded_by || "—" },
-                      {
-                        label: "Kurs turi",
-                        value: p.course_type === "tezkor" ? "Tezkor" : "Avto maktab",
-                      },
-                    ]}
-                  />
-                ))}
-              </div>
-            )}
+                              : "Perechisleniya"}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground text-xs">
+                          {p.recorded_by || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground tabular-nums">
+                          {formatDate(p.date)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="md:hidden p-3">
+              {isLoading ? (
+                <div className="grid gap-3">
+                  {[...Array(4)].map((_, i) => (
+                    <Skeleton key={i} className="h-32 w-full" />
+                  ))}
+                </div>
+              ) : paginatedItems?.length === 0 ? (
+                <EmptyState
+                  icon={CreditCard}
+                  title="To'lovlar topilmadi"
+                  description="Tanlangan filtrlar bo'yicha to'lovlar yo'q."
+                />
+              ) : (
+                <div className="grid gap-3">
+                  {paginatedItems?.map((p) => (
+                    <DataCard
+                      key={p.id}
+                      title={p.student_name}
+                      subtitle={p.branch_name}
+                      fields={[
+                        { label: "Sana", value: formatDate(p.date) },
+                        {
+                          label: "Summa",
+                          value: (
+                            <span className="text-success font-medium">
+                              +
+                              {new Intl.NumberFormat("uz-UZ").format(
+                                p.amount_paid,
+                              )}
+                            </span>
+                          ),
+                        },
+                        {
+                          label: "Qoldiq",
+                          value: (
+                            <span
+                              className={
+                                p.remaining_debt > 0
+                                  ? "text-destructive"
+                                  : "text-success"
+                              }
+                            >
+                              {p.remaining_debt > 0
+                                ? new Intl.NumberFormat("uz-UZ").format(
+                                    p.remaining_debt,
+                                  )
+                                : "To'liq"}
+                            </span>
+                          ),
+                        },
+                        {
+                          label: "To'lov turi",
+                          value:
+                            p.payment_method === "naqd"
+                              ? "Naqd"
+                              : p.payment_method === "karta"
+                                ? "Karta"
+                                : "Perechisleniya",
+                        },
+                        { label: "Operator", value: p.recorded_by || "—" },
+                        {
+                          label: "Kurs turi",
+                          value:
+                            p.course_type === "tezkor"
+                              ? "Tezkor"
+                              : "Avto maktab",
+                        },
+                      ]}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
         </div>
 
         <div className="mt-4">
