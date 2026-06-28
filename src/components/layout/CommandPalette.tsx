@@ -33,6 +33,7 @@ type NavEntry = {
   icon: typeof LayoutDashboard;
   devOnly?: boolean;
   ownerOnly?: boolean;
+  branchAccess?: boolean;
 };
 
 const NAV_ENTRIES: NavEntry[] = [
@@ -49,7 +50,12 @@ const NAV_ENTRIES: NavEntry[] = [
     icon: KeyRound,
     devOnly: true,
   },
-  { label: "Filiallar", path: "/filiallar", icon: Building2, ownerOnly: true },
+  {
+    label: "Filiallar",
+    path: "/filiallar",
+    icon: Building2,
+    branchAccess: true,
+  },
   { label: "Guruhlar", path: "/guruhlar", icon: Layers },
   { label: "Talabalar", path: "/talabalar", icon: GraduationCap },
   { label: "To'lovlar", path: "/tolovlar", icon: CreditCard },
@@ -74,6 +80,7 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
   const navigate = useNavigate();
   const isDev = useAuthStore((s) => s.isDev());
   const isOwner = useAuthStore((s) => s.isOwner());
+  const canViewBranches = useAuthStore((s) => s.canViewBranches());
   const setActiveCompanyId = useAuthStore((s) => s.setActiveCompanyId);
 
   // Fetch only when palette opens — keeps initial nav cheap.
@@ -82,6 +89,7 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
 
   const visibleNav = NAV_ENTRIES.filter((n) => {
     if (n.devOnly) return isDev;
+    if (n.branchAccess) return canViewBranches;
     if (n.ownerOnly) return isOwner || isDev;
     return true;
   });
