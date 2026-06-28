@@ -363,7 +363,7 @@ const GroupsPage = () => {
                     onClick={() => toggleSort("course_type")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors mx-auto"
                   >
-                    Kurs turi
+                    {t("groups.course_type_col")}
                     {sortField === "course_type" ? (
                       sortDir === "asc" ? (
                         <ChevronUp className="h-3 w-3" />
@@ -379,13 +379,13 @@ const GroupsPage = () => {
                   {t("common.students_count")}
                 </th>
                 <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                  Holati
+                  {t("groups.status_col")}
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  Yaratilgan
+                  {t("groups.created_col")}
                 </th>
                 <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                  Amallar
+                  {t("groups.actions_col")}
                 </th>
               </tr>
             </thead>
@@ -503,19 +503,24 @@ const GroupsPage = () => {
               onClick={() => setDetailGroup(g)}
               fields={[
                 {
-                  label: "Kurs turi",
+                  label: t("groups.card_label_course_type"),
                   value:
-                    g.course_type === "avto_maktab" ? "Avto maktab" : "Tezkor",
+                    g.course_type === "avto_maktab"
+                      ? t("groups.course_school")
+                      : t("groups.course_fast"),
                 },
                 { label: t("groups.students_count"), value: g.active_students },
-                { label: "Yaratilgan", value: formatDate(g.created_at) },
                 {
-                  label: "Holat",
+                  label: t("groups.card_label_created"),
+                  value: formatDate(g.created_at),
+                },
+                {
+                  label: t("groups.card_label_status"),
                   value: (
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${g.is_active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}
                     >
-                      {g.is_active ? "Faol" : "Nofaol"}
+                      {g.is_active ? t("common.active") : t("common.inactive")}
                     </span>
                   ),
                 },
@@ -527,7 +532,7 @@ const GroupsPage = () => {
                       e.stopPropagation();
                       openEdit(g);
                     }}
-                    title="Tahrirlash"
+                    title={t("groups.action_edit")}
                     className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -538,7 +543,7 @@ const GroupsPage = () => {
                         e.stopPropagation();
                         setDeleteId(g.id);
                       }}
-                      title="O'chirish"
+                      title={t("groups.action_delete")}
                       className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -586,34 +591,34 @@ const GroupsPage = () => {
                     #
                   </th>
                   <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    Familya
+                    {t("groups.detail_last_name")}
                   </th>
                   <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    Ismi
+                    {t("groups.detail_first_name")}
                   </th>
                   <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    Telefon
+                    {t("groups.detail_phone")}
                   </th>
                   <th className="px-3 py-3 text-right font-medium text-muted-foreground">
-                    Kurs narxi
+                    {t("groups.detail_course_price")}
                   </th>
                   {detailGroup?.course_type === "tezkor" ? (
                     <th className="px-3 py-3 text-right font-medium text-muted-foreground">
-                      To'lov
+                      {t("groups.detail_payment")}
                     </th>
                   ) : (
                     <th className="px-3 py-3 text-right font-medium text-muted-foreground">
-                      Boshlang'ich
+                      {t("groups.detail_initial")}
                     </th>
                   )}
                   <th className="px-3 py-3 text-right font-medium text-muted-foreground">
-                    Qarzdorlik
+                    {t("groups.detail_debt")}
                   </th>
                   <th className="px-3 py-3 text-center font-medium text-muted-foreground">
-                    To'lov turi
+                    {t("groups.detail_payment_type")}
                   </th>
                   <th className="px-3 py-3 text-center font-medium text-muted-foreground">
-                    Dakument
+                    {t("groups.detail_document")}
                   </th>
                   {detailGroup?.course_type === "avto_maktab" && (
                     <>
@@ -621,21 +626,21 @@ const GroupsPage = () => {
                         O83
                       </th>
                       <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                        Shartnoma
+                        {t("groups.detail_contract")}
                       </th>
                     </>
                   )}
                   <th className="px-3 py-3 text-center font-medium text-muted-foreground">
-                    Natijasi
+                    {t("groups.detail_result")}
                   </th>
                   <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    Operator
+                    {t("groups.detail_operator")}
                   </th>
                   <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    Sana
+                    {t("groups.detail_date")}
                   </th>
                   <th className="px-3 py-3 text-center font-medium text-muted-foreground">
-                    Amallar
+                    {t("groups.detail_actions")}
                   </th>
                 </tr>
               </thead>
@@ -654,7 +659,7 @@ const GroupsPage = () => {
                       colSpan={15}
                       className="py-12 text-center text-muted-foreground"
                     >
-                      Bu guruhda talabalar topilmadi
+                      {t("groups.detail_no_students")}
                     </td>
                   </tr>
                 ) : (
@@ -690,10 +695,10 @@ const GroupsPage = () => {
                       </td>
                       <td className="px-3 py-3 text-center text-muted-foreground">
                         {s?.payment_method === "naqd"
-                          ? "Naqd"
+                          ? t("students.payment_cash")
                           : s?.payment_method === "karta"
-                            ? "Karta"
-                            : "Perechisleniya"}
+                            ? t("students.payment_card")
+                            : t("students.payment_transfer")}
                       </td>
                       <td className="px-3 py-3 text-center">
                         <span
@@ -752,7 +757,9 @@ const GroupsPage = () => {
             </table>
           </div>
           <p className="text-sm text-muted-foreground">
-            Jami: {groupData?.active_students} ta talaba
+            {t("groups.detail_total", {
+              count: groupData?.active_students ?? 0,
+            })}
           </p>
         </DialogContent>
       </Dialog>
@@ -789,7 +796,7 @@ const GroupsPage = () => {
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
                 required
-                placeholder="11-guruh"
+                placeholder={t("groups.name_placeholder")}
                 className="bg-secondary border-border"
               />
             </div>
