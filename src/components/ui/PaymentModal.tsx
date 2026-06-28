@@ -187,7 +187,8 @@ const PaymentModal = ({
                                 {s.last_name} {s.first_name}
                                 {s.debt !== undefined && s.debt > 0 && (
                                   <span className="ml-auto text-xs text-destructive tabular-nums">
-                                    {formatMoney(s.debt)} so'm
+                                    {formatMoney(s.debt)}{" "}
+                                    {t("payments.currency_suffix")}
                                   </span>
                                 )}
                               </CommandItem>
@@ -202,23 +203,26 @@ const PaymentModal = ({
               )}
             />
 
-            {/* Talaba qarzdorligi ko'rsatish */}
+            {/* Show student debt */}
             {selectedStudent && selectedStudent.debt !== undefined && (
               <div className="rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm tabular-nums">
-                <span className="text-muted-foreground">Qarzdorlik: </span>
+                <span className="text-muted-foreground">
+                  {t("payments.modal_debt_label")}{" "}
+                </span>
                 <span className="font-medium text-destructive">
-                  {formatMoney(selectedStudent.debt)} so'm
+                  {formatMoney(selectedStudent.debt)}{" "}
+                  {t("payments.currency_suffix")}
                 </span>
               </div>
             )}
 
-            {/* Miqdor */}
+            {/* Amount */}
             <FormField
               control={form.control}
               name="amount"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>To'lov miqdori (so'm) *</FormLabel>
+                  <FormLabel>{t("payments.modal_amount_label")} *</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -239,13 +243,13 @@ const PaymentModal = ({
               )}
             />
 
-            {/* To'lov turi */}
+            {/* Payment method */}
             <FormField
               control={form.control}
               name="payment_method"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>To'lov turi *</FormLabel>
+                  <FormLabel>{t("payments.modal_method_label")} *</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={(v) => field.onChange(v as PaymentMethod)}
