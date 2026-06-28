@@ -62,7 +62,7 @@ export function StudentFormFields({
           name="last_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Familya *</FormLabel>
+              <FormLabel>{t("students.last_name")} *</FormLabel>
               <FormControl>
                 <Input {...field} className="bg-secondary border-border" />
               </FormControl>
@@ -75,7 +75,7 @@ export function StudentFormFields({
           name="first_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Ismi *</FormLabel>
+              <FormLabel>{t("students.first_name")} *</FormLabel>
               <FormControl>
                 <Input {...field} className="bg-secondary border-border" />
               </FormControl>
@@ -88,7 +88,7 @@ export function StudentFormFields({
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Telefon *</FormLabel>
+              <FormLabel>{t("students.phone")} *</FormLabel>
               <FormControl>
                 <Input
                   {...field}
@@ -105,7 +105,7 @@ export function StudentFormFields({
           name="branch_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Filial</FormLabel>
+              <FormLabel>{t("common.branch")}</FormLabel>
               {isOwner ? (
                 <Select
                   value={field.value || ""}
@@ -113,7 +113,9 @@ export function StudentFormFields({
                 >
                   <FormControl>
                     <SelectTrigger className="bg-secondary border-border">
-                      <SelectValue placeholder="Tanlang" />
+                      <SelectValue
+                        placeholder={t("common.select_placeholder")}
+                      />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -145,7 +147,7 @@ export function StudentFormFields({
           name="total_price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Kurs narxi *</FormLabel>
+              <FormLabel>{t("students.course_price")} *</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -164,7 +166,7 @@ export function StudentFormFields({
           name="payment_method"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>To'lov turi</FormLabel>
+              <FormLabel>{t("students.payment_method")}</FormLabel>
               <Select
                 value={field.value || "naqd"}
                 onValueChange={(v) => field.onChange(v as PaymentMethod)}
@@ -211,7 +213,7 @@ export function StudentFormFields({
                       value={field.value || ""}
                       min={0}
                       placeholder={
-                        isUpdate ? "0 (yangi to'lov qo'shish uchun)" : "0"
+                        isUpdate ? t("students.extra_placeholder") : "0"
                       }
                       className="bg-secondary border-border"
                     />
@@ -221,7 +223,9 @@ export function StudentFormFields({
               )}
             />
             <div className="space-y-2">
-              <Label>{isUpdate ? "Joriy qarzdorlik" : "Qarzdorlik"}</Label>
+              <Label>
+                {isUpdate ? t("students.current_debt") : t("students.debt")}
+              </Label>
               <Input
                 value={formatMoney(debt)}
                 disabled
@@ -235,14 +239,16 @@ export function StudentFormFields({
               name="group_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Guruh</FormLabel>
+                  <FormLabel>{t("students.group_field")}</FormLabel>
                   <Select
                     value={field.value || ""}
                     onValueChange={field.onChange}
                   >
                     <FormControl>
                       <SelectTrigger className="bg-secondary border-border">
-                        <SelectValue placeholder="Tanlang" />
+                        <SelectValue
+                          placeholder={t("common.select_placeholder")}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -267,7 +273,7 @@ export function StudentFormFields({
               name="initial_payment"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Boshlang'ich to'lov</FormLabel>
+                  <FormLabel>{t("students.initial_payment")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -285,7 +291,9 @@ export function StudentFormFields({
               )}
             />
             <div className="space-y-2">
-              <Label>{isUpdate ? "Joriy qarzdorlik" : "Qarzdorlik"}</Label>
+              <Label>
+                {isUpdate ? t("students.current_debt") : t("students.debt")}
+              </Label>
               <Input
                 value={formatMoney(debt)}
                 disabled
@@ -306,7 +314,7 @@ export function StudentFormFields({
                       {...field}
                       value={field.value || ""}
                       min={0}
-                      placeholder="0 (yangi to'lov qo'shish uchun)"
+                      placeholder={t("students.extra_placeholder")}
                       className="bg-secondary border-border"
                     />
                   </FormControl>
@@ -322,7 +330,8 @@ export function StudentFormFields({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Guruh <span className="text-destructive">*</span>
+                    {t("students.group_field")}{" "}
+                    <span className="text-destructive">*</span>
                   </FormLabel>
                   <Select
                     value={field.value || ""}
@@ -330,7 +339,9 @@ export function StudentFormFields({
                   >
                     <FormControl>
                       <SelectTrigger className="bg-secondary border-border">
-                        <SelectValue placeholder="Tanlang" />
+                        <SelectValue
+                          placeholder={t("common.select_placeholder")}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -350,7 +361,7 @@ export function StudentFormFields({
               name="completion_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tugatish sanasi</FormLabel>
+                  <FormLabel>{t("students.completion_date")}</FormLabel>
                   <FormControl>
                     <Input
                       type="date"
@@ -368,7 +379,7 @@ export function StudentFormFields({
               name="contract_number"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Shartnoma raqami</FormLabel>
+                  <FormLabel>{t("students.contract_number")}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -409,11 +420,11 @@ export function StudentFormFields({
           name="registered_by"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Operator</FormLabel>
+              <FormLabel>{t("students.operator")}</FormLabel>
               <Select value={field.value || ""} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="bg-secondary border-border">
-                    <SelectValue placeholder="Operatorni tanlang (ixtiyoriy)" />
+                    <SelectValue placeholder={t("students.select_operator")} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -436,7 +447,7 @@ export function StudentFormFields({
           name="result"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Natijasi</FormLabel>
+              <FormLabel>{t("students.result")}</FormLabel>
               <Select
                 value={field.value || "oqimoqda"}
                 onValueChange={(v) => field.onChange(v as ResultStatus)}
@@ -473,7 +484,7 @@ export function StudentFormFields({
               />
             </FormControl>
             <FormLabel htmlFor="doc" className="!mt-0">
-              Hujjat mavjud
+              {t("students.has_document")}
             </FormLabel>
           </FormItem>
         )}
@@ -484,12 +495,12 @@ export function StudentFormFields({
         name="notes"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Izoh</FormLabel>
+            <FormLabel>{t("students.notes")}</FormLabel>
             <FormControl>
               <Textarea
                 {...field}
                 value={field.value || ""}
-                placeholder="Izoh yozing..."
+                placeholder={t("students.notes_placeholder")}
                 rows={3}
                 className="bg-secondary border-border"
               />
