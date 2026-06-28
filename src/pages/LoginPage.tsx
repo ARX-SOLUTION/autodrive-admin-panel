@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useLogin } from "@/services/authService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Car } from "lucide-react";
 import { toast } from "sonner";
 
 const LoginPage = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -19,11 +20,10 @@ const LoginPage = () => {
       { email, password },
       {
         onSuccess: () => {
-          toast.success("Tizimga muvaffaqiyatli kirdingiz!");
-
+          toast.success(t("login.success"));
           navigate("/dashboard");
         },
-        onError: () => toast.error("Email yoki parol noto'g'ri"),
+        onError: () => toast.error(t("login.error")),
       },
     );
   };
@@ -36,14 +36,16 @@ const LoginPage = () => {
             <img src="/favicon.png" alt="Logo" className="h-full w-full" />
           </div>
           <h1 className="font-heading text-2xl font-bold text-foreground text-balance">
-            Auto Maktab CRM
+            {t("app.title")}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Tizimga kirish</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t("login.title")}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("login.email_label")}</Label>
             <Input
               id="email"
               type="email"
@@ -55,7 +57,7 @@ const LoginPage = () => {
             />
           </div>
           <div>
-            <Label htmlFor="password">Parol</Label>
+            <Label htmlFor="password">{t("login.password_label")}</Label>
             <Input
               id="password"
               type="password"
@@ -67,7 +69,7 @@ const LoginPage = () => {
             />
           </div>
           <Button type="submit" className="w-full" disabled={login.isPending}>
-            {login.isPending ? "Kirilmoqda..." : "Kirish"}
+            {login.isPending ? t("login.submitting") : t("login.submit")}
           </Button>
         </form>
       </div>

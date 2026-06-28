@@ -1,4 +1,5 @@
 import PaginationControls from "@/components/ui/PaginationControls";
+import { useTranslation } from "react-i18next";
 import PaymentModal, {
   CreatePaymentPayload,
 } from "@/components/ui/PaymentModal";
@@ -98,6 +99,7 @@ const lastMonthEnd = () => {
 };
 
 const PaymentsPage = () => {
+  const { t } = useTranslation();
   const { isOwner, user } = useAuthStore();
   const defaultBranchId = isOwner() ? undefined : user?.branch_id || undefined;
 
@@ -249,10 +251,10 @@ const PaymentsPage = () => {
   const handlePaymentSubmit = (data: CreatePaymentPayload) => {
     createPayment.mutate(data, {
       onSuccess: () => {
-        toast.success("To'lov muvaffaqiyatli qo'shildi");
+        toast.success(t("payments.toast_created"));
         setModalOpen(false);
       },
-      onError: () => toast.error("Xatolik yuz berdi"),
+      onError: () => toast.error(t("common.error")),
     });
   };
 
@@ -276,23 +278,23 @@ const PaymentsPage = () => {
   // };
 
   const exportToExcel = () => {
-    // Faqat headerlar - data yo'q
+    // Template export: headers only, no data rows
     const headers = {
       "#": "",
-      Talaba: "",
-      Filial: "",
-      Kurs: "",
-      "Umumiy narx": "",
-      "Bu to'lov": "",
-      "Joriy qoldiq": "",
-      Turi: "",
+      [t("payments.student_col")]: "",
+      [t("common.branch")]: "",
+      [t("common.course_type")]: "",
+      "Total price": "",
+      "This payment": "",
+      "Remaining debt": "",
+      [t("payments.payment_type")]: "",
       Operator: "",
-      Sana: "",
+      [t("common.date")]: "",
     };
 
     const ws = XLSX.utils.json_to_sheet([headers]);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "To'lovlar");
+    XLSX.utils.book_append_sheet(wb, ws, t("payments.export_sheet_name"));
     XLSX.writeFile(wb, `tolovlar_${format(new Date(), "dd-MM-yyyy")}.xlsx`);
   };
 
@@ -336,8 +338,8 @@ const PaymentsPage = () => {
   return (
     <PageContainer>
       <PageHeader
-        title="To'lovlar"
-        description="Talabalar to'lovlarini boshqarish va hisob-kitob"
+        title={t("payments.title")}
+        description={t("payments.subtitle")}
         actions={
           <>
             {isOwner() && (
@@ -346,11 +348,11 @@ const PaymentsPage = () => {
                 className="gap-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-500 dark:text-emerald-400 dark:hover:bg-emerald-950 font-semibold"
                 onClick={exportToExcel}
               >
-                <Download className="h-4 w-4" /> Excel yuklab olish
+                <Download className="h-4 w-4" /> {t("companies.export")}
               </Button>
             )}
             <Button className="gap-2" onClick={() => setModalOpen(true)}>
-              <Plus className="h-4 w-4" /> To'lov qo'shish
+              <Plus className="h-4 w-4" /> {t("payments.add_new")}
             </Button>
           </>
         }
@@ -368,22 +370,22 @@ const PaymentsPage = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard
-            title="Bugungi daromad"
+            title={t("payments.today_income")}
             value={formatMoney(snapshot?.today_income || 0)}
             icon={<Sun className="h-5 w-5" />}
           />
           <SummaryCard
-            title="Bu oygi daromad"
+            title={t("payments.month_income")}
             value={formatMoney(snapshot?.this_month_income || 0)}
             icon={<TrendingUp className="h-5 w-5" />}
           />
           <SummaryCard
-            title="Joriy qarzdorlik"
+            title={t("payments.current_debt")}
             value={formatMoney(snapshot?.current_total_debt || 0)}
             icon={<AlertTriangle className="h-5 w-5" />}
           />
           <SummaryCard
-            title="Qarzdor talabalar"
+            title={t("payments.debtor_students")}
             value={`${snapshot?.students_with_debt || 0} ta`}
             icon={<Users className="h-5 w-5" />}
           />
@@ -536,7 +538,7 @@ const PaymentsPage = () => {
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Talaba ismi bo'yicha qidirish..."
+              placeholder={t("payments.search_placeholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 bg-secondary border-border"
@@ -558,17 +560,17 @@ const PaymentsPage = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 tabular-nums">
             <SummaryCard
-              title="Yig'ilgan summa"
+              title={t("payments.collected_amount")}
               value={formatMoney(displayedSummary.period_collected)}
               icon={<Wallet className="h-5 w-5" />}
             />
             <SummaryCard
-              title="To'lovlar soni"
+              title={t("payments.count_label")}
               value={`${displayedSummary.period_payments_count} ta`}
               icon={<Receipt className="h-5 w-5" />}
             />
             <SummaryCard
-              title="Qarzdorlik"
+              title={t("payments.debt_amount")}
               value={formatMoney(displayedSummary.period_debt)}
               icon={<AlertTriangle className="h-5 w-5" />}
             />
@@ -580,7 +582,7 @@ const PaymentsPage = () => {
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-balance">
-            To'lovlar ro'yxati
+            {t("payments.list_title")}
           </h2>
           <span className="text-xs text-muted-foreground">
             {filtered.length} ta natija
@@ -781,7 +783,7 @@ const PaymentsPage = () => {
               ) : paginatedItems?.length === 0 ? (
                 <EmptyState
                   icon={CreditCard}
-                  title="To'lovlar topilmadi"
+                  title={t("payments.not_found_title")}
                   description="Tanlangan filtrlar bo'yicha to'lovlar yo'q."
                 />
               ) : (
@@ -823,7 +825,7 @@ const PaymentsPage = () => {
                           ),
                         },
                         {
-                          label: "To'lov turi",
+                          label: t("payments.payment_type"),
                           value:
                             p.payment_method === "naqd"
                               ? "Naqd"

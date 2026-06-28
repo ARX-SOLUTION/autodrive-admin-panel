@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, MapPin, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ interface FormState {
 const EMPTY_FORM: FormState = { name: "", location: "", phone: "" };
 
 const BranchesPage = () => {
+  const { t } = useTranslation();
   const { isDev, canManageBranches, activeCompanyId } = useAuthStore();
   const canManage = canManageBranches();
   const { data: branches, isLoading } = useBranches();
@@ -72,19 +74,21 @@ const BranchesPage = () => {
         { id: editItem.id, ...payload },
         {
           onSuccess: () => {
-            toast.success("Filial yangilandi");
+            toast.success(t("branches.toast_updated"));
             setModalOpen(false);
           },
-          onError: (err) => toast.error(extractErrorMessage(err)),
+          onError: (err) =>
+            toast.error(extractErrorMessage(err, t("common.error"))),
         },
       );
     } else {
       createMut.mutate(payload, {
         onSuccess: () => {
-          toast.success("Filial qo'shildi");
+          toast.success(t("branches.toast_created"));
           setModalOpen(false);
         },
-        onError: (err) => toast.error(extractErrorMessage(err)),
+        onError: (err) =>
+          toast.error(extractErrorMessage(err, t("common.error"))),
       });
     }
   };
@@ -93,10 +97,11 @@ const BranchesPage = () => {
     if (!deleteId) return;
     deleteMut.mutate(deleteId, {
       onSuccess: () => {
-        toast.success("Filial o'chirildi");
+        toast.success(t("branches.toast_deleted"));
         setDeleteId(null);
       },
-      onError: (err) => toast.error(extractErrorMessage(err)),
+      onError: (err) =>
+        toast.error(extractErrorMessage(err, t("common.error"))),
     });
   };
 
@@ -104,26 +109,25 @@ const BranchesPage = () => {
     <div className="space-y-6">
       {isDev() && !activeCompanyId && (
         <Alert>
-          <AlertDescription>
-            Kompaniya kontekstini tanlang (yuqoridagi switcher) — filiallar shu
-            kompaniya bo&apos;yicha ko&apos;rinadi.
-          </AlertDescription>
+          <AlertDescription>{t("branches.dev_context_hint")}</AlertDescription>
         </Alert>
       )}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-balance">
-            Filiallar
+            {t("branches.title")}
           </h1>
           <p className="text-sm text-muted-foreground">
             {canManage
-              ? `${(branches || []).length} ta filial`
-              : "Filial ma'lumotlari (faqat ko'rish)"}
+              ? t("branches.subtitle_count", {
+                  count: (branches || []).length,
+                })
+              : t("branches.subtitle_readonly")}
           </p>
         </div>
         {canManage && (
           <Button className="gap-2" onClick={openCreate}>
-            <Plus className="h-4 w-4" /> Filial qo'shish
+            <Plus className="h-4 w-4" /> {t("branches.add_new")}
           </Button>
         )}
       </div>
@@ -138,11 +142,11 @@ const BranchesPage = () => {
         <div className="glass-card">
           <EmptyState
             icon={Building2}
-            title="Filiallar topilmadi"
-            description="Birinchi filialingizni qo'shishdan boshlang."
+            title={t("branches.not_found_title")}
+            description={t("branches.not_found_desc")}
             action={
               canManage
-                ? { label: "Filial qo'shish", onClick: openCreate }
+                ? { label: t("branches.add_new"), onClick: openCreate }
                 : undefined
             }
           />
@@ -168,14 +172,14 @@ const BranchesPage = () => {
                         <>
                           <button
                             onClick={() => openEdit(b)}
-                            title="Tahrirlash"
+                            title={t("common.edit")}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => setDeleteId(b.id)}
-                            title="O'chirish"
+                            title={t("common.delete")}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -186,13 +190,17 @@ const BranchesPage = () => {
                   </div>
                   <div className="mt-4 flex items-center gap-6 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Menejer: </span>
+                      <span className="text-muted-foreground">
+                        {t("common.manager")}:{" "}
+                      </span>
                       <span className="text-foreground font-medium">
-                        {b.manager_name || "—"}
+                        {b.manager_name || t("common.na")}
                       </span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Talabalar: </span>
+                      <span className="text-muted-foreground">
+                        {t("common.students_count")}:{" "}
+                      </span>
                       <span className="text-foreground font-medium">
                         {b.active_students}
                       </span>
@@ -210,10 +218,13 @@ const BranchesPage = () => {
                 title={b.name}
                 subtitle={b.location}
                 fields={[
-                  { label: "Telefon", value: "—" },
-                  { label: "Talabalar", value: b.active_students },
+                  { label: t("common.phone"), value: t("common.na") },
                   {
-                    label: "Yaratilgan",
+                    label: t("common.students_count"),
+                    value: b.active_students,
+                  },
+                  {
+                    label: t("common.created"),
                     value: (() => {
                       try {
                         return format(new Date(b.created_at), "dd.MM.yyyy");
@@ -222,21 +233,24 @@ const BranchesPage = () => {
                       }
                     })(),
                   },
-                  { label: "Holat", value: "Faol" },
+                  {
+                    label: t("common.status"),
+                    value: t("branches.status_active"),
+                  },
                 ]}
                 actions={
                   canManage ? (
                     <>
                       <button
                         onClick={() => openEdit(b)}
-                        title="Tahrirlash"
+                        title={t("common.edit")}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => setDeleteId(b.id)}
-                        title="O'chirish"
+                        title={t("common.delete")}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -254,12 +268,12 @@ const BranchesPage = () => {
         <DialogContent className="max-w-md bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-heading">
-              {editItem ? "Filialni tahrirlash" : "Yangi filial qo'shish"}
+              {editItem ? t("branches.edit_title") : t("branches.add_title")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Nomi *</Label>
+              <Label>{t("branches.name_label")}</Label>
               <Input
                 value={form.name}
                 onChange={(e) =>
@@ -270,19 +284,19 @@ const BranchesPage = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Manzil *</Label>
+              <Label>{t("branches.address_label")}</Label>
               <Input
                 value={form.location}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, location: e.target.value }))
                 }
                 required
-                placeholder="Manzil, shahar"
+                placeholder={t("branches.address_placeholder")}
                 className="bg-secondary border-border"
               />
             </div>
             <div className="space-y-2">
-              <Label>Telefon</Label>
+              <Label>{t("branches.phone_label")}</Label>
               <Input
                 value={form.phone}
                 onChange={(e) =>
@@ -298,17 +312,17 @@ const BranchesPage = () => {
                 variant="outline"
                 onClick={() => setModalOpen(false)}
               >
-                Bekor qilish
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={createMut.isPending || updateMut.isPending}
               >
                 {createMut.isPending || updateMut.isPending
-                  ? "Saqlanmoqda..."
+                  ? t("common.saving")
                   : editItem
-                    ? "Saqlash"
-                    : "Qo'shish"}
+                    ? t("common.save")
+                    : t("common.add")}
               </Button>
             </div>
           </form>
