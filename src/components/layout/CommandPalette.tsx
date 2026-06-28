@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   Briefcase,
@@ -28,7 +29,7 @@ import { useCompanies } from "@/services/companyService";
 import { usePlatformUsers } from "@/services/platformUserService";
 
 type NavEntry = {
-  label: string;
+  labelKey: string;
   path: string;
   icon: typeof LayoutDashboard;
   devOnly?: boolean;
@@ -37,38 +38,38 @@ type NavEntry = {
 };
 
 const NAV_ENTRIES: NavEntry[] = [
-  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { labelKey: "nav.dashboard", path: "/dashboard", icon: LayoutDashboard },
   {
-    label: "Kompaniyalar",
+    labelKey: "nav.companies",
     path: "/kompaniyalar",
     icon: Briefcase,
     devOnly: true,
   },
   {
-    label: "Platform Users",
+    labelKey: "nav.platform_users",
     path: "/platform-foydalanuvchilar",
     icon: KeyRound,
     devOnly: true,
   },
   {
-    label: "Filiallar",
+    labelKey: "nav.branches",
     path: "/filiallar",
     icon: Building2,
     branchAccess: true,
   },
-  { label: "Guruhlar", path: "/guruhlar", icon: Layers },
-  { label: "Talabalar", path: "/talabalar", icon: GraduationCap },
-  { label: "To'lovlar", path: "/tolovlar", icon: CreditCard },
-  { label: "Operatorlar", path: "/operatorlar", icon: Headphones },
-  { label: "O'qituvchilar", path: "/oqituvchilar", icon: Users },
+  { labelKey: "nav.groups", path: "/guruhlar", icon: Layers },
+  { labelKey: "nav.students", path: "/talabalar", icon: GraduationCap },
+  { labelKey: "nav.payments", path: "/tolovlar", icon: CreditCard },
+  { labelKey: "nav.operators", path: "/operatorlar", icon: Headphones },
+  { labelKey: "nav.teachers", path: "/oqituvchilar", icon: Users },
   {
-    label: "Foydalanuvchilar",
+    labelKey: "nav.users",
     path: "/foydalanuvchilar",
     icon: UserCog,
     ownerOnly: true,
   },
-  { label: "Audit log", path: "/audit", icon: ShieldCheck, ownerOnly: true },
-  { label: "Profil", path: "/profile", icon: User },
+  { labelKey: "nav.audit", path: "/audit", icon: ShieldCheck, ownerOnly: true },
+  { labelKey: "nav.profile", path: "/profile", icon: User },
 ];
 
 interface CommandPaletteProps {
@@ -77,13 +78,13 @@ interface CommandPaletteProps {
 }
 
 export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isDev = useAuthStore((s) => s.isDev());
   const isOwner = useAuthStore((s) => s.isOwner());
   const canViewBranches = useAuthStore((s) => s.canViewBranches());
   const setActiveCompanyId = useAuthStore((s) => s.setActiveCompanyId);
 
-  // Fetch only when palette opens — keeps initial nav cheap.
   const { data: companies } = useCompanies({ limit: 100 });
   const { data: users } = usePlatformUsers({ limit: 100 });
 
@@ -107,27 +108,30 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Sahifa, kompaniya yoki foydalanuvchi qidirish..." />
+      <CommandInput placeholder={t("actions.search_companies_users")} />
       <CommandList>
-        <CommandEmpty>Hech narsa topilmadi.</CommandEmpty>
+        <CommandEmpty>{t("actions.search_empty")}</CommandEmpty>
 
-        <CommandGroup heading="Sahifalar">
-          {visibleNav.map((n) => (
-            <CommandItem
-              key={n.path}
-              value={`${n.label} ${n.path}`}
-              onSelect={() => go(n.path)}
-            >
-              <n.icon className="mr-2 h-4 w-4" />
-              {n.label}
-            </CommandItem>
-          ))}
+        <CommandGroup heading={t("actions.search_pages")}>
+          {visibleNav.map((n) => {
+            const label = t(n.labelKey);
+            return (
+              <CommandItem
+                key={n.path}
+                value={`${label} ${n.path}`}
+                onSelect={() => go(n.path)}
+              >
+                <n.icon className="mr-2 h-4 w-4" />
+                {label}
+              </CommandItem>
+            );
+          })}
         </CommandGroup>
 
         {isDev && companies?.items && companies.items.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Kompaniyalar">
+            <CommandGroup heading={t("nav.companies")}>
               {companies.items.slice(0, 20).map((c) => (
                 <CommandItem
                   key={c.id}
@@ -148,7 +152,7 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
         {isDev && users?.items && users.items.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Foydalanuvchilar">
+            <CommandGroup heading={t("actions.search_users")}>
               {users.items.slice(0, 20).map((u) => (
                 <CommandItem
                   key={u.id}
@@ -172,20 +176,20 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
 
 /**
  * Hook that registers the cmd+k / ctrl+k global shortcut and exposes
- * the open state. Mount once in AppLayout and pass to <CommandPalette>.
+ * open state for the command palette.
  */
 export const useCommandPalette = () => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((o) => !o);
       }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
   return { open, setOpen };

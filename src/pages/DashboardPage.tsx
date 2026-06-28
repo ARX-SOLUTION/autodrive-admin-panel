@@ -92,7 +92,10 @@ const TenantDashboard = () => {
   const [branchId, setBranchId] = useState<string | undefined>(
     isOwner() ? undefined : user?.branch_id || undefined,
   );
-  const { data: analytics, isLoading } = useDashboardAnalytics(branchId, courseType);
+  const { data: analytics, isLoading } = useDashboardAnalytics(
+    branchId,
+    courseType,
+  );
   const { data: branches } = useBranches();
 
   const owner = isOwner();
@@ -115,21 +118,27 @@ const TenantDashboard = () => {
       name: "To'liq to'lagan",
       value: analytics?.payment_status.paid ?? 0,
       pct: totalPieStudents
-        ? Math.round(((analytics?.payment_status.paid ?? 0) / totalPieStudents) * 100)
+        ? Math.round(
+            ((analytics?.payment_status.paid ?? 0) / totalPieStudents) * 100,
+          )
         : 0,
     },
     {
       name: "Qisman",
       value: analytics?.payment_status.partial ?? 0,
       pct: totalPieStudents
-        ? Math.round(((analytics?.payment_status.partial ?? 0) / totalPieStudents) * 100)
+        ? Math.round(
+            ((analytics?.payment_status.partial ?? 0) / totalPieStudents) * 100,
+          )
         : 0,
     },
     {
       name: "To'lamagan",
       value: analytics?.payment_status.debt ?? 0,
       pct: totalPieStudents
-        ? Math.round(((analytics?.payment_status.debt ?? 0) / totalPieStudents) * 100)
+        ? Math.round(
+            ((analytics?.payment_status.debt ?? 0) / totalPieStudents) * 100,
+          )
         : 0,
     },
   ];
@@ -167,8 +176,12 @@ const TenantDashboard = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-balance">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Biznes ko'rsatkichlari</p>
+          <h1 className="font-heading text-2xl font-bold text-balance">
+            Dashboard
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Biznes ko'rsatkichlari
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <Tabs
@@ -207,29 +220,29 @@ const TenantDashboard = () => {
       {/* ── Row 1: Student KPIs ─────────────────────────────────────────────── */}
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 text-balance">
-          Talabalar
+          Students
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           <SummaryCard
-            title="Faol talabalar"
+            title="Active students"
             value={analytics.total_students}
             icon={<GraduationCap className="h-5 w-5" />}
-            trend={`+${analytics.new_this_month} bu oy`}
+            trend={`+${analytics.new_this_month} this month`}
           />
           <SummaryCard
-            title="Bu oy yangi"
+            title="New this month"
             value={analytics.new_this_month}
             icon={<UserPlus className="h-5 w-5" />}
             trend={studentTrend?.text}
             trendDown={studentTrend?.down}
           />
           <SummaryCard
-            title="Tezkor"
+            title="Fast track"
             value={analytics.active_tezkor}
             icon={<Car className="h-5 w-5" />}
           />
           <SummaryCard
-            title="Avto maktab"
+            title="Driving school"
             value={analytics.active_avto}
             icon={<Users className="h-5 w-5" />}
           />
@@ -244,7 +257,7 @@ const TenantDashboard = () => {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           {owner && (
             <SummaryCard
-              title="Bu oy daromad"
+              title="This month's revenue"
               value={formatSum(analytics.this_month_revenue)}
               icon={<TrendingUp className="h-5 w-5" />}
               trend={revenueTrend?.text}
@@ -253,30 +266,38 @@ const TenantDashboard = () => {
           )}
           {owner && (
             <SummaryCard
-              title="Jami daromad"
+              title="Total revenue"
               value={formatSum(analytics.total_revenue)}
               icon={<Wallet className="h-5 w-5" />}
             />
           )}
           <SummaryCard
-            title="Jami qarzdorlik"
+            title="Total debt"
             value={formatSum(analytics.total_debt)}
             icon={<AlertTriangle className="h-5 w-5" />}
             trendDown
-            trend={analytics.total_debt > 0 ? `${analytics.payment_status.debt} ta talaba` : undefined}
+            trend={
+              analytics.total_debt > 0
+                ? `${analytics.payment_status.debt} ta talaba`
+                : undefined
+            }
           />
           <SummaryCard
-            title="O'rtacha qarz"
-            value={analytics.avg_debt > 0 ? formatSum(analytics.avg_debt) : "Yo'q"}
+            title="Average debt"
+            value={
+              analytics.avg_debt > 0 ? formatSum(analytics.avg_debt) : "Yo'q"
+            }
             icon={<TrendingDown className="h-5 w-5" />}
             trendDown={analytics.avg_debt > 0}
           />
           <SummaryCard
-            title="Bitiruvchilar"
+            title="Graduates"
             value={analytics.result_stats.topshirdi}
             icon={<BadgeCheck className="h-5 w-5" />}
             trend={
-              analytics.result_stats.topshirdi + analytics.result_stats.yiqildi > 0
+              analytics.result_stats.topshirdi +
+                analytics.result_stats.yiqildi >
+              0
                 ? `${Math.round((analytics.result_stats.topshirdi / (analytics.result_stats.topshirdi + analytics.result_stats.yiqildi)) * 100)}% o'tish`
                 : undefined
             }
@@ -294,7 +315,11 @@ const TenantDashboard = () => {
             </h3>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={analytics.monthly_revenue} barSize={28}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(228, 12%, 18%)" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(228, 12%, 18%)"
+                  vertical={false}
+                />
                 <XAxis dataKey="month" {...AXIS_PROPS} />
                 <YAxis
                   {...AXIS_PROPS}
@@ -323,12 +348,26 @@ const TenantDashboard = () => {
           </h3>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={analytics.monthly_enrollment} barSize={16}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(228, 12%, 18%)" vertical={false} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(228, 12%, 18%)"
+                vertical={false}
+              />
               <XAxis dataKey="month" {...AXIS_PROPS} />
               <YAxis {...AXIS_PROPS} allowDecimals={false} width={30} />
               <Tooltip {...CHART_STYLE} />
-              <Bar dataKey="tezkor" fill="hsl(217, 85%, 63%)" radius={[4, 4, 0, 0]} name="Tezkor" />
-              <Bar dataKey="avto_maktab" fill="hsl(142, 70%, 45%)" radius={[4, 4, 0, 0]} name="Avto maktab" />
+              <Bar
+                dataKey="tezkor"
+                fill="hsl(217, 85%, 63%)"
+                radius={[4, 4, 0, 0]}
+                name="Tezkor"
+              />
+              <Bar
+                dataKey="avto_maktab"
+                fill="hsl(142, 70%, 45%)"
+                radius={[4, 4, 0, 0]}
+                name="Avto maktab"
+              />
               <Legend
                 wrapperStyle={{ fontSize: 11, color: "hsl(220, 10%, 65%)" }}
                 iconType="circle"
@@ -343,7 +382,9 @@ const TenantDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Payment status pie */}
         <div className="glass-card p-5">
-          <h3 className="font-heading text-sm font-semibold mb-4 text-balance">To'lov holati</h3>
+          <h3 className="font-heading text-sm font-semibold mb-4 text-balance">
+            Payment status
+          </h3>
           {totalPieStudents === 0 ? (
             <div className="flex h-[240px] items-center justify-center text-sm text-muted-foreground">
               Ma'lumot yo'q
@@ -369,17 +410,24 @@ const TenantDashboard = () => {
                   </Pie>
                   <Tooltip
                     {...CHART_STYLE}
-                    formatter={(v: number, _: string, props: { payload?: { pct?: number } }) => [
-                      `${v} ta (${props.payload?.pct ?? 0}%)`,
-                      "",
-                    ]}
+                    formatter={(
+                      v: number,
+                      _: string,
+                      props: { payload?: { pct?: number } },
+                    ) => [`${v} ta (${props.payload?.pct ?? 0}%)`, ""]}
                   />
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex justify-center gap-5 mt-1">
                 {pieData.map((d, i) => (
-                  <div key={d.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: PIE_COLORS[i] }} />
+                  <div
+                    key={d.name}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                  >
+                    <span
+                      className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: PIE_COLORS[i] }}
+                    />
                     {d.name}: {d.value} ({d.pct}%)
                   </div>
                 ))}
@@ -390,13 +438,27 @@ const TenantDashboard = () => {
 
         {/* Result stats */}
         <div className="glass-card p-5">
-          <h3 className="font-heading text-sm font-semibold mb-4 text-balance">Talabalar natijalari</h3>
+          <h3 className="font-heading text-sm font-semibold mb-4 text-balance">
+            Student results
+          </h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={resultData} layout="vertical" barSize={20}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(228, 12%, 18%)" horizontal={false} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(228, 12%, 18%)"
+                horizontal={false}
+              />
               <XAxis type="number" {...AXIS_PROPS} allowDecimals={false} />
-              <YAxis type="category" dataKey="name" {...AXIS_PROPS} width={80} />
-              <Tooltip {...CHART_STYLE} formatter={(v: number) => [`${v} ta`, ""]} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                {...AXIS_PROPS}
+                width={80}
+              />
+              <Tooltip
+                {...CHART_STYLE}
+                formatter={(v: number) => [`${v} ta`, ""]}
+              />
               <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                 {resultData.map((_, i) => (
                   <Cell key={i} fill={RESULT_COLORS[i]} />
@@ -406,8 +468,14 @@ const TenantDashboard = () => {
           </ResponsiveContainer>
           <div className="flex justify-center gap-5 mt-2">
             {resultData.map((d, i) => (
-              <div key={d.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: RESULT_COLORS[i] }} />
+              <div
+                key={d.name}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground"
+              >
+                <span
+                  className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: RESULT_COLORS[i] }}
+                />
                 {d.name}: {d.value}
               </div>
             ))}
@@ -423,7 +491,11 @@ const TenantDashboard = () => {
           </h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={analytics.branch_stats} barSize={22}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(228, 12%, 18%)" vertical={false} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(228, 12%, 18%)"
+                vertical={false}
+              />
               <XAxis dataKey="branch" {...AXIS_PROPS} />
               <YAxis
                 yAxisId="students"
@@ -442,7 +514,7 @@ const TenantDashboard = () => {
               <Tooltip
                 {...CHART_STYLE}
                 formatter={(v: number, name: string) =>
-                  name === "Talabalar" ? [`${v} ta`, name] : [formatSum(v), name]
+                  name === "Students" ? [`${v}`, name] : [formatSum(v), name]
                 }
               />
               <Legend
@@ -450,9 +522,27 @@ const TenantDashboard = () => {
                 iconType="circle"
                 iconSize={8}
               />
-              <Bar yAxisId="students" dataKey="students" fill="hsl(217, 85%, 63%)" radius={[4, 4, 0, 0]} name="Talabalar" />
-              <Bar yAxisId="money" dataKey="revenue" fill="hsl(142, 70%, 45%)" radius={[4, 4, 0, 0]} name="Daromad" />
-              <Bar yAxisId="money" dataKey="debt" fill="hsl(0, 72%, 51%)" radius={[4, 4, 0, 0]} name="Qarz" />
+              <Bar
+                yAxisId="students"
+                dataKey="students"
+                fill="hsl(217, 85%, 63%)"
+                radius={[4, 4, 0, 0]}
+                name="Students"
+              />
+              <Bar
+                yAxisId="money"
+                dataKey="revenue"
+                fill="hsl(142, 70%, 45%)"
+                radius={[4, 4, 0, 0]}
+                name="Daromad"
+              />
+              <Bar
+                yAxisId="money"
+                dataKey="debt"
+                fill="hsl(0, 72%, 51%)"
+                radius={[4, 4, 0, 0]}
+                name="Qarz"
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

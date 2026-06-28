@@ -1,29 +1,26 @@
 import { ChevronRight, Home } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
-/**
- * Slug → display label. Mirrors the labels in `Sidebar.tsx` so the
- * crumb above the page matches the nav item the user just clicked.
- * Unknown slugs (eg. UUIDs in `/kompaniyalar/:id`) fall back to the
- * raw slug — fine for technical / detail pages.
- */
-const SEGMENT_LABELS: Record<string, string> = {
-  dashboard: "Dashboard",
-  kompaniyalar: "Kompaniyalar",
-  "platform-foydalanuvchilar": "Platform Users",
-  "system-health": "Tizim holati",
-  filiallar: "Filiallar",
-  guruhlar: "Guruhlar",
-  talabalar: "Talabalar",
-  tolovlar: "To'lovlar",
-  operatorlar: "Operatorlar",
-  oqituvchilar: "O'qituvchilar",
-  foydalanuvchilar: "Foydalanuvchilar",
-  audit: "Audit log",
-  profile: "Profil",
+/** Route slug → i18n nav key. Unknown slugs (e.g. UUIDs) fall back to raw slug. */
+const SEGMENT_NAV_KEYS: Record<string, string> = {
+  dashboard: "nav.dashboard",
+  kompaniyalar: "nav.companies",
+  "platform-foydalanuvchilar": "nav.platform_users",
+  "system-health": "nav.system_health",
+  filiallar: "nav.branches",
+  guruhlar: "nav.groups",
+  talabalar: "nav.students",
+  tolovlar: "nav.payments",
+  operatorlar: "nav.operators",
+  oqituvchilar: "nav.teachers",
+  foydalanuvchilar: "nav.users",
+  audit: "nav.audit",
+  profile: "nav.profile",
 };
 
 export const Breadcrumbs = () => {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
   const segments = pathname.split("/").filter(Boolean);
 
@@ -31,15 +28,20 @@ export const Breadcrumbs = () => {
 
   const crumbs = segments.map((segment, idx) => {
     const href = "/" + segments.slice(0, idx + 1).join("/");
-    return { segment, href, label: SEGMENT_LABELS[segment] ?? segment };
+    const navKey = SEGMENT_NAV_KEYS[segment];
+    const label = navKey ? t(navKey) : segment;
+    return { segment, href, label };
   });
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-3 flex items-center gap-1 text-sm">
+    <nav
+      aria-label="Breadcrumb"
+      className="mb-3 flex items-center gap-1 text-sm"
+    >
       <Link
         to="/dashboard"
         className="inline-flex items-center text-muted-foreground hover:text-foreground"
-        aria-label="Bosh sahifa"
+        aria-label={t("actions.home")}
       >
         <Home className="h-3.5 w-3.5" />
       </Link>
@@ -51,7 +53,10 @@ export const Breadcrumbs = () => {
             {isLast ? (
               <span className="font-medium text-foreground">{c.label}</span>
             ) : (
-              <Link to={c.href} className="text-muted-foreground hover:text-foreground">
+              <Link
+                to={c.href}
+                className="text-muted-foreground hover:text-foreground"
+              >
                 {c.label}
               </Link>
             )}

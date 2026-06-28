@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Student, CourseType } from "@/types/student";
 import { CreateStudentPayload } from "@/lib/schemas/student.schema";
 import {
@@ -33,14 +34,20 @@ const StudentModal = ({
   disabledFields = [],
   defaultBranchId,
 }: StudentModalProps) => {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border">
         <DialogHeader>
           <DialogTitle className="font-heading">
-            {student ? "Talabani tahrirlash" : "Yangi talaba qo'shish"}
+            {student ? t("students.edit_title") : t("students.add_title")}
             <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({courseType === "tezkor" ? "Tezkor" : "Avto maktab"})
+              (
+              {courseType === "tezkor"
+                ? t("students.course_fast")
+                : t("students.course_school")}
+              )
             </span>
           </DialogTitle>
         </DialogHeader>
@@ -48,7 +55,6 @@ const StudentModal = ({
         {student ? (
           <UpdateStudentForm
             student={student}
-            courseType={courseType}
             onSubmit={onSubmit}
             onCancel={onClose}
             loading={loading}
@@ -57,10 +63,10 @@ const StudentModal = ({
           />
         ) : (
           <CreateStudentForm
-            courseType={courseType}
             onSubmit={onSubmit}
             onCancel={onClose}
             loading={loading}
+            courseType={courseType}
             operators={operators}
             defaultBranchId={defaultBranchId}
           />

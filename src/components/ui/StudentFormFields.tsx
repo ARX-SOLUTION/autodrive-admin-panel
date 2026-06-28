@@ -1,4 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   StudentFormValues,
   paymentMethodLabels,
@@ -50,6 +51,7 @@ export function StudentFormFields({
   isOwner,
   currentBranchName,
 }: StudentFormFieldsProps) {
+  const { t } = useTranslation();
   const formatMoney = (n: number) => new Intl.NumberFormat("uz-UZ").format(n);
 
   return (
@@ -198,7 +200,9 @@ export function StudentFormFields({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {isUpdate ? "Qo'shimcha to'lov" : "To'lov miqdori"}
+                    {isUpdate
+                      ? t("students.extra_payment")
+                      : t("students.payment_amount")}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -295,7 +299,7 @@ export function StudentFormFields({
               name="amount_paid"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Qo'shimcha to'lov</FormLabel>
+                  <FormLabel>{t("students.extra_payment")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"

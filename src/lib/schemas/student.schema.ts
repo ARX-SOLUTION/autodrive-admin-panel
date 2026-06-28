@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { CourseType, PaymentMethod, ResultStatus, StudentStatus } from "@/types/student";
+import {
+  CourseType,
+  PaymentMethod,
+  ResultStatus,
+  StudentStatus,
+} from "@/types/student";
 
 export interface CreateStudentPayload {
   first_name: string;
@@ -23,32 +28,34 @@ export interface CreateStudentPayload {
 }
 
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
-  naqd: "Naqd",
-  karta: "Karta",
-  perechisleniya: "Perechisleniya",
+  naqd: "Cash",
+  karta: "Card",
+  perechisleniya: "Transfer",
 };
 
 export const resultLabels: Record<ResultStatus, string> = {
-  oqimoqda: "Oqimoqda",
-  topshirdi: "Topshirdi",
-  yiqildi: "Yiqildi",
+  oqimoqda: "In progress",
+  topshirdi: "Passed",
+  yiqildi: "Failed",
 };
 
 export const studentFormSchema = z
   .object({
-    first_name: z.string().min(1, "Talab qilinadi"),
-    last_name: z.string().min(1, "Talab qilinadi"),
+    first_name: z.string().min(1, "Required"),
+    last_name: z.string().min(1, "Required"),
     phone: z
       .string()
-      .min(1, "Talab qilinadi")
-      .regex(/^\+?\d{9,15}$/, "Telefon raqami noto'g'ri"),
+      .min(1, "Required")
+      .regex(/^\+?\d{9,15}$/, "Invalid phone number"),
     course_type: z.enum(["tezkor", "avto_maktab"]),
-    branch_id: z.string().min(1, "Filial tanlanmagan! Iltimos filial tanlang."),
+    branch_id: z
+      .string()
+      .min(1, "Branch not selected. Please select a branch."),
     payment_method: z.enum(["naqd", "karta", "perechisleniya"]).optional(),
     result: z.enum(["oqimoqda", "topshirdi", "yiqildi"]).optional(),
     has_document: z.boolean().optional(),
     o83: z.boolean().optional(),
-    total_price: z.coerce.number().nonnegative("Talab qilinadi"),
+    total_price: z.coerce.number().nonnegative("Required"),
     amount_paid: z.coerce.number().nonnegative().optional(),
     initial_payment: z.coerce.number().nonnegative().optional(),
     group_id: z.string().optional(),
@@ -63,7 +70,7 @@ export const studentFormSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["group_id"],
-        message: "Avto maktab kursi uchun Guruh tanlash shart!",
+        message: "Group is required for driving school course",
       });
     }
   });

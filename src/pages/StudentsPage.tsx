@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/store/authStore";
 import {
   useStudents,
@@ -76,6 +77,7 @@ export const formatDateTime = (d: string) => {
 };
 
 const StudentsPage = () => {
+  const { t } = useTranslation();
   const { isOwner, user } = useAuthStore();
   const defaultBranchId = isOwner() ? undefined : user?.branch_id || undefined;
 
@@ -191,10 +193,10 @@ const StudentsPage = () => {
     if (!deleteId) return;
     deleteMutation.mutate(deleteId, {
       onSuccess: () => {
-        toast.success("Talaba o'chirildi");
+        toast.success(t("students.toast_deleted"));
         setDeleteId(null);
       },
-      onError: () => toast.error("Xatolik yuz berdi"),
+      onError: () => toast.error(t("common.error")),
     });
   };
 
@@ -202,18 +204,18 @@ const StudentsPage = () => {
     if (editStudent) {
       updateMutation.mutate({ ...data, id: editStudent.id } as Student, {
         onSuccess: () => {
-          toast.success("Talaba yangilandi");
+          toast.success(t("students.toast_updated"));
           closeModal();
         },
-        onError: () => toast.error("Xatolik yuz berdi"),
+        onError: () => toast.error(t("common.error")),
       });
     } else {
       createMutation.mutate(data, {
         onSuccess: () => {
-          toast.success("Talaba qo'shildi");
+          toast.success(t("students.toast_created"));
           closeModal();
         },
-        onError: () => toast.error("Xatolik yuz berdi"),
+        onError: () => toast.error(t("common.error")),
       });
     }
   };
@@ -237,11 +239,13 @@ const StudentsPage = () => {
   return (
     <PageContainer>
       <PageHeader
-        title="Talabalar"
-        description={`${filtered?.length || 0} ta talaba topildi`}
+        title={t("students.title")}
+        description={t("students.count_found", {
+          count: filtered?.length || 0,
+        })}
         actions={
           <Button className="gap-2" onClick={openCreate}>
-            <Plus className="h-4 w-4" /> Talaba qo'shish
+            <Plus className="h-4 w-4" /> {t("students.add_new")}
           </Button>
         }
       />
@@ -704,7 +708,7 @@ const StudentsPage = () => {
           {filtered?.length === 0 && !isLoading && (
             <EmptyState
               icon={GraduationCap}
-              title="Talabalar topilmadi"
+              title={t("students.not_found_title")}
               description="Tanlangan filtrlar bo'yicha talabalar yo'q."
             />
           )}
@@ -721,7 +725,7 @@ const StudentsPage = () => {
           ) : filtered?.length === 0 ? (
             <EmptyState
               icon={GraduationCap}
-              title="Talabalar topilmadi"
+              title={t("students.not_found_title")}
               description="Tanlangan filtrlar bo'yicha talabalar yo'q."
             />
           ) : (
@@ -733,7 +737,10 @@ const StudentsPage = () => {
                   subtitle={formatPhone(s.phone)}
                   fields={[
                     { label: "Filial", value: s.branch_name ?? "—" },
-                    { label: "Guruh", value: s.group_name ?? "—" },
+                    {
+                      label: t("common.group"),
+                      value: s.group_name ?? t("common.na"),
+                    },
                     { label: "Kurs", value: s.course_type ?? "—" },
                     {
                       label: "Qarz",

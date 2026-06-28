@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Student, CourseType } from "@/types/student";
@@ -34,6 +35,7 @@ export function UpdateStudentForm({
   operators = [],
   disabledFields = [],
 }: UpdateStudentFormProps) {
+  const { t } = useTranslation();
   const { isOwner } = useAuthStore();
   const { data: branches } = useBranches();
   const { data: groups } = useGroups();
@@ -180,15 +182,15 @@ export function UpdateStudentForm({
         />
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Bekor qilish
+            {t("common.cancel")}
           </Button>
           <Button
             type="submit"
             disabled={loading || form.formState.isSubmitting}
           >
             {loading || form.formState.isSubmitting
-              ? "Saqlanmoqda..."
-              : "Saqlash"}
+              ? t("common.saving")
+              : t("common.save")}
           </Button>
         </div>
       </form>
