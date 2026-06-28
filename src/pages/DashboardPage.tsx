@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/store/authStore";
 import { useDashboardAnalytics } from "@/services/dashboardService";
 import { useBranches } from "@/services/branchService";
@@ -66,14 +67,8 @@ const formatMillion = (n: number) => {
   return String(n);
 };
 
-const formatSum = (n: number) =>
-  new Intl.NumberFormat("uz-UZ").format(Math.round(n)) + " so'm";
-
-const trendLabel = (current: number, previous: number) => {
-  if (!previous) return null;
-  const pct = Math.round(((current - previous) / previous) * 100);
-  return { text: `${pct >= 0 ? "+" : ""}${pct}% o'tgan oyga`, down: pct < 0 };
-};
+const formatSumRaw = (n: number) =>
+  new Intl.NumberFormat("uz-UZ").format(Math.round(n));
 
 const PIE_COLORS = [
   "hsl(142, 70%, 45%)",
@@ -87,6 +82,7 @@ const RESULT_COLORS = [
 ];
 
 const TenantDashboard = () => {
+  const { t } = useTranslation();
   const { isOwner, user } = useAuthStore();
   const [courseType, setCourseType] = useState<CourseType | undefined>();
   const [branchId, setBranchId] = useState<string | undefined>(
@@ -99,6 +95,19 @@ const TenantDashboard = () => {
   const { data: branches } = useBranches();
 
   const owner = isOwner();
+
+  const formatSum = (n: number) =>
+    `${formatSumRaw(n)} ${t("dashboard.currency_suffix")}`;
+  const trendLabel = (current: number, previous: number) => {
+    if (!previous) return null;
+    const pct = Math.round(((current - previous) / previous) * 100);
+    return {
+      text: t("dashboard.trend_compared_last_month", {
+        pct: `${pct >= 0 ? "+" : ""}${pct}`,
+      }),
+      down: pct < 0,
+    };
+  };
 
   // ── Derived values ────────────────────────────────────────────────────────
   const revenueTrend = analytics
@@ -115,7 +124,7 @@ const TenantDashboard = () => {
 
   const pieData = [
     {
-      name: "To'liq to'lagan",
+      name: t("dashboard.status_fully_paid"),
       value: analytics?.payment_status.paid ?? 0,
       pct: totalPieStudents
         ? Math.round(
@@ -124,7 +133,7 @@ const TenantDashboard = () => {
         : 0,
     },
     {
-      name: "Qisman",
+      name: t("dashboard.status_partial"),
       value: analytics?.payment_status.partial ?? 0,
       pct: totalPieStudents
         ? Math.round(
@@ -133,7 +142,7 @@ const TenantDashboard = () => {
         : 0,
     },
     {
-      name: "To'lamagan",
+      name: t("dashboard.status_unpaid"),
       value: analytics?.payment_status.debt ?? 0,
       pct: totalPieStudents
         ? Math.round(
@@ -144,9 +153,18 @@ const TenantDashboard = () => {
   ];
 
   const resultData = [
-    { name: "O'qimoqda", value: analytics?.result_stats.oqimoqda ?? 0 },
-    { name: "Topshirdi", value: analytics?.result_stats.topshirdi ?? 0 },
-    { name: "Yiqildi", value: analytics?.result_stats.yiqildi ?? 0 },
+    {
+      name: t("dashboard.result_studying"),
+      value: analytics?.result_stats.oqimoqda ?? 0,
+    },
+    {
+      name: t("dashboard.result_passed"),
+      value: analytics?.result_stats.topshirdi ?? 0,
+    },
+    {
+      name: t("dashboard.result_failed"),
+      value: analytics?.result_stats.yiqildi ?? 0,
+    },
   ];
 
   // ── Skeleton ──────────────────────────────────────────────────────────────
@@ -177,10 +195,10 @@ const TenantDashboard = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-balance">
-            Dashboard
+            {t("dashboard.tenant_title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Biznes ko'rsatkichlari
+            {t("dashboard.business_metrics")}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -191,9 +209,13 @@ const TenantDashboard = () => {
             }
           >
             <TabsList className="bg-secondary">
-              <TabsTrigger value="all">Barchasi</TabsTrigger>
-              <TabsTrigger value="tezkor">Tezkor</TabsTrigger>
-              <TabsTrigger value="avto_maktab">Avto maktab</TabsTrigger>
+              <TabsTrigger value="all">{t("dashboard.tab_all")}</TabsTrigger>
+              <TabsTrigger value="tezkor">
+                {t("dashboard.tab_fast")}
+              </TabsTrigger>
+              <TabsTrigger value="avto_maktab">
+                {t("dashboard.tab_school")}
+              </TabsTrigger>
             </TabsList>
           </Tabs>
           {owner && (
@@ -202,10 +224,12 @@ const TenantDashboard = () => {
               onValueChange={(v) => setBranchId(v === "all" ? undefined : v)}
             >
               <SelectTrigger className="w-40 bg-secondary border-border">
-                <SelectValue placeholder="Barcha filiallar" />
+                <SelectValue placeholder={t("dashboard.all_branches")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Barcha filiallar</SelectItem>
+                <SelectItem value="all">
+                  {t("dashboard.all_branches")}
+                </SelectItem>
                 {(branches || []).map((b) => (
                   <SelectItem key={b.id} value={b.id}>
                     {b.name}
@@ -220,29 +244,31 @@ const TenantDashboard = () => {
       {/* ── Row 1: Student KPIs ─────────────────────────────────────────────── */}
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 text-balance">
-          Students
+          {t("dashboard.section_students")}
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           <SummaryCard
-            title="Active students"
+            title={t("dashboard.card_active_students")}
             value={analytics.total_students}
             icon={<GraduationCap className="h-5 w-5" />}
-            trend={`+${analytics.new_this_month} this month`}
+            trend={t("dashboard.card_new_trend", {
+              count: analytics.new_this_month,
+            })}
           />
           <SummaryCard
-            title="New this month"
+            title={t("dashboard.card_new_this_month")}
             value={analytics.new_this_month}
             icon={<UserPlus className="h-5 w-5" />}
             trend={studentTrend?.text}
             trendDown={studentTrend?.down}
           />
           <SummaryCard
-            title="Fast track"
+            title={t("dashboard.card_fast_track")}
             value={analytics.active_tezkor}
             icon={<Car className="h-5 w-5" />}
           />
           <SummaryCard
-            title="Driving school"
+            title={t("dashboard.card_driving_school")}
             value={analytics.active_avto}
             icon={<Users className="h-5 w-5" />}
           />
@@ -252,12 +278,12 @@ const TenantDashboard = () => {
       {/* ── Row 2: Financial KPIs ───────────────────────────────────────────── */}
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 text-balance">
-          Moliya
+          {t("dashboard.section_finance")}
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           {owner && (
             <SummaryCard
-              title="This month's revenue"
+              title={t("dashboard.card_this_month_revenue")}
               value={formatSum(analytics.this_month_revenue)}
               icon={<TrendingUp className="h-5 w-5" />}
               trend={revenueTrend?.text}
@@ -266,39 +292,50 @@ const TenantDashboard = () => {
           )}
           {owner && (
             <SummaryCard
-              title="Total revenue"
+              title={t("dashboard.card_total_revenue")}
               value={formatSum(analytics.total_revenue)}
               icon={<Wallet className="h-5 w-5" />}
             />
           )}
           <SummaryCard
-            title="Total debt"
+            title={t("dashboard.card_total_debt")}
             value={formatSum(analytics.total_debt)}
             icon={<AlertTriangle className="h-5 w-5" />}
             trendDown
             trend={
               analytics.total_debt > 0
-                ? `${analytics.payment_status.debt} ta talaba`
+                ? t("dashboard.card_total_debt_trend", {
+                    count: analytics.payment_status.debt,
+                  })
                 : undefined
             }
           />
           <SummaryCard
-            title="Average debt"
+            title={t("dashboard.card_average_debt")}
             value={
-              analytics.avg_debt > 0 ? formatSum(analytics.avg_debt) : "Yo'q"
+              analytics.avg_debt > 0
+                ? formatSum(analytics.avg_debt)
+                : t("dashboard.card_no_value")
             }
             icon={<TrendingDown className="h-5 w-5" />}
             trendDown={analytics.avg_debt > 0}
           />
           <SummaryCard
-            title="Graduates"
+            title={t("dashboard.card_graduates")}
             value={analytics.result_stats.topshirdi}
             icon={<BadgeCheck className="h-5 w-5" />}
             trend={
               analytics.result_stats.topshirdi +
                 analytics.result_stats.yiqildi >
               0
-                ? `${Math.round((analytics.result_stats.topshirdi / (analytics.result_stats.topshirdi + analytics.result_stats.yiqildi)) * 100)}% o'tish`
+                ? t("dashboard.card_pass_rate", {
+                    pct: Math.round(
+                      (analytics.result_stats.topshirdi /
+                        (analytics.result_stats.topshirdi +
+                          analytics.result_stats.yiqildi)) *
+                        100,
+                    ),
+                  })
                 : undefined
             }
           />
@@ -311,7 +348,7 @@ const TenantDashboard = () => {
         {owner && (
           <div className="glass-card p-5">
             <h3 className="font-heading text-sm font-semibold mb-4 text-balance">
-              Oylik daromad (so'm)
+              {t("dashboard.chart_monthly_revenue")}
             </h3>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={analytics.monthly_revenue} barSize={28}>
@@ -328,13 +365,16 @@ const TenantDashboard = () => {
                 />
                 <Tooltip
                   {...CHART_STYLE}
-                  formatter={(v: number) => [formatSum(v), "Daromad"]}
+                  formatter={(v: number) => [
+                    formatSum(v),
+                    t("dashboard.chart_legend_revenue"),
+                  ]}
                 />
                 <Bar
                   dataKey="amount"
                   fill="hsl(217, 85%, 63%)"
                   radius={[4, 4, 0, 0]}
-                  name="Daromad"
+                  name={t("dashboard.chart_legend_revenue")}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -344,7 +384,7 @@ const TenantDashboard = () => {
         {/* Monthly enrollment */}
         <div className="glass-card p-5">
           <h3 className="font-heading text-sm font-semibold mb-4 text-balance">
-            Oylik ro'yxatga olish
+            {t("dashboard.chart_monthly_enrollment")}
           </h3>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={analytics.monthly_enrollment} barSize={16}>
@@ -360,13 +400,13 @@ const TenantDashboard = () => {
                 dataKey="tezkor"
                 fill="hsl(217, 85%, 63%)"
                 radius={[4, 4, 0, 0]}
-                name="Tezkor"
+                name={t("dashboard.chart_legend_fast")}
               />
               <Bar
                 dataKey="avto_maktab"
                 fill="hsl(142, 70%, 45%)"
                 radius={[4, 4, 0, 0]}
-                name="Avto maktab"
+                name={t("dashboard.chart_legend_school")}
               />
               <Legend
                 wrapperStyle={{ fontSize: 11, color: "hsl(220, 10%, 65%)" }}
@@ -383,11 +423,11 @@ const TenantDashboard = () => {
         {/* Payment status pie */}
         <div className="glass-card p-5">
           <h3 className="font-heading text-sm font-semibold mb-4 text-balance">
-            Payment status
+            {t("dashboard.chart_payment_status")}
           </h3>
           {totalPieStudents === 0 ? (
             <div className="flex h-[240px] items-center justify-center text-sm text-muted-foreground">
-              Ma'lumot yo'q
+              {t("dashboard.no_data")}
             </div>
           ) : (
             <>
@@ -414,7 +454,13 @@ const TenantDashboard = () => {
                       v: number,
                       _: string,
                       props: { payload?: { pct?: number } },
-                    ) => [`${v} ta (${props.payload?.pct ?? 0}%)`, ""]}
+                    ) => [
+                      t("dashboard.chart_value_with_pct", {
+                        count: v,
+                        pct: props.payload?.pct ?? 0,
+                      }),
+                      "",
+                    ]}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -439,7 +485,7 @@ const TenantDashboard = () => {
         {/* Result stats */}
         <div className="glass-card p-5">
           <h3 className="font-heading text-sm font-semibold mb-4 text-balance">
-            Student results
+            {t("dashboard.chart_student_results")}
           </h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={resultData} layout="vertical" barSize={20}>
@@ -457,7 +503,10 @@ const TenantDashboard = () => {
               />
               <Tooltip
                 {...CHART_STYLE}
-                formatter={(v: number) => [`${v} ta`, ""]}
+                formatter={(v: number) => [
+                  t("dashboard.chart_value_unit", { count: v }),
+                  "",
+                ]}
               />
               <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                 {resultData.map((_, i) => (
@@ -487,7 +536,7 @@ const TenantDashboard = () => {
       {owner && analytics.branch_stats.length > 1 && (
         <div className="glass-card p-5">
           <h3 className="font-heading text-sm font-semibold mb-4 text-balance">
-            Filiallar taqqoslamasi
+            {t("dashboard.chart_branch_comparison")}
           </h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={analytics.branch_stats} barSize={22}>
@@ -514,7 +563,9 @@ const TenantDashboard = () => {
               <Tooltip
                 {...CHART_STYLE}
                 formatter={(v: number, name: string) =>
-                  name === "Students" ? [`${v}`, name] : [formatSum(v), name]
+                  name === t("dashboard.chart_legend_students")
+                    ? [`${v}`, name]
+                    : [formatSum(v), name]
                 }
               />
               <Legend
@@ -527,21 +578,21 @@ const TenantDashboard = () => {
                 dataKey="students"
                 fill="hsl(217, 85%, 63%)"
                 radius={[4, 4, 0, 0]}
-                name="Students"
+                name={t("dashboard.chart_legend_students")}
               />
               <Bar
                 yAxisId="money"
                 dataKey="revenue"
                 fill="hsl(142, 70%, 45%)"
                 radius={[4, 4, 0, 0]}
-                name="Daromad"
+                name={t("dashboard.chart_legend_revenue")}
               />
               <Bar
                 yAxisId="money"
                 dataKey="debt"
                 fill="hsl(0, 72%, 51%)"
                 radius={[4, 4, 0, 0]}
-                name="Qarz"
+                name={t("dashboard.chart_legend_debt")}
               />
             </BarChart>
           </ResponsiveContainer>
