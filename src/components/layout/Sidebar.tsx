@@ -28,6 +28,7 @@ type NavItem = {
   icon: typeof LayoutDashboard;
   ownerOnly?: boolean;
   devOnly?: boolean;
+  branchAccess?: boolean;
 };
 
 type NavSection = {
@@ -71,7 +72,7 @@ const navSections: NavSection[] = [
         path: "/filiallar",
         labelKey: "nav.branches",
         icon: Building2,
-        ownerOnly: true,
+        branchAccess: true,
       },
       { path: "/guruhlar", labelKey: "nav.groups", icon: Layers },
       { path: "/talabalar", labelKey: "nav.students", icon: GraduationCap },
@@ -111,11 +112,12 @@ interface SidebarContentProps {
 
 const SidebarContent = ({ collapsed, onNavigate }: SidebarContentProps) => {
   const location = useLocation();
-  const { user, logout, isOwner, isDev } = useAuthStore();
+  const { user, logout, isOwner, isDev, canViewBranches } = useAuthStore();
   const { t } = useTranslation();
 
   const canSee = (item: NavItem) => {
     if (item.devOnly) return isDev();
+    if (item.branchAccess) return canViewBranches();
     if (item.ownerOnly) return isOwner() || isDev();
     return true;
   };

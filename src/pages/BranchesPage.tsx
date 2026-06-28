@@ -23,6 +23,8 @@ import {
 } from "@/services/branchService";
 import { extractErrorMessage } from "@/lib/errors";
 import { Branch } from "@/types/branch";
+import { useAuthStore } from "@/store/authStore";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface FormState {
   name: string;
@@ -33,6 +35,8 @@ interface FormState {
 const EMPTY_FORM: FormState = { name: "", location: "", phone: "" };
 
 const BranchesPage = () => {
+  const { isDev, canManageBranches, activeCompanyId } = useAuthStore();
+  const canManage = canManageBranches();
   const { data: branches, isLoading } = useBranches();
   const createMut = useCreateBranch();
   const updateMut = useUpdateBranch();
@@ -98,16 +102,30 @@ const BranchesPage = () => {
 
   return (
     <div className="space-y-6">
+      {isDev() && !activeCompanyId && (
+        <Alert>
+          <AlertDescription>
+            Kompaniya kontekstini tanlang (yuqoridagi switcher) — filiallar shu
+            kompaniya bo&apos;yicha ko&apos;rinadi.
+          </AlertDescription>
+        </Alert>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-balance">Filiallar</h1>
+          <h1 className="font-heading text-2xl font-bold text-balance">
+            Filiallar
+          </h1>
           <p className="text-sm text-muted-foreground">
-            {(branches || []).length} ta filial
+            {canManage
+              ? `${(branches || []).length} ta filial`
+              : "Filial ma'lumotlari (faqat ko'rish)"}
           </p>
         </div>
-        <Button className="gap-2" onClick={openCreate}>
-          <Plus className="h-4 w-4" /> Filial qo'shish
-        </Button>
+        {canManage && (
+          <Button className="gap-2" onClick={openCreate}>
+            <Plus className="h-4 w-4" /> Filial qo'shish
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -122,7 +140,11 @@ const BranchesPage = () => {
             icon={Building2}
             title="Filiallar topilmadi"
             description="Birinchi filialingizni qo'shishdan boshlang."
-            action={{ label: "Filial qo'shish", onClick: openCreate }}
+            action={
+              canManage
+                ? { label: "Filial qo'shish", onClick: openCreate }
+                : undefined
+            }
           />
         </div>
       ) : (
@@ -133,37 +155,47 @@ const BranchesPage = () => {
                 <div key={b.id} className="glass-card p-5 animate-slide-in">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-heading text-lg font-semibold text-balance">{b.name}</h3>
+                      <h3 className="font-heading text-lg font-semibold text-balance">
+                        {b.name}
+                      </h3>
                       <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
                         <MapPin className="h-3.5 w-3.5" />
                         {b.location}
                       </div>
                     </div>
                     <div className="flex gap-1">
-                      <button
-                        onClick={() => openEdit(b)}
-                        title="Tahrirlash"
-                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteId(b.id)}
-                        title="O'chirish"
-                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      {canManage && (
+                        <>
+                          <button
+                            onClick={() => openEdit(b)}
+                            title="Tahrirlash"
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteId(b.id)}
+                            title="O'chirish"
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="mt-4 flex items-center gap-6 text-sm">
                     <div>
                       <span className="text-muted-foreground">Menejer: </span>
-                      <span className="text-foreground font-medium">{b.manager_name || "—"}</span>
+                      <span className="text-foreground font-medium">
+                        {b.manager_name || "—"}
+                      </span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Talabalar: </span>
-                      <span className="text-foreground font-medium">{b.active_students}</span>
+                      <span className="text-foreground font-medium">
+                        {b.active_students}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -193,22 +225,24 @@ const BranchesPage = () => {
                   { label: "Holat", value: "Faol" },
                 ]}
                 actions={
-                  <>
-                    <button
-                      onClick={() => openEdit(b)}
-                      title="Tahrirlash"
-                      className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(b.id)}
-                      title="O'chirish"
-                      className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </>
+                  canManage ? (
+                    <>
+                      <button
+                        onClick={() => openEdit(b)}
+                        title="Tahrirlash"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(b.id)}
+                        title="O'chirish"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  ) : undefined
                 }
               />
             ))}
@@ -228,7 +262,9 @@ const BranchesPage = () => {
               <Label>Nomi *</Label>
               <Input
                 value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
                 required
                 className="bg-secondary border-border"
               />
@@ -237,7 +273,9 @@ const BranchesPage = () => {
               <Label>Manzil *</Label>
               <Input
                 value={form.location}
-                onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, location: e.target.value }))
+                }
                 required
                 placeholder="Manzil, shahar"
                 className="bg-secondary border-border"
@@ -247,16 +285,25 @@ const BranchesPage = () => {
               <Label>Telefon</Label>
               <Input
                 value={form.phone}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, phone: e.target.value }))
+                }
                 placeholder="+998..."
                 className="bg-secondary border-border"
               />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setModalOpen(false)}
+              >
                 Bekor qilish
               </Button>
-              <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
+              <Button
+                type="submit"
+                disabled={createMut.isPending || updateMut.isPending}
+              >
                 {createMut.isPending || updateMut.isPending
                   ? "Saqlanmoqda..."
                   : editItem

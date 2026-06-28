@@ -39,7 +39,14 @@ const queryClient = new QueryClient({
 // Owner page is also accessible to dev (platform admin sees everything)
 const OwnerRoute = ({ children }: { children: React.ReactNode }) => {
   const role = useAuthStore((s) => s.user?.role);
-  if (role !== "owner" && role !== "dev") return <Navigate to="/dashboard" replace />;
+  if (role !== "owner" && role !== "dev")
+    return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+};
+
+const BranchAccessRoute = ({ children }: { children: React.ReactNode }) => {
+  const canViewBranches = useAuthStore((s) => s.canViewBranches);
+  if (!canViewBranches()) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };
 
@@ -122,11 +129,11 @@ const App = () => (
             <Route
               path="filiallar"
               element={
-                <OwnerRoute>
+                <BranchAccessRoute>
                   <Suspense fallback={<PageLoader />}>
                     <BranchesPage />
                   </Suspense>
-                </OwnerRoute>
+                </BranchAccessRoute>
               }
             />
             <Route

@@ -1,6 +1,6 @@
-import { User } from '@/types/user';
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { User } from "@/types/user";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface AuthState {
   token: string | null;
@@ -14,6 +14,8 @@ interface AuthState {
   setActiveCompanyId: (id: string) => void;
   isOwner: () => boolean;
   isDev: () => boolean;
+  canViewBranches: () => boolean;
+  canManageBranches: () => boolean;
   setHasHydrated: (state: boolean) => void;
 }
 
@@ -24,16 +26,32 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       hasHydrated: false,
-      activeCompanyId: '',
-      setAuth: (token, user) => set({ token, user, isAuthenticated: true, hasHydrated: true }),
-      logout: () => set({ token: null, user: null, isAuthenticated: false, hasHydrated: true, activeCompanyId: '' }),
+      activeCompanyId: "",
+      setAuth: (token, user) =>
+        set({ token, user, isAuthenticated: true, hasHydrated: true }),
+      logout: () =>
+        set({
+          token: null,
+          user: null,
+          isAuthenticated: false,
+          hasHydrated: true,
+          activeCompanyId: "",
+        }),
       setActiveCompanyId: (id) => set({ activeCompanyId: id }),
-      isOwner: () => get().user?.role === 'owner',
-      isDev: () => get().user?.role === 'dev',
+      isOwner: () => get().user?.role === "owner",
+      isDev: () => get().user?.role === "dev",
+      canViewBranches: () => {
+        const role = get().user?.role;
+        return role === "owner" || role === "manager" || role === "dev";
+      },
+      canManageBranches: () => {
+        const role = get().user?.role;
+        return role === "owner" || role === "dev";
+      },
       setHasHydrated: (state) => set({ hasHydrated: state }),
     }),
     {
-      name: 'autodrive-auth',
+      name: "autodrive-auth",
       // token is NOT persisted — it lives in memory only.
       // Session is maintained via httpOnly cookie; Bearer is kept for
       // in-session requests where the in-memory token is still available.
@@ -48,6 +66,6 @@ export const useAuthStore = create<AuthState>()(
           state.setHasHydrated(true);
         }
       },
-    }
-  )
+    },
+  ),
 );
