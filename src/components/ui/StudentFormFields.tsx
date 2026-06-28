@@ -1,12 +1,28 @@
 import { UseFormReturn } from "react-hook-form";
-import { StudentFormValues, paymentMethodLabels, resultLabels } from "@/lib/schemas/student.schema";
+import {
+  StudentFormValues,
+  paymentMethodLabels,
+  resultLabels,
+} from "@/lib/schemas/student.schema";
 import { CourseType, PaymentMethod, ResultStatus } from "@/types/student";
 import { User } from "@/types/user";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 
 interface StudentFormFieldsProps {
@@ -15,15 +31,24 @@ interface StudentFormFieldsProps {
   isUpdate: boolean;
   debt: number;
   disabledFields: string[];
-  branchList: any[];
-  groupList: any[];
+  branchList: { id: string; name: string }[];
+  groupList: { id: string; name: string }[];
   operatorList: User[];
   isOwner: boolean;
   currentBranchName: string;
 }
 
 export function StudentFormFields({
-  form, courseType, isUpdate, debt, disabledFields, branchList, groupList, operatorList, isOwner, currentBranchName
+  form,
+  courseType,
+  isUpdate,
+  debt,
+  disabledFields,
+  branchList,
+  groupList,
+  operatorList,
+  isOwner,
+  currentBranchName,
 }: StudentFormFieldsProps) {
   const formatMoney = (n: number) => new Intl.NumberFormat("uz-UZ").format(n);
 
@@ -63,7 +88,11 @@ export function StudentFormFields({
             <FormItem>
               <FormLabel>Telefon *</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="+998901234567" className="bg-secondary border-border" />
+                <Input
+                  {...field}
+                  placeholder="+998901234567"
+                  className="bg-secondary border-border"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -76,7 +105,10 @@ export function StudentFormFields({
             <FormItem>
               <FormLabel>Filial</FormLabel>
               {isOwner ? (
-                <Select value={field.value || ""} onValueChange={field.onChange}>
+                <Select
+                  value={field.value || ""}
+                  onValueChange={field.onChange}
+                >
                   <FormControl>
                     <SelectTrigger className="bg-secondary border-border">
                       <SelectValue placeholder="Tanlang" />
@@ -84,13 +116,19 @@ export function StudentFormFields({
                   </FormControl>
                   <SelectContent>
                     {branchList.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               ) : (
                 <FormControl>
-                  <Input value={currentBranchName} disabled className="bg-muted border-border" />
+                  <Input
+                    value={currentBranchName}
+                    disabled
+                    className="bg-muted border-border"
+                  />
                 </FormControl>
               )}
               <FormMessage />
@@ -131,13 +169,17 @@ export function StudentFormFields({
                 disabled={disabledFields.includes("payment_method")}
               >
                 <FormControl>
-                  <SelectTrigger className={`${disabledFields.includes("payment_method") ? "bg-muted" : "bg-secondary"} border-border`}>
+                  <SelectTrigger
+                    className={`${disabledFields.includes("payment_method") ? "bg-muted" : "bg-secondary"} border-border`}
+                  >
                     <SelectValue />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {Object.entries(paymentMethodLabels).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -155,14 +197,18 @@ export function StudentFormFields({
               name="amount_paid"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{isUpdate ? "Qo'shimcha to'lov" : "To'lov miqdori"}</FormLabel>
+                  <FormLabel>
+                    {isUpdate ? "Qo'shimcha to'lov" : "To'lov miqdori"}
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       {...field}
                       value={field.value || ""}
                       min={0}
-                      placeholder={isUpdate ? "0 (yangi to'lov qo'shish uchun)" : "0"}
+                      placeholder={
+                        isUpdate ? "0 (yangi to'lov qo'shish uchun)" : "0"
+                      }
                       className="bg-secondary border-border"
                     />
                   </FormControl>
@@ -172,7 +218,11 @@ export function StudentFormFields({
             />
             <div className="space-y-2">
               <Label>{isUpdate ? "Joriy qarzdorlik" : "Qarzdorlik"}</Label>
-              <Input value={formatMoney(debt)} disabled className="bg-muted border-border text-destructive font-medium" />
+              <Input
+                value={formatMoney(debt)}
+                disabled
+                className="bg-muted border-border text-destructive font-medium"
+              />
             </div>
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
@@ -182,7 +232,10 @@ export function StudentFormFields({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Guruh</FormLabel>
-                  <Select value={field.value || ""} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value || ""}
+                    onValueChange={field.onChange}
+                  >
                     <FormControl>
                       <SelectTrigger className="bg-secondary border-border">
                         <SelectValue placeholder="Tanlang" />
@@ -190,7 +243,9 @@ export function StudentFormFields({
                     </FormControl>
                     <SelectContent>
                       {groupList.map((g) => (
-                        <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                        <SelectItem key={g.id} value={g.id}>
+                          {g.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -215,8 +270,10 @@ export function StudentFormFields({
                       {...field}
                       value={field.value || ""}
                       min={0}
-                      disabled={isUpdate || disabledFields.includes("initial_payment")}
-                      className={`${(isUpdate || disabledFields.includes("initial_payment")) ? "bg-muted" : "bg-secondary"} border-border`}
+                      disabled={
+                        isUpdate || disabledFields.includes("initial_payment")
+                      }
+                      className={`${isUpdate || disabledFields.includes("initial_payment") ? "bg-muted" : "bg-secondary"} border-border`}
                     />
                   </FormControl>
                   <FormMessage />
@@ -225,7 +282,11 @@ export function StudentFormFields({
             />
             <div className="space-y-2">
               <Label>{isUpdate ? "Joriy qarzdorlik" : "Qarzdorlik"}</Label>
-              <Input value={formatMoney(debt)} disabled className="bg-muted border-border text-destructive font-medium" />
+              <Input
+                value={formatMoney(debt)}
+                disabled
+                className="bg-muted border-border text-destructive font-medium"
+              />
             </div>
           </div>
           {isUpdate && (
@@ -256,8 +317,13 @@ export function StudentFormFields({
               name="group_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Guruh <span className="text-destructive">*</span></FormLabel>
-                  <Select value={field.value || ""} onValueChange={field.onChange}>
+                  <FormLabel>
+                    Guruh <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <Select
+                    value={field.value || ""}
+                    onValueChange={field.onChange}
+                  >
                     <FormControl>
                       <SelectTrigger className="bg-secondary border-border">
                         <SelectValue placeholder="Tanlang" />
@@ -265,7 +331,9 @@ export function StudentFormFields({
                     </FormControl>
                     <SelectContent>
                       {groupList.map((g) => (
-                        <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                        <SelectItem key={g.id} value={g.id}>
+                          {g.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -280,7 +348,12 @@ export function StudentFormFields({
                 <FormItem>
                   <FormLabel>Tugatish sanasi</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} value={field.value || ""} className="bg-secondary border-border" />
+                    <Input
+                      type="date"
+                      {...field}
+                      value={field.value || ""}
+                      className="bg-secondary border-border"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -293,7 +366,12 @@ export function StudentFormFields({
                 <FormItem>
                   <FormLabel>Shartnoma raqami</FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value || ""} placeholder="C-201" className="bg-secondary border-border" />
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      placeholder="C-201"
+                      className="bg-secondary border-border"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -306,9 +384,15 @@ export function StudentFormFields({
             render={({ field }) => (
               <FormItem className="flex items-center gap-2 space-y-0">
                 <FormControl>
-                  <Checkbox checked={field.value || false} onCheckedChange={(v) => field.onChange(!!v)} id="o83" />
+                  <Checkbox
+                    checked={field.value || false}
+                    onCheckedChange={(v) => field.onChange(!!v)}
+                    id="o83"
+                  />
                 </FormControl>
-                <FormLabel htmlFor="o83" className="!mt-0">O83</FormLabel>
+                <FormLabel htmlFor="o83" className="!mt-0">
+                  O83
+                </FormLabel>
               </FormItem>
             )}
           />
@@ -330,7 +414,9 @@ export function StudentFormFields({
                 </FormControl>
                 <SelectContent>
                   {operatorList.map((op) => (
-                    <SelectItem key={op.id} value={op.id}>{op.name || op.email}</SelectItem>
+                    <SelectItem key={op.id} value={op.id}>
+                      {op.name || op.email}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -347,7 +433,10 @@ export function StudentFormFields({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Natijasi</FormLabel>
-              <Select value={field.value || "oqimoqda"} onValueChange={(v) => field.onChange(v as ResultStatus)}>
+              <Select
+                value={field.value || "oqimoqda"}
+                onValueChange={(v) => field.onChange(v as ResultStatus)}
+              >
                 <FormControl>
                   <SelectTrigger className="bg-secondary border-border">
                     <SelectValue />
@@ -355,7 +444,9 @@ export function StudentFormFields({
                 </FormControl>
                 <SelectContent>
                   {Object.entries(resultLabels).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -371,9 +462,15 @@ export function StudentFormFields({
         render={({ field }) => (
           <FormItem className="flex items-center gap-2 space-y-0">
             <FormControl>
-              <Checkbox checked={field.value || false} onCheckedChange={(v) => field.onChange(!!v)} id="doc" />
+              <Checkbox
+                checked={field.value || false}
+                onCheckedChange={(v) => field.onChange(!!v)}
+                id="doc"
+              />
             </FormControl>
-            <FormLabel htmlFor="doc" className="!mt-0">Hujjat mavjud</FormLabel>
+            <FormLabel htmlFor="doc" className="!mt-0">
+              Hujjat mavjud
+            </FormLabel>
           </FormItem>
         )}
       />
@@ -385,7 +482,13 @@ export function StudentFormFields({
           <FormItem>
             <FormLabel>Izoh</FormLabel>
             <FormControl>
-              <Textarea {...field} value={field.value || ""} placeholder="Izoh yozing..." rows={3} className="bg-secondary border-border" />
+              <Textarea
+                {...field}
+                value={field.value || ""}
+                placeholder="Izoh yozing..."
+                rows={3}
+                className="bg-secondary border-border"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

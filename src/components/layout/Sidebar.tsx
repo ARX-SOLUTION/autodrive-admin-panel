@@ -37,20 +37,42 @@ type NavSection = {
 
 const navSections: NavSection[] = [
   {
-    items: [{ path: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard }],
+    items: [
+      { path: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+    ],
   },
   {
     titleKey: "common.platform_admin",
     items: [
-      { path: "/kompaniyalar", labelKey: "nav.companies", icon: Briefcase, devOnly: true },
-      { path: "/platform-foydalanuvchilar", labelKey: "nav.platform_users", icon: KeyRound, devOnly: true },
-      { path: "/system-health", labelKey: "nav.system_health", icon: Activity, devOnly: true },
+      {
+        path: "/kompaniyalar",
+        labelKey: "nav.companies",
+        icon: Briefcase,
+        devOnly: true,
+      },
+      {
+        path: "/platform-foydalanuvchilar",
+        labelKey: "nav.platform_users",
+        icon: KeyRound,
+        devOnly: true,
+      },
+      {
+        path: "/system-health",
+        labelKey: "nav.system_health",
+        icon: Activity,
+        devOnly: true,
+      },
     ],
   },
   {
     titleKey: "common.management",
     items: [
-      { path: "/filiallar", labelKey: "nav.branches", icon: Building2, ownerOnly: true },
+      {
+        path: "/filiallar",
+        labelKey: "nav.branches",
+        icon: Building2,
+        ownerOnly: true,
+      },
       { path: "/guruhlar", labelKey: "nav.groups", icon: Layers },
       { path: "/talabalar", labelKey: "nav.students", icon: GraduationCap },
       { path: "/tolovlar", labelKey: "nav.payments", icon: CreditCard },
@@ -61,12 +83,22 @@ const navSections: NavSection[] = [
     items: [
       { path: "/operatorlar", labelKey: "nav.operators", icon: Headphones },
       { path: "/oqituvchilar", labelKey: "nav.teachers", icon: Users },
-      { path: "/foydalanuvchilar", labelKey: "nav.users", icon: UserCog, ownerOnly: true },
+      {
+        path: "/foydalanuvchilar",
+        labelKey: "nav.users",
+        icon: UserCog,
+        ownerOnly: true,
+      },
     ],
   },
   {
     items: [
-      { path: "/audit", labelKey: "nav.audit", icon: ShieldCheck, ownerOnly: true },
+      {
+        path: "/audit",
+        labelKey: "nav.audit",
+        icon: ShieldCheck,
+        ownerOnly: true,
+      },
       { path: "/profile", labelKey: "nav.profile", icon: User },
     ],
   },
@@ -154,7 +186,14 @@ const SidebarContent = ({ collapsed, onNavigate }: SidebarContentProps) => {
             </p>
           </div>
         )}
-        <div className={cn("flex items-center", collapsed ? "flex-col gap-2 justify-center" : "justify-between px-1")}>
+        <div
+          className={cn(
+            "flex items-center",
+            collapsed
+              ? "flex-col gap-2 justify-center"
+              : "justify-between px-1",
+          )}
+        >
           <button
             onClick={() => {
               onNavigate?.();
@@ -181,7 +220,13 @@ interface SidebarProps {
   onMobileOpenChange: (open: boolean) => void;
 }
 
-export const Sidebar = ({ collapsed, onCollapsedChange, mobileOpen, onMobileOpenChange }: SidebarProps) => {
+export const Sidebar = ({
+  collapsed,
+  onCollapsedChange,
+  mobileOpen,
+  onMobileOpenChange,
+}: SidebarProps) => {
+  const { t } = useTranslation();
 
   return (
     <>
@@ -191,16 +236,21 @@ export const Sidebar = ({ collapsed, onCollapsedChange, mobileOpen, onMobileOpen
           "fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-glass-border-light backdrop-blur-2xl transition-all duration-300 md:flex",
           collapsed ? "w-[68px]" : "w-60",
         )}
-        style={{ background: 'hsl(var(--sidebar-background))' }}
+        style={{ background: "hsl(var(--sidebar-background))" }}
       >
         <SidebarContent collapsed={collapsed} />
         <button
           onClick={() => onCollapsedChange(!collapsed)}
-          aria-label={collapsed ? t("actions.sidebar_open") : t("actions.sidebar_close")}
+          aria-label={
+            collapsed ? t("actions.sidebar_open") : t("actions.sidebar_close")
+          }
           className="absolute -right-3 top-20 z-10 rounded-full border border-border bg-background p-1 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
         >
           <ChevronLeft
-            className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")}
+            className={cn(
+              "h-4 w-4 transition-transform",
+              collapsed && "rotate-180",
+            )}
           />
         </button>
       </aside>
@@ -212,7 +262,10 @@ export const Sidebar = ({ collapsed, onCollapsedChange, mobileOpen, onMobileOpen
           className="w-72 bg-sidebar p-0 [&>button]:text-sidebar-foreground"
         >
           <div className="flex h-full flex-col">
-            <SidebarContent collapsed={false} onNavigate={() => onMobileOpenChange(false)} />
+            <SidebarContent
+              collapsed={false}
+              onNavigate={() => onMobileOpenChange(false)}
+            />
           </div>
         </SheetContent>
       </Sheet>

@@ -2,13 +2,13 @@ import { useAuthStore } from "@/store/authStore";
 import axios, { type AxiosRequestHeaders } from "axios";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ??
-  "https://autodrive-backend-production.up.railway.app";
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
-  withCredentials: true, // send httpOnly cookie on every request
+  withCredentials: true,
+  timeout: 30_000,
 });
 
 // Endpoints under /platform/* are platform-admin only and intentionally

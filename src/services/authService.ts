@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import axiosInstance from "@/api/axiosInstance";
 import { useAuthStore } from "@/store/authStore";
 import { AuthResponse, LoginCredentials, User } from "@/types/user";
@@ -45,7 +46,8 @@ export const useRestoreSession = () => {
   }, [query.data, setAuth]);
 
   useEffect(() => {
-    if ((query.error as any)?.response?.status === 401) logout();
+    if (isAxiosError(query.error) && query.error.response?.status === 401)
+      logout();
   }, [query.error, logout]);
 
   return query;
@@ -53,7 +55,10 @@ export const useRestoreSession = () => {
 
 export const useChangePassword = () => {
   return useMutation({
-    mutationFn: async (payload: { currentPassword: string; newPassword: string }) => {
+    mutationFn: async (payload: {
+      currentPassword: string;
+      newPassword: string;
+    }) => {
       await axiosInstance.post("/auth/change-password", payload);
     },
   });

@@ -37,15 +37,30 @@ type NavEntry = {
 
 const NAV_ENTRIES: NavEntry[] = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { label: "Kompaniyalar", path: "/kompaniyalar", icon: Briefcase, devOnly: true },
-  { label: "Platform Users", path: "/platform-foydalanuvchilar", icon: KeyRound, devOnly: true },
+  {
+    label: "Kompaniyalar",
+    path: "/kompaniyalar",
+    icon: Briefcase,
+    devOnly: true,
+  },
+  {
+    label: "Platform Users",
+    path: "/platform-foydalanuvchilar",
+    icon: KeyRound,
+    devOnly: true,
+  },
   { label: "Filiallar", path: "/filiallar", icon: Building2, ownerOnly: true },
   { label: "Guruhlar", path: "/guruhlar", icon: Layers },
   { label: "Talabalar", path: "/talabalar", icon: GraduationCap },
   { label: "To'lovlar", path: "/tolovlar", icon: CreditCard },
   { label: "Operatorlar", path: "/operatorlar", icon: Headphones },
   { label: "O'qituvchilar", path: "/oqituvchilar", icon: Users },
-  { label: "Foydalanuvchilar", path: "/foydalanuvchilar", icon: UserCog, ownerOnly: true },
+  {
+    label: "Foydalanuvchilar",
+    path: "/foydalanuvchilar",
+    icon: UserCog,
+    ownerOnly: true,
+  },
   { label: "Audit log", path: "/audit", icon: ShieldCheck, ownerOnly: true },
   { label: "Profil", path: "/profile", icon: User },
 ];
@@ -105,7 +120,7 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
           <>
             <CommandSeparator />
             <CommandGroup heading="Kompaniyalar">
-              {companies.items.map((c) => (
+              {companies.items.slice(0, 20).map((c) => (
                 <CommandItem
                   key={c.id}
                   value={`company ${c.name} ${c.slug}`}
@@ -113,7 +128,9 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
                 >
                   <Briefcase className="mr-2 h-4 w-4" />
                   <span className="flex-1 truncate">{c.name}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">{c.slug}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {c.slug}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -132,7 +149,9 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
                 >
                   <User className="mr-2 h-4 w-4" />
                   <span className="flex-1 truncate">{u.name || u.email}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">{u.role}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {u.role}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

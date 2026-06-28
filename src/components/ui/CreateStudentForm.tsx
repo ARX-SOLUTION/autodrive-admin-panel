@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Student, CourseType } from "@/types/student";
-import { CreateStudentPayload, studentFormSchema, StudentFormValues } from "@/lib/schemas/student.schema";
+import {
+  CreateStudentPayload,
+  studentFormSchema,
+  StudentFormValues,
+} from "@/lib/schemas/student.schema";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useAuthStore } from "@/store/authStore";
@@ -34,26 +38,29 @@ export function CreateStudentForm({
 
   const branchList = branches || [];
 
-  const defaultFormValues = (): StudentFormValues => ({
-    first_name: "",
-    last_name: "",
-    phone: "",
-    course_type: courseType,
-    branch_id: isOwner() ? (defaultBranchId || "") : user?.branch_id || "",
-    payment_method: "naqd",
-    result: "oqimoqda",
-    has_document: false,
-    o83: false,
-    total_price: courseType === "tezkor" ? 2500000 : 6000000,
-    amount_paid: 0,
-    initial_payment: 0,
-    group_id: "",
-    completion_date: "",
-    contract_number: "",
-    notes: "",
-    status: "active",
-    registered_by: "",
-  });
+  const defaultFormValues = useCallback(
+    (): StudentFormValues => ({
+      first_name: "",
+      last_name: "",
+      phone: "",
+      course_type: courseType,
+      branch_id: isOwner() ? defaultBranchId || "" : user?.branch_id || "",
+      payment_method: "naqd",
+      result: "oqimoqda",
+      has_document: false,
+      o83: false,
+      total_price: courseType === "tezkor" ? 2500000 : 6000000,
+      amount_paid: 0,
+      initial_payment: 0,
+      group_id: "",
+      completion_date: "",
+      contract_number: "",
+      notes: "",
+      status: "active",
+      registered_by: "",
+    }),
+    [courseType, defaultBranchId, isOwner, user?.branch_id],
+  );
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentFormSchema),
@@ -80,7 +87,7 @@ export function CreateStudentForm({
 
   useEffect(() => {
     form.reset(defaultFormValues());
-  }, [courseType, defaultBranchId]);
+  }, [courseType, defaultBranchId, form, defaultFormValues]);
 
   useEffect(() => {
     const total = Number(watchedTotalPrice) || 0;
@@ -95,7 +102,10 @@ export function CreateStudentForm({
     if (watchedGroupId && !groupList.some((g) => g.id === watchedGroupId)) {
       form.setValue("group_id", "");
     }
-    if (watchedRegisteredBy && !operatorList.some((op) => op.id === watchedRegisteredBy)) {
+    if (
+      watchedRegisteredBy &&
+      !operatorList.some((op) => op.id === watchedRegisteredBy)
+    ) {
       form.setValue("registered_by", "");
     }
   }, [form, groupList, operatorList, watchedGroupId, watchedRegisteredBy]);
@@ -130,7 +140,9 @@ export function CreateStudentForm({
   });
 
   const currentBranchName =
-    branchList.find((b) => b.id === watchedBranchId)?.name || watchedBranchId || "";
+    branchList.find((b) => b.id === watchedBranchId)?.name ||
+    watchedBranchId ||
+    "";
 
   return (
     <Form {...form}>
@@ -151,8 +163,13 @@ export function CreateStudentForm({
           <Button type="button" variant="outline" onClick={onCancel}>
             Bekor qilish
           </Button>
-          <Button type="submit" disabled={loading || form.formState.isSubmitting}>
-            {loading || form.formState.isSubmitting ? "Saqlanmoqda..." : "Qo'shish"}
+          <Button
+            type="submit"
+            disabled={loading || form.formState.isSubmitting}
+          >
+            {loading || form.formState.isSubmitting
+              ? "Saqlanmoqda..."
+              : "Qo'shish"}
           </Button>
         </div>
       </form>

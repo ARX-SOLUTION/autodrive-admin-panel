@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "@/components/ui/PaginationControls";
 import {
   useApproveCompany,
   useCompany,
@@ -31,12 +33,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { DataCard } from "@/components/ui/DataCard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -45,7 +42,10 @@ import { UserRole } from "@/types/user";
 import { toast } from "sonner";
 import { extractErrorMessage } from "@/lib/errors";
 
-const statusVariant: Record<CompanyStatus, "default" | "secondary" | "destructive"> = {
+const statusVariant: Record<
+  CompanyStatus,
+  "default" | "secondary" | "destructive"
+> = {
   active: "default",
   pending: "secondary",
   suspended: "destructive",
@@ -81,15 +81,20 @@ const StatTile = ({
   </Card>
 );
 
+const USERS_PAGE_SIZE = 10;
+
 const CompanyDetailPage = () => {
   const { t } = useTranslation();
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const setActiveCompanyId = useAuthStore((s) => s.setActiveCompanyId);
   const { data: company, isLoading } = useCompany(id);
+  const { currentPage: usersPage, setCurrentPage: setUsersPage } =
+    usePagination([], USERS_PAGE_SIZE);
   const { data: users, isLoading: usersLoading } = usePlatformUsers({
     companyId: id,
-    limit: 100,
+    page: usersPage,
+    limit: USERS_PAGE_SIZE,
   });
   const { data: branches, isLoading: branchesLoading } = useBranches({
     companyId: id,
@@ -98,6 +103,11 @@ const CompanyDetailPage = () => {
   const suspend = useSuspendCompany();
   const [confirmApprove, setConfirmApprove] = useState(false);
   const [confirmSuspend, setConfirmSuspend] = useState(false);
+
+  const userItems = users?.items ?? [];
+  const usersTotalPages = users
+    ? Math.max(1, Math.ceil(users.total / USERS_PAGE_SIZE))
+    : 1;
 
   if (isLoading) {
     return (
@@ -112,9 +122,12 @@ const CompanyDetailPage = () => {
     return (
       <EmptyState
         icon={Briefcase}
-        title={t('company_detail.not_found_title')}
-        description={t('company_detail.not_found_desc')}
-        action={{ label: t('company_detail.not_found_action'), onClick: () => navigate("/kompaniyalar") }}
+        title={t("company_detail.not_found_title")}
+        description={t("company_detail.not_found_desc")}
+        action={{
+          label: t("company_detail.not_found_action"),
+          onClick: () => navigate("/kompaniyalar"),
+        }}
       />
     );
   }
@@ -122,7 +135,7 @@ const CompanyDetailPage = () => {
   const handleApprove = async () => {
     try {
       await approve.mutateAsync(id);
-      toast.success(t('company_detail.toast_approved'));
+      toast.success(t("company_detail.toast_approved"));
     } catch (e) {
       toast.error(extractErrorMessage(e));
     } finally {
@@ -133,7 +146,7 @@ const CompanyDetailPage = () => {
   const handleSuspend = async () => {
     try {
       await suspend.mutateAsync(id);
-      toast.success(t('company_detail.toast_blocked'));
+      toast.success(t("company_detail.toast_blocked"));
     } catch (e) {
       toast.error(extractErrorMessage(e));
     } finally {
@@ -143,7 +156,7 @@ const CompanyDetailPage = () => {
 
   const handleViewAs = () => {
     setActiveCompanyId(id);
-    toast.success(t('company_detail.toast_view_as', { name: company.name }));
+    toast.success(t("company_detail.toast_view_as", { name: company.name }));
     navigate("/dashboard");
   };
 
@@ -154,7 +167,7 @@ const CompanyDetailPage = () => {
           <Link
             to="/kompaniyalar"
             className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label={t('common.back')}
+            aria-label={t("common.back")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -163,18 +176,23 @@ const CompanyDetailPage = () => {
               <h1 className="truncate font-heading text-2xl font-bold text-foreground text-balance">
                 {company.name}
               </h1>
-              <Badge variant={statusVariant[company.status]}>{company.status}</Badge>
+              <Badge variant={statusVariant[company.status]}>
+                {company.status}
+              </Badge>
             </div>
-            <div className="mt-1 text-sm text-muted-foreground">slug: {company.slug}</div>
+            <div className="mt-1 text-sm text-muted-foreground">
+              slug: {company.slug}
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={handleViewAs}>
-            {t('company_detail.view_as')}
+            {t("company_detail.view_as")}
           </Button>
           {company.status !== "active" && (
             <Button size="sm" onClick={() => setConfirmApprove(true)}>
-              <CheckCircle2 className="mr-1 h-4 w-4" /> {t('company_detail.approve')}
+              <CheckCircle2 className="mr-1 h-4 w-4" />{" "}
+              {t("company_detail.approve")}
             </Button>
           )}
           {company.status === "active" && (
@@ -183,56 +201,97 @@ const CompanyDetailPage = () => {
               size="sm"
               onClick={() => setConfirmSuspend(true)}
             >
-              <PauseCircle className="mr-1 h-4 w-4" /> {t('company_detail.block')}
+              <PauseCircle className="mr-1 h-4 w-4" />{" "}
+              {t("company_detail.block")}
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={() => navigate("/kompaniyalar")}>
-            <Pencil className="mr-1 h-4 w-4" /> {t('company_detail.edit')}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/kompaniyalar")}
+          >
+            <Pencil className="mr-1 h-4 w-4" /> {t("company_detail.edit")}
           </Button>
         </div>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">{t('company_detail.tab_overview')}</TabsTrigger>
-          <TabsTrigger value="branches">{t('company_detail.tab_branches')}</TabsTrigger>
-          <TabsTrigger value="users">{t('company_detail.tab_users')}</TabsTrigger>
-          <TabsTrigger value="audit">{t('company_detail.tab_audit')}</TabsTrigger>
+          <TabsTrigger value="overview">
+            {t("company_detail.tab_overview")}
+          </TabsTrigger>
+          <TabsTrigger value="branches">
+            {t("company_detail.tab_branches")}
+          </TabsTrigger>
+          <TabsTrigger value="users">
+            {t("company_detail.tab_users")}
+          </TabsTrigger>
+          <TabsTrigger value="audit">
+            {t("company_detail.tab_audit")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
-            <StatTile icon={Building2} label={t('company_detail.stat_branches')} value={company.stats?.branches ?? 0} />
-            <StatTile icon={Users} label={t('company_detail.stat_users')} value={company.stats?.users ?? 0} />
-            <StatTile icon={GraduationCap} label={t('company_detail.stat_students')} value={company.stats?.students ?? 0} />
-            <StatTile icon={CreditCard} label={t('company_detail.stat_payments')} value={company.stats?.payments ?? 0} />
+            <StatTile
+              icon={Building2}
+              label={t("company_detail.stat_branches")}
+              value={company.stats?.branches ?? 0}
+            />
+            <StatTile
+              icon={Users}
+              label={t("company_detail.stat_users")}
+              value={company.stats?.users ?? 0}
+            />
+            <StatTile
+              icon={GraduationCap}
+              label={t("company_detail.stat_students")}
+              value={company.stats?.students ?? 0}
+            />
+            <StatTile
+              icon={CreditCard}
+              label={t("company_detail.stat_payments")}
+              value={company.stats?.payments ?? 0}
+            />
           </div>
 
           <Card className="p-4">
             <h2 className="mb-3 font-heading text-sm font-semibold text-foreground text-balance">
-              {t('company_detail.section_contact')}
+              {t("company_detail.section_contact")}
             </h2>
             <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <dt className="text-muted-foreground">{t('company_detail.label_phone')}</dt>
-                <dd className="text-foreground">{company.contact_phone ?? "—"}</dd>
+                <dt className="text-muted-foreground">
+                  {t("company_detail.label_phone")}
+                </dt>
+                <dd className="text-foreground">
+                  {company.contact_phone ?? "—"}
+                </dd>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <dt className="text-muted-foreground">{t('company_detail.label_email')}</dt>
-                <dd className="text-foreground">{company.contact_email ?? "—"}</dd>
+                <dt className="text-muted-foreground">
+                  {t("company_detail.label_email")}
+                </dt>
+                <dd className="text-foreground">
+                  {company.contact_email ?? "—"}
+                </dd>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <dt className="text-muted-foreground">{t('company_detail.label_created')}</dt>
+                <dt className="text-muted-foreground">
+                  {t("company_detail.label_created")}
+                </dt>
                 <dd className="text-foreground">
                   {format(new Date(company.created_at), "dd-MMM-yyyy HH:mm")}
                 </dd>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <dt className="text-muted-foreground">{t('company_detail.label_updated')}</dt>
+                <dt className="text-muted-foreground">
+                  {t("company_detail.label_updated")}
+                </dt>
                 <dd className="text-foreground">
                   {format(new Date(company.updated_at), "dd-MMM-yyyy HH:mm")}
                 </dd>
@@ -242,10 +301,10 @@ const CompanyDetailPage = () => {
 
           <Card className="p-4">
             <h2 className="mb-2 font-heading text-sm font-semibold text-foreground text-balance">
-              {t('company_detail.section_quick')}
+              {t("company_detail.section_quick")}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {t('company_detail.quick_help')}
+              {t("company_detail.quick_help")}
             </p>
           </Card>
         </TabsContent>
@@ -260,8 +319,8 @@ const CompanyDetailPage = () => {
           ) : !branches || branches.length === 0 ? (
             <EmptyState
               icon={Building2}
-              title={t('company_detail.branches_empty_title')}
-              description={t('company_detail.branches_empty_desc')}
+              title={t("company_detail.branches_empty_title")}
+              description={t("company_detail.branches_empty_desc")}
             />
           ) : (
             <div className="grid gap-3">
@@ -271,10 +330,16 @@ const CompanyDetailPage = () => {
                   title={b.name}
                   subtitle={b.location}
                   fields={[
-                    { label: t('company_detail.branch_manager'), value: b.manager_name ?? "—" },
-                    { label: t('company_detail.branch_active_students'), value: b.active_students ?? 0 },
                     {
-                      label: t('company_detail.branch_created'),
+                      label: t("company_detail.branch_manager"),
+                      value: b.manager_name ?? "—",
+                    },
+                    {
+                      label: t("company_detail.branch_active_students"),
+                      value: b.active_students ?? 0,
+                    },
+                    {
+                      label: t("company_detail.branch_created"),
                       value: b.created_at
                         ? format(new Date(b.created_at), "dd-MMM-yyyy")
                         : "—",
@@ -293,46 +358,62 @@ const CompanyDetailPage = () => {
                 <Skeleton key={i} className="h-16 w-full" />
               ))}
             </div>
-          ) : !users || users.items.length === 0 ? (
+          ) : !users || userItems.length === 0 ? (
             <EmptyState
               icon={UserCog}
-              title={t('company_detail.users_empty_title')}
-              description={t('company_detail.users_empty_desc')}
+              title={t("company_detail.users_empty_title")}
+              description={t("company_detail.users_empty_desc")}
               action={{
-                label: t('company_detail.users_empty_action'),
+                label: t("company_detail.users_empty_action"),
                 onClick: () => navigate("/platform-foydalanuvchilar"),
               }}
             />
           ) : (
-            <div className="grid gap-3">
-              {users.items.map((u) => (
-                <DataCard
-                  key={u.id}
-                  title={u.name || u.email}
-                  subtitle={u.email}
-                  fields={[
-                    { label: t('company_detail.user_role'), value: roleLabel[u.role] ?? u.role },
-                    { label: t('company_detail.user_branch'), value: u.branch_name ?? "—" },
-                    { label: t('company_detail.user_phone'), value: u.phone ?? "—" },
-                    {
-                      label: t('company_detail.user_created'),
-                      value: u.created_at
-                        ? format(new Date(u.created_at), "dd-MMM-yyyy")
-                        : "—",
-                    },
-                  ]}
-                  actions={
-                    <Link
-                      to="/platform-foydalanuvchilar"
-                      aria-label={t('common.edit')}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-                    >
-                      <KeyRound className="h-4 w-4" />
-                    </Link>
-                  }
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid gap-3">
+                {userItems.map((u) => (
+                  <DataCard
+                    key={u.id}
+                    title={u.name || u.email}
+                    subtitle={u.email}
+                    fields={[
+                      {
+                        label: t("company_detail.user_role"),
+                        value: roleLabel[u.role] ?? u.role,
+                      },
+                      {
+                        label: t("company_detail.user_branch"),
+                        value: u.branch_name ?? "—",
+                      },
+                      {
+                        label: t("company_detail.user_phone"),
+                        value: u.phone ?? "—",
+                      },
+                      {
+                        label: t("company_detail.user_created"),
+                        value: u.created_at
+                          ? format(new Date(u.created_at), "dd-MMM-yyyy")
+                          : "—",
+                      },
+                    ]}
+                    actions={
+                      <Link
+                        to="/platform-foydalanuvchilar"
+                        aria-label={t("common.edit")}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+                      >
+                        <KeyRound className="h-4 w-4" />
+                      </Link>
+                    }
+                  />
+                ))}
+              </div>
+              <PaginationControls
+                currentPage={usersPage}
+                totalPages={usersTotalPages}
+                onPageChange={setUsersPage}
+              />
+            </>
           )}
         </TabsContent>
 
@@ -341,22 +422,21 @@ const CompanyDetailPage = () => {
             <div className="mb-3 flex items-center gap-2">
               <Layers className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-heading text-sm font-semibold text-foreground text-balance">
-                {t('company_detail.audit_section_title')}
+                {t("company_detail.audit_section_title")}
               </h2>
             </div>
             <p className="text-sm text-muted-foreground">
-              {t('company_detail.audit_help')}{' '}
+              {t("company_detail.audit_help")}{" "}
               <Button
                 variant="link"
                 className="h-auto p-0 align-baseline"
                 onClick={() => {
-                  setActiveCompanyId(id);
-                  navigate("/audit");
+                  navigate(`/audit?company=${id}`);
                 }}
               >
-                {t('company_detail.audit_link')}
+                {t("company_detail.audit_link")}
               </Button>
-              {t('company_detail.audit_help_tail')}
+              {t("company_detail.audit_help_tail")}
             </p>
           </Card>
         </TabsContent>
@@ -365,16 +445,20 @@ const CompanyDetailPage = () => {
       <ConfirmDialog
         open={confirmApprove}
         onClose={() => setConfirmApprove(false)}
-        title={t('company_detail.confirm_approve_title')}
-        description={t('company_detail.confirm_approve_desc', { name: company.name })}
+        title={t("company_detail.confirm_approve_title")}
+        description={t("company_detail.confirm_approve_desc", {
+          name: company.name,
+        })}
         onConfirm={handleApprove}
         loading={approve.isPending}
       />
       <ConfirmDialog
         open={confirmSuspend}
         onClose={() => setConfirmSuspend(false)}
-        title={t('company_detail.confirm_block_title')}
-        description={t('company_detail.confirm_block_desc', { name: company.name })}
+        title={t("company_detail.confirm_block_title")}
+        description={t("company_detail.confirm_block_desc", {
+          name: company.name,
+        })}
         onConfirm={handleSuspend}
         loading={suspend.isPending}
       />
