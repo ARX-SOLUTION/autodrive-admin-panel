@@ -68,8 +68,8 @@ const formatDate = (d: string) => {
   }
 };
 
-const formatMoney = (n: number) =>
-  new Intl.NumberFormat("uz-UZ").format(n || 0) + " so'm";
+const formatMoneyRaw = (n: number) =>
+  new Intl.NumberFormat("uz-UZ").format(n || 0);
 
 // Date preset helpers
 const today = () => {
@@ -100,6 +100,8 @@ const lastMonthEnd = () => {
 
 const PaymentsPage = () => {
   const { t } = useTranslation();
+  const formatMoney = (n: number) =>
+    `${formatMoneyRaw(n)} ${t("payments.currency_suffix")}`;
   const { isOwner, user } = useAuthStore();
   const defaultBranchId = isOwner() ? undefined : user?.branch_id || undefined;
 
@@ -179,13 +181,13 @@ const PaymentsPage = () => {
 
   useEffect(() => {
     if (isOwner()) {
-      toast.info("Excel yuklab olish mavjud", {
-        description:
-          "Filterlangan to'lovlarni Excel formatida yuklab olishingiz mumkin.",
+      toast.info(t("payments.export_toast_title"), {
+        description: t("payments.export_toast_desc"),
         duration: 5000,
         icon: <Download className="h-4 w-4" />,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOwner]);
 
   // Client-side filter for search/status/method (date is server-side)
@@ -284,11 +286,11 @@ const PaymentsPage = () => {
       [t("payments.student_col")]: "",
       [t("common.branch")]: "",
       [t("common.course_type")]: "",
-      "Total price": "",
-      "This payment": "",
-      "Remaining debt": "",
+      [t("payments.export_col_total_price")]: "",
+      [t("payments.export_col_this_payment")]: "",
+      [t("payments.export_col_remaining")]: "",
       [t("payments.payment_type")]: "",
-      Operator: "",
+      [t("payments.export_col_operator")]: "",
       [t("common.date")]: "",
     };
 
@@ -358,14 +360,14 @@ const PaymentsPage = () => {
         }
       />
 
-      {/* SECTION 1: Joriy holat (Always visible snapshot) */}
+      {/* SECTION 1: Current snapshot (Always visible) */}
       <section>
         <div className="flex items-center justify-between mb-3 tabular-nums">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-balance">
-            Joriy holat
+            {t("payments.current_status")}
           </h2>
           <span className="text-xs text-muted-foreground">
-            Filterga bog'liq emas
+            {t("payments.current_status_hint")}
           </span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -392,11 +394,11 @@ const PaymentsPage = () => {
         </div>
       </section>
 
-      {/* SECTION 2: Filterlar */}
+      {/* SECTION 2: Filters */}
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-balance">
-            Filterlash
+            {t("payments.filter_section_title")}
           </h2>
           {hasAnyFilter && (
             <Button
@@ -405,7 +407,7 @@ const PaymentsPage = () => {
               onClick={clearAllFilters}
               className="h-7 gap-1 text-xs"
             >
-              <X className="h-3 w-3" /> Hammasini tozalash
+              <X className="h-3 w-3" /> {t("payments.clear_all_filters")}
             </Button>
           )}
         </div>
@@ -417,27 +419,27 @@ const PaymentsPage = () => {
             size="sm"
             onClick={() => setPreset("today")}
           >
-            Bugun
+            {t("payments.preset_today")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => setPreset("week")}>
-            So'nggi 7 kun
+            {t("payments.preset_week")}
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setPreset("month")}
           >
-            Bu oy
+            {t("payments.preset_month")}
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setPreset("lastMonth")}
           >
-            O'tgan oy
+            {t("payments.preset_last_month")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => setPreset("all")}>
-            Barcha vaqt
+            {t("payments.preset_all")}
           </Button>
         </div>
 
@@ -449,10 +451,14 @@ const PaymentsPage = () => {
               onValueChange={(v) => setBranchId(v === "all" ? undefined : v)}
             >
               <SelectTrigger className="w-40 bg-secondary border-border">
-                <SelectValue placeholder="Filial" />
+                <SelectValue
+                  placeholder={t("payments.filter_branch_placeholder")}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Barcha filiallar</SelectItem>
+                <SelectItem value="all">
+                  {t("payments.filter_all_branches")}
+                </SelectItem>
                 {(branches || []).map((b) => (
                   <SelectItem key={b.id} value={b.id}>
                     {b.name}
@@ -467,9 +473,15 @@ const PaymentsPage = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Barcha holatlar</SelectItem>
-              <SelectItem value="paid">To'liq to'lagan</SelectItem>
-              <SelectItem value="unpaid">Qarzi bor</SelectItem>
+              <SelectItem value="all">
+                {t("payments.filter_status_all")}
+              </SelectItem>
+              <SelectItem value="paid">
+                {t("payments.filter_status_paid")}
+              </SelectItem>
+              <SelectItem value="unpaid">
+                {t("payments.filter_status_unpaid")}
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -481,9 +493,13 @@ const PaymentsPage = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Barcha turi</SelectItem>
-              <SelectItem value="naqd">Naqd</SelectItem>
-              <SelectItem value="karta">Karta</SelectItem>
+              <SelectItem value="all">
+                {t("payments.filter_method_all")}
+              </SelectItem>
+              <SelectItem value="naqd">{t("payments.method_naqd")}</SelectItem>
+              <SelectItem value="karta">
+                {t("payments.method_karta")}
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -492,9 +508,15 @@ const PaymentsPage = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Barcha kurslar</SelectItem>
-              <SelectItem value="avto_maktab">Avto maktab</SelectItem>
-              <SelectItem value="tezkor">Tezkor</SelectItem>
+              <SelectItem value="all">
+                {t("payments.filter_course_all")}
+              </SelectItem>
+              <SelectItem value="avto_maktab">
+                {t("payments.course_school")}
+              </SelectItem>
+              <SelectItem value="tezkor">
+                {t("payments.course_fast")}
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -509,7 +531,7 @@ const PaymentsPage = () => {
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {!dateFrom
-                  ? "Sana tanlang"
+                  ? t("payments.filter_date_placeholder")
                   : dateTo && dateTo.getTime() !== dateFrom.getTime()
                     ? `${format(dateFrom, "dd.MM.yyyy")} → ${format(dateTo, "dd.MM.yyyy")}`
                     : format(dateFrom, "dd.MM.yyyy")}
@@ -547,15 +569,15 @@ const PaymentsPage = () => {
         </FilterBar>
       </section>
 
-      {/* SECTION 3: Tanlangan davr natijasi (only when date filter active) */}
+      {/* SECTION 3: Selected period result (only when filter active) */}
       {hasAnyFilter && (
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-primary text-balance">
-              Tanlangan natija
+              {t("payments.selected_result")}
             </h2>
             <span className="text-xs text-muted-foreground">
-              {filtered.length} ta to'lov bo'yicha
+              {t("payments.by_payments_count", { count: filtered.length })}
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 tabular-nums">
@@ -585,7 +607,7 @@ const PaymentsPage = () => {
             {t("payments.list_title")}
           </h2>
           <span className="text-xs text-muted-foreground">
-            {filtered.length} ta natija
+            {t("payments.results_count", { count: filtered.length })}
           </span>
         </div>
         <div className="relative">
@@ -612,7 +634,7 @@ const PaymentsPage = () => {
                         onClick={() => toggleSort("student_name")}
                         className="flex items-center gap-1 hover:text-foreground transition-colors"
                       >
-                        Talaba
+                        {t("payments.col_student")}
                         {sortField === "student_name" ? (
                           sortDir === "asc" ? (
                             <ChevronUp className="h-3 w-3" />
@@ -625,20 +647,20 @@ const PaymentsPage = () => {
                       </button>
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Filial
+                      {t("payments.col_branch")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Kurs
+                      {t("payments.col_course")}
                     </th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                      Umumiy narx
+                      {t("payments.col_total_price")}
                     </th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                       <button
                         onClick={() => toggleSort("amount_paid")}
                         className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
                       >
-                        Bu to'lov
+                        {t("payments.col_this_payment")}
                         {sortField === "amount_paid" ? (
                           sortDir === "asc" ? (
                             <ChevronUp className="h-3 w-3" />
@@ -655,7 +677,7 @@ const PaymentsPage = () => {
                         onClick={() => toggleSort("remaining_debt")}
                         className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
                       >
-                        Joriy qoldiq
+                        {t("payments.col_remaining")}
                         {sortField === "remaining_debt" ? (
                           sortDir === "asc" ? (
                             <ChevronUp className="h-3 w-3" />
@@ -668,17 +690,17 @@ const PaymentsPage = () => {
                       </button>
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                      Turi
+                      {t("payments.col_method")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Operator
+                      {t("payments.col_operator")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                       <button
                         onClick={() => toggleSort("date")}
                         className="flex items-center gap-1 hover:text-foreground transition-colors"
                       >
-                        Sana
+                        {t("payments.col_date")}
                         {sortField === "date" ? (
                           sortDir === "asc" ? (
                             <ChevronUp className="h-3 w-3" />
@@ -707,7 +729,7 @@ const PaymentsPage = () => {
                         colSpan={10}
                         className="py-12 text-center text-muted-foreground"
                       >
-                        To'lovlar topilmadi
+                        {t("payments.no_payments_inline")}
                       </td>
                     </tr>
                   ) : (
@@ -727,8 +749,8 @@ const PaymentsPage = () => {
                         </td>
                         <td className="px-4 py-3 text-xs">
                           {p.course_type === "tezkor"
-                            ? "Tezkor"
-                            : "Avto maktab"}
+                            ? t("payments.course_fast")
+                            : t("payments.course_school")}
                         </td>
                         <td className="px-4 py-3 text-right">
                           {new Intl.NumberFormat("uz-UZ").format(p.total_price)}
@@ -749,15 +771,15 @@ const PaymentsPage = () => {
                               ? new Intl.NumberFormat("uz-UZ").format(
                                   p.remaining_debt,
                                 )
-                              : "To'liq"}
+                              : t("payments.fully_paid_label")}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-center text-xs">
                           {p.payment_method === "naqd"
-                            ? "Naqd"
+                            ? t("payments.method_naqd")
                             : p.payment_method === "karta"
-                              ? "Karta"
-                              : "Perechisleniya"}
+                              ? t("payments.method_karta")
+                              : t("payments.method_perechisleniya")}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground text-xs">
                           {p.recorded_by || "—"}
@@ -784,7 +806,7 @@ const PaymentsPage = () => {
                 <EmptyState
                   icon={CreditCard}
                   title={t("payments.not_found_title")}
-                  description="Tanlangan filtrlar bo'yicha to'lovlar yo'q."
+                  description={t("payments.not_found_desc")}
                 />
               ) : (
                 <div className="grid gap-3">
@@ -794,9 +816,12 @@ const PaymentsPage = () => {
                       title={p.student_name}
                       subtitle={p.branch_name}
                       fields={[
-                        { label: "Sana", value: formatDate(p.date) },
                         {
-                          label: "Summa",
+                          label: t("payments.card_label_date"),
+                          value: formatDate(p.date),
+                        },
+                        {
+                          label: t("payments.card_label_amount"),
                           value: (
                             <span className="text-success font-medium">
                               +
@@ -807,7 +832,7 @@ const PaymentsPage = () => {
                           ),
                         },
                         {
-                          label: "Qoldiq",
+                          label: t("payments.card_label_remaining"),
                           value: (
                             <span
                               className={
@@ -820,7 +845,7 @@ const PaymentsPage = () => {
                                 ? new Intl.NumberFormat("uz-UZ").format(
                                     p.remaining_debt,
                                   )
-                                : "To'liq"}
+                                : t("payments.fully_paid_label")}
                             </span>
                           ),
                         },
@@ -828,18 +853,21 @@ const PaymentsPage = () => {
                           label: t("payments.payment_type"),
                           value:
                             p.payment_method === "naqd"
-                              ? "Naqd"
+                              ? t("payments.method_naqd")
                               : p.payment_method === "karta"
-                                ? "Karta"
-                                : "Perechisleniya",
+                                ? t("payments.method_karta")
+                                : t("payments.method_perechisleniya"),
                         },
-                        { label: "Operator", value: p.recorded_by || "—" },
                         {
-                          label: "Kurs turi",
+                          label: t("payments.card_label_operator"),
+                          value: p.recorded_by || "—",
+                        },
+                        {
+                          label: t("payments.card_label_course_type"),
                           value:
                             p.course_type === "tezkor"
-                              ? "Tezkor"
-                              : "Avto maktab",
+                              ? t("payments.course_fast")
+                              : t("payments.course_school"),
                         },
                       ]}
                     />
