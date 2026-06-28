@@ -257,8 +257,12 @@ const StudentsPage = () => {
           onValueChange={(v) => setCourseType(v as CourseType)}
         >
           <TabsList className="bg-secondary">
-            <TabsTrigger value="tezkor">Tezkor</TabsTrigger>
-            <TabsTrigger value="avto_maktab">Avto maktab</TabsTrigger>
+            <TabsTrigger value="tezkor">
+              {t("students.course_fast")}
+            </TabsTrigger>
+            <TabsTrigger value="avto_maktab">
+              {t("students.course_school")}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
         {isOwner() && (
@@ -267,10 +271,12 @@ const StudentsPage = () => {
             onValueChange={(v) => setBranchId(v === "all" ? undefined : v)}
           >
             <SelectTrigger className="w-40 bg-secondary border-border">
-              <SelectValue placeholder="Filial" />
+              <SelectValue
+                placeholder={t("students.filter_branch_placeholder")}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Barchasi</SelectItem>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
               {(branches || []).map((b) => (
                 <SelectItem key={b.id} value={b.id}>
                   {b.name}
@@ -288,10 +294,14 @@ const StudentsPage = () => {
               onValueChange={(v) => setOperatorId(v === "all" ? undefined : v)}
             >
               <SelectTrigger className="w-44 bg-secondary border-border">
-                <SelectValue placeholder="Operator" />
+                <SelectValue
+                  placeholder={t("students.filter_operator_placeholder")}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Barcha operatorlar</SelectItem>
+                <SelectItem value="all">
+                  {t("students.filter_all_operators")}
+                </SelectItem>
                 {(operators || [])
                   .filter((op) => isOwner() || op.branch_id === user?.branch_id)
                   .map((op) => (
@@ -315,7 +325,7 @@ const StudentsPage = () => {
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {!dateFrom
-                ? "Sana tanlang"
+                ? t("students.date_placeholder")
                 : dateTo && dateTo.getTime() !== dateFrom.getTime()
                   ? `${format(dateFrom, "dd.MM.yyyy")} → ${format(dateTo, "dd.MM.yyyy")}`
                   : format(dateFrom, "dd.MM.yyyy")}
@@ -349,14 +359,14 @@ const StudentsPage = () => {
               setDateTo(undefined);
             }}
           >
-            Tozalash
+            {t("common.clear")}
           </Button>
         )}
 
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Ism, familya yoki telefon..."
+            placeholder={t("students.search_placeholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 bg-secondary border-border"
@@ -378,7 +388,7 @@ const StudentsPage = () => {
                     onClick={() => toggleSort("last_name")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
                   >
-                    Familya
+                    {t("students.last_name")}
                     {sortField === "last_name" ? (
                       sortDir === "asc" ? (
                         <ChevronUp className="h-3 w-3" />
@@ -395,7 +405,7 @@ const StudentsPage = () => {
                     onClick={() => toggleSort("first_name")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
                   >
-                    Ismi
+                    {t("students.first_name")}
                     {sortField === "first_name" ? (
                       sortDir === "asc" ? (
                         <ChevronUp className="h-3 w-3" />
@@ -408,14 +418,14 @@ const StudentsPage = () => {
                   </button>
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  Telefon
+                  {t("students.phone")}
                 </th>
                 <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                   <button
                     onClick={() => toggleSort("total_price")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
                   >
-                    Kurs narxi
+                    {t("students.course_price")}
                     {sortField === "total_price" ? (
                       sortDir === "asc" ? (
                         <ChevronUp className="h-3 w-3" />
@@ -430,14 +440,14 @@ const StudentsPage = () => {
                 {courseType === "tezkor" ? (
                   <>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                      To'lov
+                      {t("students.payment_col")}
                     </th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                       <button
                         onClick={() => toggleSort("debt")}
                         className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
                       >
-                        Qarzdorlik
+                        {t("students.debt")}
                         {sortField === "debt" ? (
                           sortDir === "asc" ? (
                             <ChevronUp className="h-3 w-3" />
@@ -450,41 +460,41 @@ const StudentsPage = () => {
                       </button>
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                      Tulov turi
+                      {t("students.payment_type_col")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Guruh
+                      {t("students.group_field")}
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                      Dakument
+                      {t("students.document_col")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Operator
+                      {t("students.operator")}
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                      Natijasi
+                      {t("students.result_col")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Izoh
+                      {t("students.notes_col")}
                     </th>
                   </>
                 ) : (
                   <>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                      Bosh. tulov
+                      {t("students.initial_col")}
                     </th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                      2-tulov
+                      {t("students.second_col")}
                     </th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                      3-tulov
+                      {t("students.third_col")}
                     </th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                       <button
                         onClick={() => toggleSort("debt")}
                         className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
                       >
-                        Qarzdorlik
+                        {t("students.debt")}
                         {sortField === "debt" ? (
                           sortDir === "asc" ? (
                             <ChevronUp className="h-3 w-3" />
@@ -497,31 +507,31 @@ const StudentsPage = () => {
                       </button>
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                      Tulov turi
+                      {t("students.payment_type_col")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Guruh
+                      {t("students.group_field")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Tugatish
+                      {t("students.completion_col")}
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
                       O83
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Shartnoma
+                      {t("students.contract_col")}
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                      Dakument
+                      {t("students.document_col")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Operator
+                      {t("students.operator")}
                     </th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                      Natijasi
+                      {t("students.result_col")}
                     </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                      Izoh
+                      {t("students.notes_col")}
                     </th>
                   </>
                 )}
@@ -530,7 +540,7 @@ const StudentsPage = () => {
                     onClick={() => toggleSort("created_at")}
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
                   >
-                    Sana
+                    {t("common.date")}
                     {sortField === "created_at" ? (
                       sortDir === "asc" ? (
                         <ChevronUp className="h-3 w-3" />
@@ -543,7 +553,7 @@ const StudentsPage = () => {
                   </button>
                 </th>
                 <th className="px-4 py-3 text-center font-medium text-muted-foreground">
-                  Amallar
+                  {t("common.actions")}
                 </th>
               </tr>
             </thead>
@@ -590,10 +600,10 @@ const StudentsPage = () => {
                           </td>
                           <td className="px-4 py-3 text-center text-xs">
                             {s.payment_method === "naqd"
-                              ? "Naqd"
+                              ? t("students.payment_cash")
                               : s.payment_method === "karta"
-                                ? "Karta"
-                                : "Transfer"}
+                                ? t("students.payment_card")
+                                : t("students.payment_transfer")}
                           </td>
                           <td className="px-4 py-3 text-muted-foreground">
                             {s.group_name || "—"}
@@ -639,10 +649,10 @@ const StudentsPage = () => {
                           </td>
                           <td className="px-4 py-3 text-center text-xs">
                             {s.payment_method === "naqd"
-                              ? "Naqd"
+                              ? t("students.payment_cash")
                               : s.payment_method === "karta"
-                                ? "Karta"
-                                : "Transfer"}
+                                ? t("students.payment_card")
+                                : t("students.payment_transfer")}
                           </td>
                           <td className="px-4 py-3">{s.group_name}</td>
                           <td className="px-4 py-3 text-muted-foreground tabular-nums">
@@ -709,7 +719,7 @@ const StudentsPage = () => {
             <EmptyState
               icon={GraduationCap}
               title={t("students.not_found_title")}
-              description="Tanlangan filtrlar bo'yicha talabalar yo'q."
+              description={t("students.empty_filtered")}
             />
           )}
         </div>
@@ -726,7 +736,7 @@ const StudentsPage = () => {
             <EmptyState
               icon={GraduationCap}
               title={t("students.not_found_title")}
-              description="Tanlangan filtrlar bo'yicha talabalar yo'q."
+              description={t("students.empty_filtered")}
             />
           ) : (
             <div className="grid gap-3">
@@ -736,14 +746,20 @@ const StudentsPage = () => {
                   title={`${capitalize(s.last_name)} ${capitalize(s.first_name)}`}
                   subtitle={formatPhone(s.phone)}
                   fields={[
-                    { label: "Filial", value: s.branch_name ?? "—" },
+                    {
+                      label: t("students.card_label_branch"),
+                      value: s.branch_name ?? "—",
+                    },
                     {
                       label: t("common.group"),
                       value: s.group_name ?? t("common.na"),
                     },
-                    { label: "Kurs", value: s.course_type ?? "—" },
                     {
-                      label: "Qarz",
+                      label: t("students.card_label_course"),
+                      value: s.course_type ?? "—",
+                    },
+                    {
+                      label: t("students.card_label_debt"),
                       value: (
                         <span
                           className={
@@ -754,8 +770,14 @@ const StudentsPage = () => {
                         </span>
                       ),
                     },
-                    { label: "Holat", value: s.status ?? "—" },
-                    { label: "Sana", value: formatDate(s.created_at) },
+                    {
+                      label: t("students.card_label_status"),
+                      value: s.status ?? "—",
+                    },
+                    {
+                      label: t("students.card_label_date"),
+                      value: formatDate(s.created_at),
+                    },
                   ]}
                   actions={
                     <>
@@ -763,7 +785,7 @@ const StudentsPage = () => {
                         size="icon"
                         variant="ghost"
                         onClick={() => openEdit(s)}
-                        aria-label="Tahrirlash"
+                        aria-label={t("students.action_edit")}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -772,7 +794,7 @@ const StudentsPage = () => {
                           size="icon"
                           variant="ghost"
                           onClick={() => setDeleteId(s.id)}
-                          aria-label="O'chirish"
+                          aria-label={t("students.action_delete")}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
