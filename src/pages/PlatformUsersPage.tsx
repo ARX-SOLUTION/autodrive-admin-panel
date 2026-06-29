@@ -151,6 +151,14 @@ const PlatformUsersPage = () => {
     usePagination(sorted);
   const startIndex = (currentPage - 1) * 10;
 
+  const toggleSort = (field: keyof User) => {
+    if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortField(field);
+      setSortDir("asc");
+    }
+  };
+
   const openCreate = () => {
     setEditItem(null);
     setForm(EMPTY_FORM);
@@ -267,7 +275,7 @@ const PlatformUsersPage = () => {
             {t("platform_users.title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {t("platform_users.count", { count: items.length })}
+            {t("platform_users.count", { count: sorted.length })}
           </p>
         </div>
         <Button className="gap-2" onClick={openCreate}>
@@ -454,7 +462,7 @@ const PlatformUsersPage = () => {
                   ))}
             </tbody>
           </table>
-          {items.length === 0 && !isLoading && (
+          {sorted.length === 0 && !isLoading && (
             <EmptyState
               icon={KeyRound}
               title={t("platform_users.not_found_title")}
@@ -471,7 +479,7 @@ const PlatformUsersPage = () => {
                 <Skeleton key={i} className="h-32 w-full" />
               ))}
             </div>
-          ) : items.length === 0 ? (
+          ) : sorted.length === 0 ? (
             <EmptyState
               icon={KeyRound}
               title={t("platform_users.not_found_title")}

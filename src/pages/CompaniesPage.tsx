@@ -228,6 +228,14 @@ const CompaniesPage = () => {
       onError: (err) => toast.error(extractErrorMessage(err)),
     });
 
+  const toggleSort = (field: keyof Company) => {
+    if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortField(field);
+      setSortDir("asc");
+    }
+  };
+
   const handleSuspend = (id: string) =>
     suspendMut.mutate(id, {
       onSuccess: () => toast.success(t("companies.toast_suspended")),
@@ -242,7 +250,7 @@ const CompaniesPage = () => {
             {t("companies.title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {t("companies.count", { count: items.length })}
+            {t("companies.count", { count: sorted.length })}
           </p>
         </div>
         <div className="flex gap-2">
@@ -436,7 +444,7 @@ const CompaniesPage = () => {
                   ))}
             </tbody>
           </table>
-          {items.length === 0 && !isLoading && (
+          {sorted.length === 0 && !isLoading && (
             <EmptyState
               icon={Briefcase}
               title={t("companies.not_found_title")}
