@@ -101,7 +101,9 @@
     "submit": "Kirish",
     "submitting": "Kirilmoqda...",
     "success": "Tizimga muvaffaqiyatli kirdingiz!",
-    "error": "Email yoki parol noto'g'ri"
+    "error": "Email yoki parol noto'g'ri",
+    "rate_limit": "Ko'p urinishlar. Iltimos 1 daqiqa kuting.",
+    "network_error": "Server bilan ulanish yo'q."
   },
   "dashboard": {
     "title": "Platforma boshqaruvi",
