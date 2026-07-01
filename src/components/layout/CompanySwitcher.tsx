@@ -17,7 +17,10 @@ export const CompanySwitcher = () => {
   const isDev = useAuthStore((s) => s.isDev());
   const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   const setActiveCompanyId = useAuthStore((s) => s.setActiveCompanyId);
-  const { data, isLoading } = useCompanies({ limit: 200 });
+  // limit maxes at 100 server-side (ListCompaniesDto @Max(100)); 200 → 400 →
+  // the dropdown silently rendered only "All companies". Shows up to 100;
+  // add search/pagination here if a dev ever has more.
+  const { data, isLoading } = useCompanies({ limit: 100 });
 
   if (!isDev) return null;
 
