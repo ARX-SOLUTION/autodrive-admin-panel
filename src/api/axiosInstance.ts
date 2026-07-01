@@ -35,20 +35,27 @@ axiosInstance.interceptors.request.use((config) => {
     !isPlatformRoute &&
     !isAuthRoute
   ) {
-    // Override any call-site company_id with the dev's view-as company
-    // so that activeCompanyId is always authoritative for non-platform routes.
+    // Treat activeCompanyId as a DEFAULT, not an override: only inject it
+    // when the call site did not explicitly scope the request itself. An
+    // explicit company_id (e.g. CompanyDetailPage's Branches tab) must win,
+    // otherwise the dev's view-as company would bleed across companies.
     if (config.params instanceof URLSearchParams) {
-      if (config.params.has("company_id")) {
-        config.params.set("company_id", activeCompanyId);
-      } else {
+      const hasExplicit =
+        config.params.get("company_id") != null ||
+        config.params.get("companyId") != null;
+      if (!hasExplicit) {
         config.params.append("company_id", activeCompanyId);
       }
     } else {
       const existingParams =
         typeof config.params === "object" && config.params !== null
-          ? config.params
+          ? (config.params as Record<string, unknown>)
           : {};
-      config.params = { ...existingParams, company_id: activeCompanyId };
+      const hasExplicit =
+        existingParams.company_id != null || existingParams.companyId != null;
+      if (!hasExplicit) {
+        config.params = { ...existingParams, company_id: activeCompanyId };
+      }
     }
   }
   return config;
