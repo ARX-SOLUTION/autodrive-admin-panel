@@ -102,7 +102,9 @@
     "submit": "Sign in",
     "submitting": "Signing in...",
     "success": "Successfully signed in!",
-    "error": "Invalid email or password"
+    "error": "Invalid email or password",
+    "rate_limit": "Too many attempts. Please wait 1 minute.",
+    "network_error": "Unable to connect to the server."
   },
   "dashboard": {
     "title": "Platform Dashboard",

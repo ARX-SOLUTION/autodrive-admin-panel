@@ -23,7 +23,15 @@ const LoginPage = () => {
           toast.success(t("login.success"));
           navigate("/dashboard");
         },
-        onError: () => toast.error(t("login.error")),
+        onError: (error: any) => {
+          if (error.response?.status === 429) {
+            toast.error(t("login.rate_limit"));
+          } else if (!error.response) {
+            toast.error(t("login.network_error"));
+          } else {
+            toast.error(t("login.error"));
+          }
+        },
       },
     );
   };
