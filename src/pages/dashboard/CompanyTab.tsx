@@ -317,7 +317,7 @@ const CompanyTab = () => {
           subtitle={t("dashboard.top_branches_sub")}
           action={
             <Link
-              to="/filiallar"
+              to="/branches"
               className="text-xs font-medium text-primary hover:underline"
             >
               {t("dashboard.top_branches_link")}
@@ -378,7 +378,7 @@ const CompanyTab = () => {
           subtitle={t("dashboard.recent_payments_sub")}
           action={
             <Link
-              to="/tolovlar"
+              to="/payments"
               className="text-xs font-medium text-primary hover:underline"
             >
               {t("dashboard.recent_payments_link")}

@@ -242,7 +242,7 @@ const PlatformDashboard = () => {
             <h3 className="font-heading text-sm font-semibold text-balance">
               {t('dashboard.recent_companies')}
             </h3>
-            <Link to="/kompaniyalar">
+            <Link to="/companies">
               <Button variant="ghost" size="sm" className="gap-1 text-xs">
                 {t('common.view_all')} <ArrowRight className="h-3 w-3" />
               </Button>
@@ -287,12 +287,12 @@ const PlatformDashboard = () => {
             <h3 className="font-heading text-sm font-semibold text-balance">{t('dashboard.quick_actions')}</h3>
           </div>
           <div className="grid grid-cols-1 gap-2">
-            <Link to="/kompaniyalar">
+            <Link to="/companies">
               <Button variant="outline" className="w-full justify-start gap-2">
                 <Briefcase className="h-4 w-4" /> {t('dashboard.manage_companies')}
               </Button>
             </Link>
-            <Link to="/platform-foydalanuvchilar">
+            <Link to="/platform-users">
               <Button variant="outline" className="w-full justify-start gap-2">
                 <UserCog className="h-4 w-4" /> {t('dashboard.manage_users')}
               </Button>

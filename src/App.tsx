@@ -87,7 +87,7 @@ const App = () => (
               }
             />
             <Route
-              path="kompaniyalar"
+              path="companies"
               element={
                 <DevRoute>
                   <Suspense fallback={<PageLoader />}>
@@ -97,7 +97,7 @@ const App = () => (
               }
             />
             <Route
-              path="kompaniyalar/:id"
+              path="companies/:id"
               element={
                 <DevRoute>
                   <Suspense fallback={<PageLoader />}>
@@ -107,7 +107,7 @@ const App = () => (
               }
             />
             <Route
-              path="platform-foydalanuvchilar"
+              path="platform-users"
               element={
                 <DevRoute>
                   <Suspense fallback={<PageLoader />}>
@@ -127,7 +127,7 @@ const App = () => (
               }
             />
             <Route
-              path="filiallar"
+              path="branches"
               element={
                 <BranchAccessRoute>
                   <Suspense fallback={<PageLoader />}>
@@ -137,7 +137,7 @@ const App = () => (
               }
             />
             <Route
-              path="guruhlar"
+              path="groups"
               element={
                 <Suspense fallback={<PageLoader />}>
                   <GroupsPage />
@@ -145,7 +145,7 @@ const App = () => (
               }
             />
             <Route
-              path="talabalar"
+              path="students"
               element={
                 <Suspense fallback={<PageLoader />}>
                   <StudentsPage />
@@ -153,7 +153,7 @@ const App = () => (
               }
             />
             <Route
-              path="tolovlar"
+              path="payments"
               element={
                 <Suspense fallback={<PageLoader />}>
                   <PaymentsPage />
@@ -161,7 +161,7 @@ const App = () => (
               }
             />
             <Route
-              path="operatorlar"
+              path="operators"
               element={
                 <Suspense fallback={<PageLoader />}>
                   <OperatorsPage />
@@ -169,7 +169,7 @@ const App = () => (
               }
             />
             <Route
-              path="oqituvchilar"
+              path="teachers"
               element={
                 <Suspense fallback={<PageLoader />}>
                   <TeachersPage />
@@ -177,7 +177,7 @@ const App = () => (
               }
             />
             <Route
-              path="foydalanuvchilar"
+              path="users"
               element={
                 <OwnerRoute>
                   <Suspense fallback={<PageLoader />}>

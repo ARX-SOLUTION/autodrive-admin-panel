@@ -41,30 +41,30 @@ const NAV_ENTRIES: NavEntry[] = [
   { labelKey: "nav.dashboard", path: "/dashboard", icon: LayoutDashboard },
   {
     labelKey: "nav.companies",
-    path: "/kompaniyalar",
+    path: "/companies",
     icon: Briefcase,
     devOnly: true,
   },
   {
     labelKey: "nav.platform_users",
-    path: "/platform-foydalanuvchilar",
+    path: "/platform-users",
     icon: KeyRound,
     devOnly: true,
   },
   {
     labelKey: "nav.branches",
-    path: "/filiallar",
+    path: "/branches",
     icon: Building2,
     branchAccess: true,
   },
-  { labelKey: "nav.groups", path: "/guruhlar", icon: Layers },
-  { labelKey: "nav.students", path: "/talabalar", icon: GraduationCap },
-  { labelKey: "nav.payments", path: "/tolovlar", icon: CreditCard },
-  { labelKey: "nav.operators", path: "/operatorlar", icon: Headphones },
-  { labelKey: "nav.teachers", path: "/oqituvchilar", icon: Users },
+  { labelKey: "nav.groups", path: "/groups", icon: Layers },
+  { labelKey: "nav.students", path: "/students", icon: GraduationCap },
+  { labelKey: "nav.payments", path: "/payments", icon: CreditCard },
+  { labelKey: "nav.operators", path: "/operators", icon: Headphones },
+  { labelKey: "nav.teachers", path: "/teachers", icon: Users },
   {
     labelKey: "nav.users",
-    path: "/foydalanuvchilar",
+    path: "/users",
     icon: UserCog,
     ownerOnly: true,
   },
@@ -103,7 +103,7 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
   const goCompany = (id: string) => {
     setActiveCompanyId(id);
     onOpenChange(false);
-    navigate(`/kompaniyalar/${id}`);
+    navigate(`/companies/${id}`);
   };
 
   return (
@@ -157,7 +157,7 @@ export const CommandPalette = ({ open, onOpenChange }: CommandPaletteProps) => {
                 <CommandItem
                   key={u.id}
                   value={`user ${u.name} ${u.email}`}
-                  onSelect={() => go("/platform-foydalanuvchilar")}
+                  onSelect={() => go("/platform-users")}
                 >
                   <User className="mr-2 h-4 w-4" />
                   <span className="flex-1 truncate">{u.name || u.email}</span>

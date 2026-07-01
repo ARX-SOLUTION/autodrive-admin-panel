@@ -126,7 +126,7 @@ const CompanyDetailPage = () => {
         description={t("company_detail.not_found_desc")}
         action={{
           label: t("company_detail.not_found_action"),
-          onClick: () => navigate("/kompaniyalar"),
+          onClick: () => navigate("/companies"),
         }}
       />
     );
@@ -165,7 +165,7 @@ const CompanyDetailPage = () => {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <Link
-            to="/kompaniyalar"
+            to="/companies"
             className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
             aria-label={t("common.back")}
           >
@@ -208,7 +208,7 @@ const CompanyDetailPage = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/kompaniyalar")}
+            onClick={() => navigate("/companies")}
           >
             <Pencil className="mr-1 h-4 w-4" /> {t("company_detail.edit")}
           </Button>
@@ -365,7 +365,7 @@ const CompanyDetailPage = () => {
               description={t("company_detail.users_empty_desc")}
               action={{
                 label: t("company_detail.users_empty_action"),
-                onClick: () => navigate("/platform-foydalanuvchilar"),
+                onClick: () => navigate("/platform-users"),
               }}
             />
           ) : (
@@ -398,7 +398,7 @@ const CompanyDetailPage = () => {
                     ]}
                     actions={
                       <Link
-                        to="/platform-foydalanuvchilar"
+                        to="/platform-users"
                         aria-label={t("common.edit")}
                         className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
                       >
