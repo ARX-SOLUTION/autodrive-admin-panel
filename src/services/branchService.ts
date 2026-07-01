@@ -39,7 +39,11 @@ export const useCreateBranch = () => {
   const activeCompanyId = useAuthStore((s) => s.activeCompanyId);
   return useMutation({
     mutationFn: async (b: { name: string; location: string; phone?: string }) => {
-      const { data } = await axiosInstance.post('/branches', b);
+      // dev has no companyId of its own — pass the active view-as company so the
+      // backend knows which company the new branch belongs to (owner ignores it).
+      const { data } = await axiosInstance.post('/branches', b, {
+        params: activeCompanyId ? { company_id: activeCompanyId } : undefined,
+      });
       return data?.data || data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['branches', activeCompanyId] }),
