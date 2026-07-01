@@ -126,7 +126,14 @@ const BranchesPage = () => {
           </p>
         </div>
         {canManage && (
-          <Button className="gap-2" onClick={openCreate}>
+          <Button
+            className="gap-2"
+            onClick={openCreate}
+            // dev must target a company (activeCompanyId) or create fails
+            // server-side with "company_id is required". The Alert above tells
+            // them to pick one in the switcher.
+            disabled={isDev() && !activeCompanyId}
+          >
             <Plus className="h-4 w-4" /> {t("branches.add_new")}
           </Button>
         )}
