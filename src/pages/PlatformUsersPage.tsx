@@ -39,6 +39,7 @@ import { User, UserRole } from "@/types/user";
 import { DataCard } from "@/components/ui/DataCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useCompanies } from "@/services/companyService";
+import { useBranches } from "@/services/branchService";
 import {
   useCreatePlatformUser,
   useDeletePlatformUser,
@@ -116,6 +117,11 @@ const PlatformUsersPage = () => {
   });
   const { data: companiesData } = useCompanies({ limit: 100 });
   const companies = companiesData?.items ?? [];
+  // Branches of the company selected in the form — drives the branch dropdown
+  // so a manager/operator/teacher is assigned by name, not a hand-typed UUID.
+  const { data: branchesForCompany = [] } = useBranches({
+    companyId: form.companyId || undefined,
+  });
 
   const createMut = useCreatePlatformUser();
   const updateMut = useUpdatePlatformUser();
@@ -650,7 +656,7 @@ const PlatformUsersPage = () => {
                 <Select
                   value={form.companyId}
                   onValueChange={(v) =>
-                    setForm((f) => ({ ...f, companyId: v }))
+                    setForm((f) => ({ ...f, companyId: v, branchId: "" }))
                   }
                 >
                   <SelectTrigger className="bg-secondary border-border">
@@ -669,14 +675,34 @@ const PlatformUsersPage = () => {
             {showBranchField && (
               <div className="space-y-2">
                 <Label>{t("platform_users.branch_label")}</Label>
-                <Input
+                <Select
                   value={form.branchId}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, branchId: e.target.value }))
+                  onValueChange={(v) =>
+                    setForm((f) => ({ ...f, branchId: v }))
                   }
-                  placeholder={t("platform_users.branch_placeholder")}
-                  className="bg-secondary border-border"
-                />
+                  disabled={
+                    !form.companyId || branchesForCompany.length === 0
+                  }
+                >
+                  <SelectTrigger className="bg-secondary border-border">
+                    <SelectValue
+                      placeholder={
+                        !form.companyId
+                          ? t("platform_users.branch_select_company_first")
+                          : branchesForCompany.length === 0
+                            ? t("platform_users.branch_none")
+                            : t("common.select_placeholder")
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branchesForCompany.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
             <div className="flex justify-end gap-3 pt-2">
