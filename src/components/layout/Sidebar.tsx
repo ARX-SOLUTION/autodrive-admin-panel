@@ -46,13 +46,13 @@ const navSections: NavSection[] = [
     titleKey: "common.platform_admin",
     items: [
       {
-        path: "/kompaniyalar",
+        path: "/companies",
         labelKey: "nav.companies",
         icon: Briefcase,
         devOnly: true,
       },
       {
-        path: "/platform-foydalanuvchilar",
+        path: "/platform-users",
         labelKey: "nav.platform_users",
         icon: KeyRound,
         devOnly: true,
@@ -69,23 +69,23 @@ const navSections: NavSection[] = [
     titleKey: "common.management",
     items: [
       {
-        path: "/filiallar",
+        path: "/branches",
         labelKey: "nav.branches",
         icon: Building2,
         branchAccess: true,
       },
-      { path: "/guruhlar", labelKey: "nav.groups", icon: Layers },
-      { path: "/talabalar", labelKey: "nav.students", icon: GraduationCap },
-      { path: "/tolovlar", labelKey: "nav.payments", icon: CreditCard },
+      { path: "/groups", labelKey: "nav.groups", icon: Layers },
+      { path: "/students", labelKey: "nav.students", icon: GraduationCap },
+      { path: "/payments", labelKey: "nav.payments", icon: CreditCard },
     ],
   },
   {
     titleKey: "common.staff",
     items: [
-      { path: "/operatorlar", labelKey: "nav.operators", icon: Headphones },
-      { path: "/oqituvchilar", labelKey: "nav.teachers", icon: Users },
+      { path: "/operators", labelKey: "nav.operators", icon: Headphones },
+      { path: "/teachers", labelKey: "nav.teachers", icon: Users },
       {
-        path: "/foydalanuvchilar",
+        path: "/users",
         labelKey: "nav.users",
         icon: UserCog,
         ownerOnly: true,

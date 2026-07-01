@@ -375,7 +375,7 @@ const CompaniesPage = () => {
                       </td>
                       <td className="px-4 py-3 font-medium">
                         <Link
-                          to={`/kompaniyalar/${c.id}`}
+                          to={`/companies/${c.id}`}
                           className="hover:text-primary hover:underline"
                         >
                           {c.name}
@@ -472,7 +472,7 @@ const CompaniesPage = () => {
               key={c.id}
               title={c.name}
               subtitle={c.slug}
-              onClick={() => navigate(`/kompaniyalar/${c.id}`)}
+              onClick={() => navigate(`/companies/${c.id}`)}
               fields={[
                 {
                   label: t("companies.status"),

@@ -188,7 +188,7 @@ const PlatformTab = () => {
           subtitle={t("dashboard.recent_companies_sub")}
           action={
             <Link
-              to="/kompaniyalar"
+              to="/companies"
               className="text-xs font-medium text-primary hover:underline"
             >
               {t("common.view_all")}
